@@ -158,7 +158,17 @@ var data={accessToken:accessToken,orderId:orderId,customerName:custName,orderDat
 try{
 await fetch(SURL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
 
-try{if(typeof liff!=='undefined'&&liff.isInClient()){var cl=[];cl.push('📋 訂單確認');cl.push('');cl.push('🔖 '+orderId);cl.push('👤 '+custName);cl.push('🕐 '+orderDT);cl.push('');data.items.forEach(function(it,i){cl.push((i+1)+'. '+it.name+'('+it.size+')x'+it.qty+' $'+it.price);});cl.push('');cl.push('💰 合計 '+data.totalBowls+'碗 $'+data.totalAmount);cl.push('');cl.push('✅ 訂單已送出，請等候製作！');liff.sendMessage([{type:'text',text:cl.join('\n')}]);}}catch(me){}
+try{if(typeof liff!=='undefined'&&liff.isInClient()){var cl=[];cl.push('📋 訂單確認');cl.push('');cl.push('🔖 '+orderId);cl.push('👤 '+custName);cl.push('🕐 '+orderDT);cl.push('');data.items.forEach(function(it,i){
+var cds=['香菜','醬油','烏醋','蒜蓉'];
+var rm=cds.filter(function(x){return !it.conds[x];});
+var cdT=rm.length===0?'✅全加':'⛔'+rm.map(function(x){return '不要'+x;}).join('、');
+var spT=it.spice==='不加辣'?'':'🌶️'+it.spice;
+var tpA=[];if(it.toppings)it.toppings.forEach(function(t){tpA.push(t);});
+var tpT=tpA.length?'➕'+tpA.join('、'):'';
+var detail=[cdT,spT,tpT].filter(function(x){return x;}).join(' ');
+cl.push((i+1)+'. '+it.name+'('+it.size+')x'+it.qty+' $'+it.price);
+cl.push('   '+detail);
+});cl.push('');cl.push('💰 合計 '+data.totalBowls+'碗 $'+data.totalAmount);cl.push('');cl.push('✅ 訂單已送出，請等候製作！');liff.sendMessage([{type:'text',text:cl.join('\n')}]);}}catch(me){}
 document.getElementById('ft').style.display='none';
 var rm=CD;
 document.getElementById('app').innerHTML='<div class="ok"><div class="ic">✅</div><h2>訂單已送出！</h2></div><div class="okinfo"><div class="row"><span class="k">訂單編號</span><span class="v vid">'+data.orderId+'</span></div><div class="row"><span class="k">取餐姓名</span><span class="v">'+custName+'</span></div><div class="row"><span class="k">下單時間</span><span class="v">'+data.orderDatetime+'</span></div></div>'+'<div class="sec">📋 訂單明細</div><div class="receipt">'+data.items.map((it,i)=>{var removed=rm.filter(c=>!it.conds[c]);var cT=removed.length?'去'+removed.join('、'):'全加';var tps=[];for(var k in it.toppingQty)if(it.toppingQty[k]>0)tps.push(k+' x'+it.toppingQty[k]);return '<div class="ri"><div class="ri-hd">'+(i+1)+'. '+it.name+'（'+it.size+'）</div>'+'<div class="ri-row"><span>底價</span><span class="rv">$'+it.unitBase+'</span></div>'+'<div class="ri-row"><span>醬料</span><span class="rv">'+cT+'</span></div>'+'<div class="ri-row"><span>辣度</span><span class="rv">'+it.spice+'</span></div>'+(tps.length?'<div class="ri-row"><span>加料</span><span class="rv">'+tps.join('、')+'</span></div>':'')+'<div class="ri-row"><span>碗數</span><span class="rv">x'+it.qty+'</span></div>'+'<div class="ri-sub"><span>小計</span><span>$'+it.price+'</span></div></div>';}).join('')+'</div>'+'<div class="rt"><div style="font-size:14px;color:#888;margin-bottom:4px">合計（'+data.totalBowls+' 碗）</div><div class="a">$'+data.totalAmount+'</div></div>'+'<div style="text-align:center;color:#888;font-size:14px;padding:0 20px 12px">感謝訂購，請稍候取餐 🍜</div>'+'<div style="padding:0 16px 40px"><button class="fbtn" onclick="closeLiff()">關閉</button></div>';
