@@ -92,6 +92,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ri-sub{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding-top:6px;margin-top:4px;border-top:1px dashed #eee;color:#D85A30}
 .rt{background:#fff;border-radius:14px;padding:16px;margin:0 16px 16px;text-align:center}
 .rt .a{font-size:30px;font-weight:800;color:#D85A30}
+.group-banner{background:linear-gradient(135deg,#FFF0E8,#FFE0D0);padding:14px 16px;text-align:center;border-bottom:3px solid #D85A30;border-radius:0 0 14px 14px}
 </style>
 </head>
 <body>
@@ -111,7 +112,13 @@ var CD=['香菜','醬油','烏醋','蒜蓉'],SP=['不加辣','微辣','小辣','
 var cart=[],uid='',uname='',orderId='',orderDT='',custName='';
 function genOID(){var n=new Date(),ds=''+n.getFullYear()+String(n.getMonth()+1).padStart(2,'0')+String(n.getDate()).padStart(2,'0');var sq=String(n.getHours())+String(n.getMinutes()).padStart(2,'0')+String(n.getSeconds()).padStart(2,'0');return 'ORD-'+ds+'-'+sq;}
 function fmtDT(){var n=new Date();return n.getFullYear()+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+String(n.getDate()).padStart(2,'0')+' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
-var accessToken='';async function init(){try{accessToken=sessionStorage.getItem('liff_token')||'';uid=sessionStorage.getItem('liff_uid')||'';uname=sessionStorage.getItem('liff_name')||'';}catch(e){}if(!accessToken){try{await liff.init({liffId:LID});if(liff.isLoggedIn()){var p=await liff.getProfile();uid=p.userId;uname=p.displayName;accessToken=liff.getAccessToken()||'';}}catch(e){}}var cn=document.getElementById('custName');if(cn&&uname&&!cn.value)cn.value=uname;orderId=genOID();orderDT=fmtDT();document.getElementById('oidD').textContent=orderId;document.getElementById('odtD').textContent=orderDT;if(uname)document.getElementById('ousrD').textContent='👤 '+uname;render();}
+var accessToken='';async function init(){try{accessToken=sessionStorage.getItem('liff_token')||'';uid=sessionStorage.getItem('liff_uid')||'';uname=sessionStorage.getItem('liff_name')||'';}catch(e){}
+  var urlParams=new URLSearchParams(window.location.search);
+  var grpParam=urlParams.get('group')||'';
+  if(grpParam){groupId=grpParam;}
+  if(!accessToken){try{await liff.init({liffId:LID});if(liff.isLoggedIn()){var p=await liff.getProfile();uid=p.userId;uname=p.displayName;accessToken=liff.getAccessToken()||'';}}catch(e){}}var cn=document.getElementById('custName');
+  // Load group info if in group order mode
+  if(groupId&&accessToken){try{var gr=await fetch(GROUP_JOIN_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({groupId:groupId})});var gd=await gr.json();if(gd.success){groupInfo=gd;var gb=document.createElement('div');gb.id='group-banner';gb.style.cssText='background:linear-gradient(135deg,#FFF0E8,#FFE0D0);padding:14px 16px;margin:0 0 8px;border-radius:0 0 14px 14px;text-align:center;border-bottom:3px solid #D85A30';gb.innerHTML='<div style="font-size:15px;font-weight:700;color:#D85A30">\ud83c\udf89 \u4f60\u6b63\u5728\u53c3\u52a0 '+gd.hostName+' \u7684\u63ea\u5718\uff01</div><div style="font-size:12px;color:#888;margin-top:4px">\u76ee\u524d '+gd.totalMembers+' \u4eba / '+gd.totalBowls+' \u7897 | \u6eff 5 \u7897\u4eab 95 \u6298</div>';var app=document.getElementById('app');app.parentNode.insertBefore(gb,app);}else if(gd.error==='GROUP_EXPIRED'||gd.error==='GROUP_CLOSED'){groupId='';sessionStorage.removeItem('liff_group');}}catch(e){groupId='';}}if(cn&&uname&&!cn.value)cn.value=uname;orderId=genOID();orderDT=fmtDT();document.getElementById('oidD').textContent=orderId;document.getElementById('odtD').textContent=orderDT;if(uname)document.getElementById('ousrD').textContent='👤 '+uname;render();}
 function render(){
 var nm=custName||uname||'';
 document.getElementById('app').innerHTML='<div class="nsec"><div class="nlbl">👤 取餐姓名（必填）</div><div class="nwrap"><input type="text" id="cname" placeholder="請輸入您的姓名" maxlength="20" value="'+nm.replace(/"/g,'&quot;')+'" oninput="custName=this.value.trim();document.getElementById(\x27nerr\x27).style.display=\x27none\x27;rc();"></div><div class="nerr" id="nerr">⚠ 請輸入取餐姓名才能送出訂單</div></div><div class="sec">選擇品項加入購物車</div><div class="grid">'+M.map(m=>'<div class="mc"><div class="nm">'+m.nm+'</div><div class="ds">'+m.ds+'</div><div class="sr"><div class="sb on" onclick="add(\x27'+m.id+'\x27,\x27小碗\x27)">小碗 $'+m.S+'</div><div class="sb" onclick="add(\x27'+m.id+'\x27,\x27大碗\x27)">大碗 $'+m.L+'</div></div></div>').join('')+'</div><div id="ca"></div>';
@@ -154,7 +161,7 @@ function backToEdit(){render();rc();}
 function cfDel(u){cart=cart.filter(c=>c.uid!==u);if(cart.length)showConfirm();else render();}
 async function doSubmit(){
 var btns=document.querySelectorAll('.fbtn');btns.forEach(b=>{b.disabled=true;b.textContent='送出中...';});
-var data={accessToken:accessToken,orderId:orderId,customerName:custName,orderDatetime:orderDT,items:cart.map(it=>{var tl=[];Object.entries(it.tp).forEach(([k,v])=>{for(var i=0;i<v;i++)tl.push(k);});var m=M.find(x=>x.id===it.mid);var base=it.sz==='大碗'?m.L:m.S;var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);return{name:it.nm,size:it.sz,qty:it.qty,unitBase:base,unitTotal:base+topP,conds:it.cd,spice:it.sp,toppings:tl,toppingQty:it.tp,price:pr2(it)};}),totalBowls:tb(),totalAmount:ta(),timestamp:new Date().toISOString()};
+var data={accessToken:accessToken,orderId:orderId,groupId:groupId,customerName:custName,orderDatetime:orderDT,items:cart.map(it=>{var tl=[];Object.entries(it.tp).forEach(([k,v])=>{for(var i=0;i<v;i++)tl.push(k);});var m=M.find(x=>x.id===it.mid);var base=it.sz==='大碗'?m.L:m.S;var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);return{name:it.nm,size:it.sz,qty:it.qty,unitBase:base,unitTotal:base+topP,conds:it.cd,spice:it.sp,toppings:tl,toppingQty:it.tp,price:pr2(it)};}),totalBowls:tb(),totalAmount:ta(),timestamp:new Date().toISOString()};
 try{
 var resp=await fetch(SURL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
 var rd=await resp.json();
