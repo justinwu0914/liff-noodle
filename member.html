@@ -124,7 +124,7 @@ async function doRegister(){
     var res=await fetch(SUBMIT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
     var d=await res.json();
     if(d.success){
-      document.getElementById('app').innerHTML='<div class="ok"><div class="ic">\ud83c\udf89</div><h2>\u6b61\u8fce\u52a0\u5165\u6703\u54e1\uff01</h2><p><strong>'+data.real_name+'</strong> \u60a8\u597d\uff0c<br>\u8a3b\u518a\u6210\u529f\uff0c\u5df2\u8d08\u9001\u9996\u6b21\u52a0\u5165\u512a\u60e0\uff01</p><div class="pts">+ 50 \u9ede</div><p>\u8acb\u67e5\u770b LINE \u8a0a\u606f\u78ba\u8a8d</p><div style="padding:16px"><button class="btn btn-primary" onclick="closePage()">\u5b8c\u6210</button></div></div>';
+      document.getElementById('app').innerHTML='<div class="ok"><div class="ic">\ud83c\udf89</div><h2>\u6b61\u8fce\u52a0\u5165\u6703\u54e1\uff01</h2><p><strong>'+data.real_name+'</strong> \u60a8\u597d\uff0c<br>\u8a3b\u518a\u6210\u529f\uff0c\u5df2\u8d08\u9001\u9996\u6b21\u52a0\u5165\u512a\u60e0\uff01</p><div class="pts">+ 10 \u9ede</div><p>\u8acb\u67e5\u770b LINE \u8a0a\u606f\u78ba\u8a8d</p><div style="padding:16px"><button class="btn btn-primary" onclick="closePage()">\u5b8c\u6210</button></div></div>';
     }else{btn.disabled=false;btn.textContent='\u2705 \u78ba\u8a8d\u8a3b\u518a';alert(d.error||'\u8a3b\u518a\u5931\u6557');}
   }catch(e){btn.disabled=false;btn.textContent='\u2705 \u78ba\u8a8d\u8a3b\u518a';alert('\u7db2\u8def\u932f\u8aa4\uff0c\u8acb\u91cd\u8a66');}
 }
