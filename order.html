@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>麵線點餐</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f0eb;color:#333;padding-bottom:140px}
+.hd{background:#D85A30;color:#fff;padding:16px 20px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center}
+.hd h1{font-size:20px;font-weight:700}
+.bg{background:#fff;color:#D85A30;padding:4px 12px;border-radius:20px;font-size:14px;font-weight:700}
+.obar{background:#fff;border-bottom:1px solid #eee;padding:10px 20px;display:flex;align-items:center;gap:12px;font-size:13px}
+.obar .oid{font-family:monospace;color:#D85A30;font-weight:700}
+.obar .sep{width:1px;height:14px;background:#ddd}
+.obar .odt{color:#999}
+.obar .ousr{color:#666;margin-left:auto;font-weight:500}
+.nsec{padding:12px 20px 4px}
+.nlbl{font-size:12px;color:#888;font-weight:600;margin-bottom:6px}
+.nwrap{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #eee;border-radius:12px;padding:10px 14px}
+.nwrap:focus-within{border-color:#D85A30}
+.nwrap input{flex:1;border:none;outline:none;font-size:15px;font-weight:500;font-family:inherit;background:none;color:#333}
+.nwrap input::placeholder{color:#ccc}
+.nerr{font-size:11px;color:#A32D2D;margin-top:4px;padding-left:4px;display:none}
+.okinfo{background:#fff;border-radius:12px;margin:0 20px 16px;padding:14px 18px;text-align:left}
+.okinfo .row{display:flex;justify-content:space-between;font-size:14px;padding:4px 0}
+.okinfo .row .k{color:#888}
+.okinfo .row .v{font-weight:600;color:#333}
+.okinfo .row .vid{font-family:monospace;color:#D85A30}
+.sec{padding:16px 20px 8px;font-size:15px;font-weight:700;color:#888}
+.grid{padding:0 12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mc{background:#fff;border-radius:14px;padding:16px;border:2px solid transparent}
+.mc .nm{font-size:18px;font-weight:700;color:#D85A30;margin-bottom:2px}
+.mc .ds{font-size:12px;color:#999;margin-bottom:10px}
+.sr{display:flex;gap:6px}
+.sb{flex:1;padding:8px 4px;border-radius:8px;text-align:center;font-size:13px;font-weight:600;border:1.5px solid #ddd;background:#fff;color:#666;cursor:pointer}
+.sb.on{background:#D85A30;color:#fff;border-color:#D85A30}
+.cs{padding:12px 16px}
+.ci{background:#fff;border-radius:14px;margin-bottom:12px;border-left:5px solid #D85A30;overflow:hidden}
+.ci:nth-child(even){border-left-color:#0F6E56}
+.ci-inner{padding:14px 16px}
+.ci-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.ci-badge{background:#D85A30;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.ci:nth-child(even) .ci-badge{background:#0F6E56}
+.ci-nm{font-size:16px;font-weight:700;margin-left:8px;flex:1}
+.ci-del{color:#ccc;font-size:22px;cursor:pointer;padding:0 6px}
+.ci-summary{font-size:12px;color:#888;background:#f9f7f4;padding:6px 10px;border-radius:8px;margin:6px 0 8px;line-height:1.5}
+.ci-summary b{color:#D85A30}
+.note{font-size:11px;color:#D85A30;background:#FFF5F0;padding:4px 8px;border-radius:6px;margin-bottom:8px;text-align:center}
+.note2{font-size:11px;color:#0F6E56;background:#E1F5EE;padding:4px 8px;border-radius:6px;margin-bottom:8px;text-align:center}
+.lbl{font-size:12px;color:#888;margin:8px 0 4px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.ch{padding:6px 12px;border-radius:20px;font-size:13px;cursor:pointer;border:1.5px solid #ddd;background:#fff;color:#666;user-select:none}
+.ch.on{background:#0F6E56;color:#fff;border-color:#0F6E56}
+.ch.off{background:#FCEBEB;color:#A32D2D;border-color:#F09595;text-decoration:line-through}
+.ch.sp{background:#D85A30;color:#fff;border-color:#D85A30}
+.qr{display:flex;align-items:center;justify-content:center;gap:16px;margin:8px 0}
+.qb{width:36px;height:36px;border-radius:50%;border:2px solid #D85A30;background:#fff;color:#D85A30;font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.qb:active{background:#D85A30;color:#fff}
+.qn{font-size:24px;font-weight:700;min-width:30px;text-align:center}
+.tr{display:flex;align-items:center;gap:8px;margin:4px 0}
+.tn{font-size:14px;flex:1}
+.ts{padding:6px 10px;border-radius:8px;border:1.5px solid #ddd;font-size:14px;background:#fff;color:#333;font-weight:600;min-width:70px}
+.sub{text-align:center;font-size:14px;color:#D85A30;font-weight:700;margin-top:4px}
+.ft{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;padding:12px 20px;z-index:100}
+.ftrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.ftlbl{font-size:16px;color:#666}
+.ftamt{font-size:28px;font-weight:800;color:#D85A30}
+.fbtn{width:100%;padding:16px;background:#D85A30;color:#fff;border:none;border-radius:14px;font-size:18px;font-weight:700;cursor:pointer;margin-bottom:6px}
+.fbtn:active{opacity:.8}
+.fbtn:disabled{background:#ccc}
+.fbtn2{width:100%;padding:12px;background:#fff;color:#D85A30;border:2px solid #D85A30;border-radius:14px;font-size:16px;font-weight:600;cursor:pointer}
+.cf-item{background:#fff;border-radius:14px;margin-bottom:10px;border-left:5px solid #D85A30;padding:14px 16px}
+.cf-item:nth-child(even){border-left-color:#0F6E56}
+.cf-row{display:flex;justify-content:space-between;font-size:14px;padding:3px 0}
+.cf-row .k{color:#888}
+.cf-row .v{font-weight:600}
+.cf-actions{display:flex;gap:8px;margin-top:8px}
+.cf-edit{flex:1;padding:8px;background:#fff;color:#D85A30;border:1.5px solid #D85A30;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:center}
+.cf-del{flex:1;padding:8px;background:#fff;color:#A32D2D;border:1.5px solid #F09595;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:center}
+.cf-total{background:#fff;border-radius:14px;padding:16px;margin:12px 16px;text-align:center}
+.cf-total .amt{font-size:32px;font-weight:800;color:#D85A30}
+.ok{text-align:center;padding:40px 20px 20px}
+.ok .ic{font-size:60px;margin-bottom:12px}
+.ok h2{font-size:22px;margin-bottom:12px}
+.receipt{padding:0 16px 20px}
+.ri{background:#fff;border-radius:12px;margin-bottom:8px;padding:12px 14px;border-left:4px solid #D85A30}
+.ri:nth-child(even){border-left-color:#0F6E56}
+.ri-hd{font-size:15px;font-weight:700;margin-bottom:6px}
+.ri-row{display:flex;justify-content:space-between;font-size:13px;padding:2px 0;color:#666}
+.ri-row .rv{color:#333;font-weight:500}
+.ri-sub{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding-top:6px;margin-top:4px;border-top:1px dashed #eee;color:#D85A30}
+.rt{background:#fff;border-radius:14px;padding:16px;margin:0 16px 16px;text-align:center}
+.rt .a{font-size:30px;font-weight:800;color:#D85A30}
+</style>
+</head>
+<body>
+<div class="hd"><h1>🍜 麵線點餐</h1><div class="bg" id="bdg">0 碗 $0</div></div>
+<div class="obar"><span class="oid" id="oidD">---</span><span class="sep"></span><span class="odt" id="odtD">---</span><span class="ousr" id="ousrD"></span></div>
+<div id="app"><div style="text-align:center;padding:80px 20px;color:#999">載入中...</div></div>
+<div class="ft" id="ft" style="display:none">
+<div class="ftrow"><span class="ftlbl">合計</span><span class="ftamt" id="tamt">$0</span></div>
+<button class="fbtn" id="sbtn" onclick="showConfirm()" disabled>選擇品項開始點餐</button>
+</div>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+var LID='2009530264-3xA9VL4a',SURL='https://n8n.justinaiauto.com/webhook/food-order-submit';
+// SHOP_UID & LTOKEN moved to n8n backend for security
+var M=[{id:'oyster',nm:'鮮蚵麵線',ds:'新鮮蚵仔搭配麵線',L:65,S:60,top:1},{id:'mixed',nm:'綜合麵線',ds:'鮮蚵＋滷製豬腸搭配麵線',L:65,S:60,top:1},{id:'intestine',nm:'豬腸麵線',ds:'滷製豬腸搭配麵線',L:60,S:55,top:1},{id:'plain',nm:'清麵線',ds:'純麵線湯底',L:45,S:40,top:0}];
+var CD=['香菜','醬油','烏醋','蒜蓉'],SP=['不加辣','微辣','小辣','中辣','大辣'],TP=[{nm:'加豬腸',p:30},{nm:'加鮮蚵',p:30}];
+var cart=[],uid='',uname='',orderId='',orderDT='',custName='';
+function genOID(){var n=new Date(),ds=''+n.getFullYear()+String(n.getMonth()+1).padStart(2,'0')+String(n.getDate()).padStart(2,'0');var sq=String(n.getHours())+String(n.getMinutes()).padStart(2,'0')+String(n.getSeconds()).padStart(2,'0');return 'ORD-'+ds+'-'+sq;}
+function fmtDT(){var n=new Date();return n.getFullYear()+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+String(n.getDate()).padStart(2,'0')+' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
+var accessToken='';async function init(){try{accessToken=sessionStorage.getItem('liff_token')||'';uid=sessionStorage.getItem('liff_uid')||'';uname=sessionStorage.getItem('liff_name')||'';}catch(e){}if(!accessToken){try{await liff.init({liffId:LID});if(liff.isLoggedIn()){var p=await liff.getProfile();uid=p.userId;uname=p.displayName;accessToken=liff.getAccessToken()||'';}}catch(e){}}var cn=document.getElementById('custName');if(cn&&uname&&!cn.value)cn.value=uname;orderId=genOID();orderDT=fmtDT();document.getElementById('oidD').textContent=orderId;document.getElementById('odtD').textContent=orderDT;if(uname)document.getElementById('ousrD').textContent='👤 '+uname;render();}
+function render(){
+var nm=custName||uname||'';
+document.getElementById('app').innerHTML='<div class="nsec"><div class="nlbl">👤 取餐姓名（必填）</div><div class="nwrap"><input type="text" id="cname" placeholder="請輸入您的姓名" maxlength="20" value="'+nm.replace(/"/g,'&quot;')+'" oninput="custName=this.value.trim();document.getElementById(\x27nerr\x27).style.display=\x27none\x27;rc();"></div><div class="nerr" id="nerr">⚠ 請輸入取餐姓名才能送出訂單</div></div><div class="sec">選擇品項加入購物車</div><div class="grid">'+M.map(m=>'<div class="mc"><div class="nm">'+m.nm+'</div><div class="ds">'+m.ds+'</div><div class="sr"><div class="sb on" onclick="add(\x27'+m.id+'\x27,\x27小碗\x27)">小碗 $'+m.S+'</div><div class="sb" onclick="add(\x27'+m.id+'\x27,\x27大碗\x27)">大碗 $'+m.L+'</div></div></div>').join('')+'</div><div id="ca"></div>';
+document.getElementById('ft').style.display='block';rc();
+}
+function add(id,sz){var m=M.find(x=>x.id===id);cart.push({uid:Date.now(),mid:id,nm:m.nm,sz:sz,qty:1,cd:{香菜:1,醬油:1,烏醋:1,蒜蓉:1},sp:'不加辣',tp:{加豬腸:0,加鮮蚵:0},canTop:m.top});rc();setTimeout(function(){document.getElementById('ca').scrollIntoView({behavior:'smooth'});},100);}
+function del(u){cart=cart.filter(c=>c.uid!==u);rc();}
+function cq(u,d){var it=cart.find(c=>c.uid===u);if(it)it.qty=Math.max(1,Math.min(99,it.qty+d));rc();}
+function tc(u,cd){var it=cart.find(c=>c.uid===u);if(it)it.cd[cd]=it.cd[cd]?0:1;rc();}
+function ss(u,sp){var it=cart.find(c=>c.uid===u);if(it)it.sp=sp;rc();}
+function st(u,tn,v){var it=cart.find(c=>c.uid===u);if(it)it.tp[tn]=parseInt(v)||0;rc();}
+function pr2(it){var m=M.find(x=>x.id===it.mid);var base=it.sz==='大碗'?m.L:m.S;var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);return(base+topP)*it.qty;}
+function ta(){return cart.reduce((s,i)=>s+pr2(i),0);}
+function tb(){return cart.reduce((s,i)=>s+i.qty,0);}
+function sumText(it){var rm=CD.filter(c=>!it.cd[c]);var cT=rm.length?'去'+rm.join('、'):'全加';var sT=it.sp==='不加辣'?'不辣':it.sp;var tps=[];for(var k in it.tp)if(it.tp[k]>0)tps.push(k+'x'+it.tp[k]);return cT+' / '+sT+(tps.length?' / '+tps.join('、'):'');}
+function rc(){
+var a=document.getElementById('ca'),bw=tb(),tt=ta();
+document.getElementById('bdg').textContent=bw+' 碗 $'+tt;
+document.getElementById('tamt').textContent='$'+tt;
+var btn=document.getElementById('sbtn');
+if(!cart.length){a.innerHTML='';btn.disabled=true;btn.textContent='選擇品項開始點餐';return;}
+btn.disabled=false;btn.textContent='確認訂單（'+bw+' 碗 $'+tt+'）';
+a.innerHTML='<div class="sec">🛒 購物車（'+cart.length+' 筆，共 '+bw+' 碗）</div><div class="cs">'+cart.map((it,i)=>{
+var m=M.find(x=>x.id===it.mid);var base=it.sz==='大碗'?m.L:m.S;var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);var unit=base+topP;
+return '<div class="ci"><div class="ci-inner"><div class="ci-hd"><div style="display:flex;align-items:center"><span class="ci-badge">'+(i+1)+'</span><span class="ci-nm">'+it.nm+'（'+it.sz+'）</span></div><span class="ci-del" onclick="del('+it.uid+')">✕</span></div>'+'<div class="ci-summary">📋 <b>'+it.nm+'（'+it.sz+'）x'+it.qty+'</b> — '+sumText(it)+' — <b>$'+pr2(it)+'</b></div>'+'<div class="note">⬇ 以下設定套用到此筆所有 '+it.qty+' 碗（都一樣）</div>'+(i===0?'<div class="note2">💡 不同設定請分開加入（例如：2碗不辣 + 1碗小辣 = 分兩筆）</div>':'')+'<div class="lbl">碗數</div><div class="qr"><div class="qb" onclick="cq('+it.uid+',-1)">−</div><div class="qn">'+it.qty+'</div><div class="qb" onclick="cq('+it.uid+',1)">+</div></div><div class="sub">$'+unit+' × '+it.qty+' = $'+pr2(it)+'</div>'+'<div class="lbl">醬料（點擊切換）</div><div class="chips">'+CD.map(c=>'<span class="ch '+(it.cd[c]?'on':'off')+'" onclick="tc('+it.uid+',\x27'+c+'\x27)">'+(it.cd[c]?'✓ ':'✗ ')+c+'</span>').join('')+'</div>'+'<div class="lbl">辣度</div><div class="chips">'+SP.map(s=>'<span class="ch '+(it.sp===s?'sp':'')+'" onclick="ss('+it.uid+',\x27'+s+'\x27)">'+s+'</span>').join('')+'</div>'+(it.canTop?'<div class="lbl">加料（選擇份數，每份 $30）</div>'+TP.map(t=>'<div class="tr"><span class="tn">'+t.nm+' +$30/份</span><select class="ts" onchange="st('+it.uid+',\x27'+t.nm+'\x27,this.value)">'+[0,1,2,3,4,5,6,7,8,9,10].map(n=>'<option value="'+n+'" '+(it.tp[t.nm]===n?'selected':'')+'>'+n+' 份</option>').join('')+'</select></div>').join(''):'')+'</div></div>';}).join('')+'</div>';
+}
+function showConfirm(){
+var ni=document.getElementById('cname');custName=(ni?ni.value:'').trim();
+if(!custName){document.getElementById('nerr').style.display='block';if(ni)ni.focus();return;}
+if(!cart.length)return;var bw=tb(),tt=ta();
+document.getElementById('ft').style.display='none';
+document.getElementById('app').innerHTML='<div class="sec">📋 確認訂單明細</div><div class="okinfo"><div class="row"><span class="k">訂單編號</span><span class="v vid">'+orderId+'</span></div><div class="row"><span class="k">取餐姓名</span><span class="v">'+custName+'</span></div><div class="row"><span class="k">下單時間</span><span class="v">'+orderDT+'</span></div></div><div class="cs">'+cart.map((it,i)=>{
+var rm=CD.filter(c=>!it.cd[c]);var cT=rm.length?'去'+rm.join('、'):'全加（香菜、醬油、烏醋、蒜蓉）';
+var m=M.find(x=>x.id===it.mid);var base=it.sz==='大碗'?m.L:m.S;var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);
+var tps=[];for(var k in it.tp)if(it.tp[k]>0)tps.push(k+' x'+it.tp[k]+' = $'+(it.tp[k]*30));
+return '<div class="cf-item"><div style="display:flex;align-items:center;margin-bottom:8px"><span class="ci-badge" style="background:'+(i%2===0?'#D85A30':'#0F6E56')+'">'+(i+1)+'</span><span style="font-size:17px;font-weight:700;margin-left:8px">'+it.nm+'（'+it.sz+'）</span></div>'+'<div class="cf-row"><span class="k">單碗底價</span><span class="v">$'+base+'</span></div>'+'<div class="cf-row"><span class="k">醬料</span><span class="v">'+cT+'</span></div>'+'<div class="cf-row"><span class="k">辣度</span><span class="v">'+it.sp+'</span></div>'+(tps.length?tps.map(t=>'<div class="cf-row"><span class="k">加料</span><span class="v">'+t+'</span></div>').join(''):'')+  (topP>0?'<div class="cf-row"><span class="k">單碗含加料</span><span class="v">$'+(base+topP)+'</span></div>':'')+'<div class="cf-row"><span class="k">碗數</span><span class="v">x '+it.qty+'</span></div>'+'<div class="cf-row" style="border-top:1.5px solid #eee;margin-top:6px;padding-top:6px"><span class="k" style="font-size:15px">小計</span><span class="v" style="color:#D85A30;font-size:18px">$'+pr2(it)+'</span></div>'+'<div class="cf-actions"><div class="cf-edit" onclick="backToEdit()">✏️ 修改</div><div class="cf-del" onclick="cfDel('+it.uid+')">🗑️ 刪除</div></div></div>';}).join('')+'</div>'+'<div class="cf-total"><div style="font-size:14px;color:#888;margin-bottom:4px">合計（'+bw+' 碗）</div><div class="amt">$'+tt+'</div></div>'+'<div style="padding:12px 16px 40px"><button class="fbtn" onclick="doSubmit()">✅ 確認送出訂單</button><button class="fbtn2" onclick="backToEdit()" style="margin-top:8px">⬅️ 返回修改</button></div>';
+window.scrollTo(0,0);
+}
+function backToEdit(){render();rc();}
+function cfDel(u){cart=cart.filter(c=>c.uid!==u);if(cart.length)showConfirm();else render();}
+async function doSubmit(){
+var btns=document.querySelectorAll('.fbtn');btns.forEach(b=>{b.disabled=true;b.textContent='送出中...';});
+var data={accessToken:accessToken,orderId:orderId,customerName:custName,orderDatetime:orderDT,items:cart.map(it=>{var tl=[];Object.entries(it.tp).forEach(([k,v])=>{for(var i=0;i<v;i++)tl.push(k);});var m=M.find(x=>x.id===it.mid);var base=it.sz==='大碗'?m.L:m.S;var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);return{name:it.nm,size:it.sz,qty:it.qty,unitBase:base,unitTotal:base+topP,conds:it.cd,spice:it.sp,toppings:tl,toppingQty:it.tp,price:pr2(it)};}),totalBowls:tb(),totalAmount:ta(),timestamp:new Date().toISOString()};
+try{
+await fetch(SURL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+
+try{if(typeof liff!=='undefined'&&liff.isInClient()){var cl=[];cl.push('📋 訂單確認');cl.push('');cl.push('🔖 '+orderId);cl.push('👤 '+custName);cl.push('🕐 '+orderDT);cl.push('');data.items.forEach(function(it,i){cl.push((i+1)+'. '+it.name+'('+it.size+')x'+it.qty+' $'+it.price);});cl.push('');cl.push('💰 合計 '+data.totalBowls+'碗 $'+data.totalAmount);cl.push('');cl.push('✅ 訂單已送出，請等候製作！');liff.sendMessage([{type:'text',text:cl.join('\n')}]);}}catch(me){}
+document.getElementById('ft').style.display='none';
+var rm=CD;
+document.getElementById('app').innerHTML='<div class="ok"><div class="ic">✅</div><h2>訂單已送出！</h2></div><div class="okinfo"><div class="row"><span class="k">訂單編號</span><span class="v vid">'+data.orderId+'</span></div><div class="row"><span class="k">取餐姓名</span><span class="v">'+custName+'</span></div><div class="row"><span class="k">下單時間</span><span class="v">'+data.orderDatetime+'</span></div></div>'+'<div class="sec">📋 訂單明細</div><div class="receipt">'+data.items.map((it,i)=>{var removed=rm.filter(c=>!it.conds[c]);var cT=removed.length?'去'+removed.join('、'):'全加';var tps=[];for(var k in it.toppingQty)if(it.toppingQty[k]>0)tps.push(k+' x'+it.toppingQty[k]);return '<div class="ri"><div class="ri-hd">'+(i+1)+'. '+it.name+'（'+it.size+'）</div>'+'<div class="ri-row"><span>底價</span><span class="rv">$'+it.unitBase+'</span></div>'+'<div class="ri-row"><span>醬料</span><span class="rv">'+cT+'</span></div>'+'<div class="ri-row"><span>辣度</span><span class="rv">'+it.spice+'</span></div>'+(tps.length?'<div class="ri-row"><span>加料</span><span class="rv">'+tps.join('、')+'</span></div>':'')+'<div class="ri-row"><span>碗數</span><span class="rv">x'+it.qty+'</span></div>'+'<div class="ri-sub"><span>小計</span><span>$'+it.price+'</span></div></div>';}).join('')+'</div>'+'<div class="rt"><div style="font-size:14px;color:#888;margin-bottom:4px">合計（'+data.totalBowls+' 碗）</div><div class="a">$'+data.totalAmount+'</div></div>'+'<div style="text-align:center;color:#888;font-size:14px;padding:0 20px 12px">感謝訂購，請稍候取餐 🍜</div>'+'<div style="padding:0 16px 40px"><button class="fbtn" onclick="closeLiff()">關閉</button></div>';
+}catch(e){btns.forEach(b=>{b.disabled=false;b.textContent='送出失敗，請重試';});}}
+function closeLiff(){try{if(liff.isInClient()){liff.closeWindow();return;}}catch(e){}try{window.close();}catch(e){}document.querySelector('.fbtn').textContent='請手動關閉此分頁';document.querySelector('.fbtn').style.background='#999';}
+init();
+</script>
+</body>
+</html>
