@@ -137,15 +137,10 @@ function showInfoTab(){
 }
 
 function showMemberCenter(){
-  var d=memberData;var app=document.getElementById('app');
-  app.innerHTML='<div class="card"><div class="avatar">'+(upic?'<img src="'+upic+'">':'')+'<div class="name">'+(d.real_name||uname)+'</div><div class="uid">\u6703\u54e1\u7de8\u865f #'+(d.member_id||'---')+'</div></div>'
-    +'<div class="info-row"><span class="k">\u96fb\u8a71</span><span class="v">'+(d.phone||'---')+'</span></div>'
-    +'<div class="info-row"><span class="k">\u751f\u65e5\u6708\u4efd</span><span class="v">'+(d.birthday_month||'---')+'</span></div>'
-    +'<div class="info-row"><span class="k">\u98f2\u98df\u504f\u597d</span><span class="v">'+(d.dietary_preferences||'---')+'</span></div>'
-    +'<div class="info-row"><span class="k">\u7d2f\u8a08\u9ede\u6578</span><span class="v accent">'+(d.total_points||0)+' \u9ede</span></div>'
-    +'<div class="info-row"><span class="k">\u6703\u54e1\u7b49\u7d1a</span><span class="v accent">'+(d.level||'\u4e00\u822c\u6703\u54e1')+'</span></div>'
-    +'<div class="edit-link" onclick="showPage(\x27edit\x27)">\u270f\ufe0f \u4fee\u6539\u500b\u4eba\u8cc7\u6599</div></div>'
-    +'<div style="padding:0 16px"><button class="btn btn-secondary" onclick="closePage()">\u95dc\u9589</button></div>';
+  loadOrderHistory();
+  var app=document.getElementById('app');
+  app.innerHTML='<div class="tabs"><div class="tab active" data-tab="info" onclick="switchTab(\x27info\x27)">\u270b \u6703\u54e1\u8cc7\u8a0a</div><div class="tab" data-tab="history" onclick="switchTab(\x27history\x27)">\ud83d\udce6 \u8cfc\u8cb7\u7d00\u9304</div></div><div id="tab-content"></div><div style="padding:0 16px 40px"><button class="btn btn-secondary" onclick="closePage()">\u95dc\u9589</button></div>';
+  showInfoTab();
 }
 
 function showEditForm(){
