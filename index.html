@@ -66,7 +66,8 @@ async function init() {
     if (page === 'member') {
       location.replace(baseUrl + '/member.html');
     } else {
-      location.replace(baseUrl + '/order.html');
+      var grp=new URLSearchParams(window.location.search).get('group')||'';
+      location.replace(baseUrl + '/order.html' + (grp ? '?group=' + grp : ''));
     }
 
   } catch (e) {
