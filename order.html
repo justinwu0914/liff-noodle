@@ -266,22 +266,18 @@ if(!cart.length)return;
 var recs=getRecommendations();
 if(recs.length>0&&!recShown){
   recShown=true;
+  window._recActions=[];
   var bw=tb(),tt=ta();
   document.getElementById('ft').style.display='none';
   var html='<div class="rec-hd"><h2>💡 加料推薦</h2><p>根據你的訂單，推薦以下升級</p></div><div class="rec-panel">';
-  recs.forEach(function(r){
-    var btnId='rec-btn-'+Math.random().toString(36).substr(2,6);
+  recs.forEach(function(r,i){
+    window._recActions[i]=r.action;
     html+='<div class="rec-card"><span class="rec-tag'+(r.tagColor?' green':'')+'">'+r.tag+'</span><div class="rec-title">'+r.icon+' '+r.title+'</div><div class="rec-desc">'+r.desc+'</div>';
     if(r.extra>0)html+='<div class="rec-price"><span class="new">+$'+r.extra+'</span><span class="save">超值推薦</span></div>';
-    html+='<div class="rec-btn" id="'+btnId+'">加入訂單</div></div>';
+    html+='<div class="rec-btn" onclick="window._recActions['+i+']()">加入訂單</div></div>';
   });
   html+='</div><div style="padding:0 16px 40px"><button class="fbtn" onclick="recShown=true;showConfirmReal()">不用了，直接確認訂單</button></div>';
   document.getElementById('app').innerHTML=html;
-  // 綁定推薦按鈕事件
-  recs.forEach(function(r,i){
-    var btns=document.querySelectorAll('.rec-btn');
-    if(btns[i])btns[i].onclick=function(){r.action();};
-  });
   window.scrollTo(0,0);
   return;
 }
