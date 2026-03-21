@@ -221,40 +221,41 @@ return '<div class="ci"><div class="ci-inner"><div class="ci-hd"><div style="dis
 }
 // === Upsell Recommendation Engine ===
 var recShown=false;
+var _recs=[];
+function applyRec(i){if(_recs[i]&&_recs[i].action)_recs[i].action();}
 function getRecommendations(){
 var recs=[];var bw=tb();
-// 1. 小碗升大碗（每碗只多 $5）
-cart.forEach(function(it){
+cart.forEach(function(it,idx){
   if(it.sz==='小碗'){
     var m=M.find(function(x){return x.id===it.mid;});
     var diff=m.L-m.S;
-    recs.push({type:'upgrade',icon:'📐',tag:'升級推薦',title:it.nm+'升大碗',desc:'每碗只要多 $'+diff+'，份量多更滿足！（'+it.qty+' 碗共多 $'+(diff*it.qty)+'）',action:function(){it.sz='大碗';rc();showConfirm();},extra:diff*it.qty});
+    recs.push({icon:'📐',tag:'升級推薦',title:it.nm+'升大碗',desc:'每碗只要多 $'+diff+'，份量多更滿足！（'+it.qty+' 碗共多 $'+(diff*it.qty)+'）',extra:diff*it.qty,
+      action:function(){cart[idx].sz='大碗';recShown=true;rc();showConfirm();}});
   }
 });
-// 2. 沒加料的碗推薦加料（清麵線除外）
-cart.forEach(function(it){
+cart.forEach(function(it,idx){
   if(it.canTop){
     var hasTop=Object.values(it.tp).some(function(v){return v>0;});
     if(!hasTop){
       var recTop=it.mid==='intestine'?'加鮮蚵':'加豬腸';
-      recs.push({type:'topping',icon:'🍖',tag:'加料推薦',title:it.nm+'加'+recTop.replace('加',''),desc:'每份只要 $30，讓你的麵線更豐盛！',action:function(){it.tp[recTop]=1;rc();showConfirm();},extra:30*it.qty});
+      recs.push({icon:'🍖',tag:'加料推薦',title:it.nm+'加'+recTop.replace('加',''),desc:'每份只要 $30，讓你的麵線更豐盛！',extra:30*it.qty,
+        action:function(){cart[idx].tp[recTop]=1;recShown=true;rc();showConfirm();}});
     }
   }
 });
-// 3. 揪團湊碗（差幾碗到 5 碗享 95 折）
 if(groupId&&bw<5&&bw>=2){
   var need=5-bw;
   var cheapest=M.reduce(function(a,b){return a.S<b.S?a:b;});
-  recs.push({type:'group',icon:'👥',tag:'揪團優惠',tagColor:'green',title:'再點 '+need+' 碗就享 95 折！',desc:'全團滿 5 碗即享 95 折優惠，加點'+cheapest.nm+'（小碗 $'+cheapest.S+'）最划算',action:function(){add(cheapest.id,'小碗');for(var i=1;i<need;i++)add(cheapest.id,'小碗');rc();showConfirm();},extra:0});
+  recs.push({icon:'👥',tag:'揪團優惠',tagColor:'green',title:'再點 '+need+' 碗就享 95 折！',desc:'全團滿 5 碗即享 95 折優惠，加點'+cheapest.nm+'（小碗 $'+cheapest.S+'）最划算',extra:0,
+    action:function(){for(var i=0;i<need;i++)add(cheapest.id,'小碗');recShown=true;rc();showConfirm();}});
 }
-// 4. 清麵線升級有料
-cart.forEach(function(it){
+cart.forEach(function(it,idx){
   if(it.mid==='plain'){
     var curPrice=it.sz==='大碗'?45:40;var newPrice=it.sz==='大碗'?65:60;var diff=newPrice-curPrice;
-    recs.push({type:'switch',icon:'⬆️',tag:'升級推薦',title:'清麵線升級鮮蚵麵線',desc:'只要每碗多 $'+diff+'，從清湯變成鮮蚵滿滿！',action:function(){it.mid='oyster';it.nm='鮮蚵麵線';it.canTop=1;rc();showConfirm();},extra:diff*it.qty});
+    recs.push({icon:'⬆️',tag:'升級推薦',title:'清麵線升級鮮蚵麵線',desc:'只要每碗多 $'+diff+'，從清湯變成鮮蚵滿滿！',extra:diff*it.qty,
+      action:function(){cart[idx].mid='oyster';cart[idx].nm='鮮蚵麵線';cart[idx].canTop=1;recShown=true;rc();showConfirm();}});
   }
 });
-// 最多顯示 3 個推薦
 return recs.slice(0,3);
 }
 
@@ -262,21 +263,17 @@ function showConfirm(){
 var ni=document.getElementById('cname');custName=(ni?ni.value:'').trim();
 if(!custName){document.getElementById('nerr').style.display='block';if(ni)ni.focus();return;}
 if(!cart.length)return;
-// 推薦引擎：第一次進確認頁時顯示
-var recs=getRecommendations();
-if(recs.length>0&&!recShown){
+_recs=getRecommendations();
+if(_recs.length>0&&!recShown){
   recShown=true;
-  window._recActions=[];
-  var bw=tb(),tt=ta();
   document.getElementById('ft').style.display='none';
   var html='<div class="rec-hd"><h2>💡 加料推薦</h2><p>根據你的訂單，推薦以下升級</p></div><div class="rec-panel">';
-  recs.forEach(function(r,i){
-    window._recActions[i]=r.action;
+  _recs.forEach(function(r,i){
     html+='<div class="rec-card"><span class="rec-tag'+(r.tagColor?' green':'')+'">'+r.tag+'</span><div class="rec-title">'+r.icon+' '+r.title+'</div><div class="rec-desc">'+r.desc+'</div>';
     if(r.extra>0)html+='<div class="rec-price"><span class="new">+$'+r.extra+'</span><span class="save">超值推薦</span></div>';
-    html+='<div class="rec-btn" onclick="window._recActions['+i+']()">加入訂單</div></div>';
+    html+='<div class="rec-btn" onclick="applyRec('+i+')">加入訂單</div></div>';
   });
-  html+='</div><div style="padding:0 16px 40px"><button class="fbtn" onclick="recShown=true;showConfirmReal()">不用了，直接確認訂單</button></div>';
+  html+='</div><div style="padding:0 16px 40px"><button class="fbtn" onclick="showConfirmReal()">不用了，直接確認訂單</button></div>';
   document.getElementById('app').innerHTML=html;
   window.scrollTo(0,0);
   return;
