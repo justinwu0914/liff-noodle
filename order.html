@@ -117,9 +117,9 @@ function dlog(msg){
     el.parentNode.scrollTop=el.parentNode.scrollHeight;
   }catch(e){}
 }
-// Debug panel: temporarily ON for group order testing
+// Debug panel: only shows when URL has ?debug=1
 (function(){
-  var show=window.location.search.indexOf('debug=1')!==-1||window.location.search.indexOf('group=')!==-1;
+  var show=window.location.search.indexOf('debug=1')!==-1;
   if(show){var d=document.getElementById('dbg');if(d)d.style.display='block';}
   dlog('🚀 order.html loaded');
   dlog('📍 URL: '+window.location.href);
