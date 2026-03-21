@@ -93,23 +93,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .rt{background:#fff;border-radius:14px;padding:16px;margin:0 16px 16px;text-align:center}
 .rt .a{font-size:30px;font-weight:800;color:#D85A30}
 .group-banner{background:linear-gradient(135deg,#FFF0E8,#FFE0D0);padding:14px 16px;text-align:center;border-bottom:3px solid #D85A30;border-radius:0 0 14px 14px}
-.rec-panel{padding:12px 16px}
-.rec-hd{text-align:center;padding:16px 20px 8px}
-.rec-hd h2{font-size:20px;font-weight:700;color:#D85A30;margin-bottom:4px}
-.rec-hd p{font-size:13px;color:#888}
-.rec-card{background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:10px;border:2px solid #FFE0D0;position:relative;overflow:hidden}
-.rec-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:#D85A30}
-.rec-tag{display:inline-block;background:#D85A30;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;margin-bottom:8px}
-.rec-tag.green{background:#0F6E56}
-.rec-title{font-size:15px;font-weight:700;color:#333;margin-bottom:4px}
-.rec-desc{font-size:12px;color:#888;margin-bottom:10px;line-height:1.4}
-.rec-price{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.rec-price .old{color:#999;text-decoration:line-through;font-size:13px}
-.rec-price .new{color:#D85A30;font-weight:800;font-size:18px}
-.rec-price .save{background:#E1F5EE;color:#0F6E56;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px}
-.rec-btn{display:block;width:100%;padding:12px;background:#FFF5F0;color:#D85A30;border:1.5px solid #D85A30;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:center;-webkit-appearance:none;-webkit-tap-highlight-color:rgba(216,90,48,0.2)}
-.rec-btn:active{background:#D85A30;color:#fff}
-.rec-skip{text-align:center;padding:8px;color:#999;font-size:13px;cursor:pointer;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -193,9 +176,51 @@ var cn=document.getElementById('cname');
 if(cn&&uname&&!cn.value){cn.value=uname;custName=uname;}
 dlog('✅ init() done');
 }
+// === 營業時間判斷 ===
+// 週一至週六 06:30-13:00，週日公休
+function getBizStatus(){
+var now=new Date();var day=now.getDay();// 0=Sun
+var h=now.getHours(),m=now.getMinutes(),t=h*60+m;
+var open=6*60+30,close=13*60;// 06:30~13:00
+if(day===0)return {open:false,reason:'sunday',msg:'週日公休',next:'週一 06:30'};
+if(t<open)return {open:false,reason:'before',msg:'尚未開始營業',next:'今天 06:30'};
+if(t>=close)return {open:false,reason:'after',msg:'今日營業已結束',next:day===6?'週一 06:30':'明天 06:30'};
+return {open:true};
+}
+function showClosed(biz){
+document.getElementById('ft').style.display='none';
+document.getElementById('app').innerHTML=
+'<div style="text-align:center;padding:60px 24px 20px">'+
+'<div style="font-size:64px;margin-bottom:12px">😴</div>'+
+'<h2 style="font-size:22px;font-weight:700;color:#333;margin-bottom:8px">目前休息中</h2>'+
+'<div style="font-size:15px;color:#888;margin-bottom:24px">'+biz.msg+'</div>'+
+'<div style="background:#fff;border-radius:14px;padding:20px;margin:0 auto;max-width:320px;text-align:left">'+
+'<div style="display:flex;justify-content:space-between;font-size:14px;padding:6px 0"><span style="color:#888">營業時間</span><span style="font-weight:600">週一至週六 06:30-13:00</span></div>'+
+'<div style="display:flex;justify-content:space-between;font-size:14px;padding:6px 0"><span style="color:#888">公休日</span><span style="font-weight:600">每週日</span></div>'+
+'<div style="display:flex;justify-content:space-between;font-size:14px;padding:6px 0;border-top:1px solid #eee;margin-top:6px;padding-top:10px"><span style="color:#888">下次營業</span><span style="font-weight:700;color:#D85A30">'+biz.next+'</span></div>'+
+'</div>'+
+'</div>'+
+'<div style="padding:24px 20px">'+
+'<div style="background:#FFF5F0;border:1.5px solid #FFE0D0;border-radius:14px;padding:16px;text-align:center;margin-bottom:16px">'+
+'<div style="font-size:14px;font-weight:700;color:#D85A30;margin-bottom:6px">📝 預約下次營業時段</div>'+
+'<div style="font-size:12px;color:#888">提前點餐，開店後優先製作</div>'+
+'</div>'+
+'<button class="fbtn" onclick="startPreorder()" style="background:#D85A30">🍜 預約點餐（'+biz.next+' 取餐）</button>'+
+'<button class="fbtn2" onclick="closeLiff()" style="margin-top:10px">關閉</button>'+
+'</div>';
+}
+var _preorderMode=false;
+function startPreorder(){_preorderMode=true;render();}
+
 function render(){
+// 營業時間檢查（預約模式跳過）
+if(!_preorderMode){
+var biz=getBizStatus();
+if(!biz.open){showClosed(biz);return;}
+}
+var preTag=_preorderMode?'<div style="background:#FFF5F0;padding:10px 16px;text-align:center;border-bottom:2px solid #D85A30;font-size:13px;color:#D85A30;font-weight:600">📝 預約模式 — 此訂單將於下次營業時段製作</div>':'';
 var nm=custName||uname||'';
-document.getElementById('app').innerHTML='<div class="nsec"><div class="nlbl">👤 取餐姓名（必填）</div><div class="nwrap"><input type="text" id="cname" placeholder="請輸入您的姓名" maxlength="20" value="'+nm.replace(/"/g,'&quot;')+'" oninput="custName=this.value.trim();document.getElementById(\x27nerr\x27).style.display=\x27none\x27;rc();"></div><div class="nerr" id="nerr">⚠ 請輸入取餐姓名才能送出訂單</div></div><div class="sec">選擇品項加入購物車</div><div class="grid">'+M.map(m=>'<div class="mc"><div class="nm">'+m.nm+'</div><div class="ds">'+m.ds+'</div><div class="sr"><div class="sb on" onclick="add(\x27'+m.id+'\x27,\x27小碗\x27)">小碗 $'+m.S+'</div><div class="sb" onclick="add(\x27'+m.id+'\x27,\x27大碗\x27)">大碗 $'+m.L+'</div></div></div>').join('')+'</div><div id="ca"></div>';
+document.getElementById('app').innerHTML=preTag+'<div class="nsec"><div class="nlbl">👤 取餐姓名（必填）</div><div class="nwrap"><input type="text" id="cname" placeholder="請輸入您的姓名" maxlength="20" value="'+nm.replace(/"/g,'&quot;')+'" oninput="custName=this.value.trim();document.getElementById(\x27nerr\x27).style.display=\x27none\x27;rc();"></div><div class="nerr" id="nerr">⚠ 請輸入取餐姓名才能送出訂單</div></div><div class="sec">選擇品項加入購物車</div><div class="grid">'+M.map(m=>'<div class="mc"><div class="nm">'+m.nm+'</div><div class="ds">'+m.ds+'</div><div class="sr"><div class="sb on" onclick="add(\x27'+m.id+'\x27,\x27小碗\x27)">小碗 $'+m.S+'</div><div class="sb" onclick="add(\x27'+m.id+'\x27,\x27大碗\x27)">大碗 $'+m.L+'</div></div></div>').join('')+'</div><div id="ca"></div>';
 document.getElementById('ft').style.display='block';rc();
 }
 function add(id,sz){var m=M.find(x=>x.id===id);cart.push({uid:Date.now(),mid:id,nm:m.nm,sz:sz,qty:1,cd:{香菜:1,醬油:1,烏醋:1,蒜蓉:1},sp:'不加辣',tp:{加豬腸:0,加鮮蚵:0},canTop:m.top});rc();setTimeout(function(){document.getElementById('ca').scrollIntoView({behavior:'smooth'});},100);}
@@ -219,13 +244,12 @@ a.innerHTML='<div class="sec">🛒 購物車（'+cart.length+' 筆，共 '+bw+' 
 var m=M.find(x=>x.id===it.mid);var base=it.sz==='大碗'?m.L:m.S;var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);var unit=base+topP;
 return '<div class="ci"><div class="ci-inner"><div class="ci-hd"><div style="display:flex;align-items:center"><span class="ci-badge">'+(i+1)+'</span><span class="ci-nm">'+it.nm+'（'+it.sz+'）</span></div><span class="ci-del" onclick="del('+it.uid+')">✕</span></div>'+'<div class="ci-summary">📋 <b>'+it.nm+'（'+it.sz+'）x'+it.qty+'</b> — '+sumText(it)+' — <b>$'+pr2(it)+'</b></div>'+'<div class="note">⬇ 以下設定套用到此筆所有 '+it.qty+' 碗（都一樣）</div>'+(i===0?'<div class="note2">💡 不同設定請分開加入（例如：2碗不辣 + 1碗小辣 = 分兩筆）</div>':'')+'<div class="lbl">碗數</div><div class="qr"><div class="qb" onclick="cq('+it.uid+',-1)">−</div><div class="qn">'+it.qty+'</div><div class="qb" onclick="cq('+it.uid+',1)">+</div></div><div class="sub">$'+unit+' × '+it.qty+' = $'+pr2(it)+'</div>'+'<div class="lbl">醬料（點擊切換）</div><div class="chips">'+CD.map(c=>'<span class="ch '+(it.cd[c]?'on':'off')+'" onclick="tc('+it.uid+',\x27'+c+'\x27)">'+(it.cd[c]?'✓ ':'✗ ')+c+'</span>').join('')+'</div>'+'<div class="lbl">辣度</div><div class="chips">'+SP.map(s=>'<span class="ch '+(it.sp===s?'sp':'')+'" onclick="ss('+it.uid+',\x27'+s+'\x27)">'+s+'</span>').join('')+'</div>'+(it.canTop?'<div class="lbl">加料（選擇份數，每份 $30）</div>'+TP.map(t=>'<div class="tr"><span class="tn">'+t.nm+' +$30/份</span><select class="ts" onchange="st('+it.uid+',\x27'+t.nm+'\x27,this.value)">'+[0,1,2,3,4,5,6,7,8,9,10].map(n=>'<option value="'+n+'" '+(it.tp[t.nm]===n?'selected':'')+'>'+n+' 份</option>').join('')+'</select></div>').join(''):'')+'</div></div>';}).join('')+'</div>';
 }
-// === Upsell Recommendation Engine ===
 function showConfirm(){
 var ni=document.getElementById('cname');custName=(ni?ni.value:'').trim();
 if(!custName){document.getElementById('nerr').style.display='block';if(ni)ni.focus();return;}
 if(!cart.length)return;var bw=tb(),tt=ta();
 document.getElementById('ft').style.display='none';
-document.getElementById('app').innerHTML='<div class="sec">📋 確認訂單明細</div><div class="okinfo"><div class="row"><span class="k">訂單編號</span><span class="v vid">'+orderId+'</span></div><div class="row"><span class="k">取餐姓名</span><span class="v">'+custName+'</span></div><div class="row"><span class="k">下單時間</span><span class="v">'+orderDT+'</span></div></div><div class="cs">'+cart.map((it,i)=>{
+document.getElementById('app').innerHTML=(_preorderMode?'<div style="background:#FFF5F0;padding:10px 16px;text-align:center;border-bottom:2px solid #D85A30;font-size:13px;color:#D85A30;font-weight:600">📝 預約模式 — 此訂單將於下次營業時段製作</div>':'')+'<div class="sec">📋 確認訂單明細</div><div class="okinfo"><div class="row"><span class="k">訂單編號</span><span class="v vid">'+orderId+'</span></div><div class="row"><span class="k">取餐姓名</span><span class="v">'+custName+'</span></div><div class="row"><span class="k">下單時間</span><span class="v">'+orderDT+'</span></div></div><div class="cs">'+cart.map((it,i)=>{
 var rm=CD.filter(c=>!it.cd[c]);var cT=rm.length?'去'+rm.join('、'):'全加（香菜、醬油、烏醋、蒜蓉）';
 var m=M.find(x=>x.id===it.mid);var base=it.sz==='大碗'?m.L:m.S;var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);
 var tps=[];for(var k in it.tp)if(it.tp[k]>0)tps.push(k+' x'+it.tp[k]+' = $'+(it.tp[k]*30));
@@ -239,7 +263,7 @@ var btns=document.querySelectorAll('.fbtn');btns.forEach(b=>{b.disabled=true;b.t
 // 確保 groupId 有值（fallback from sessionStorage）
 if(!groupId){try{groupId=sessionStorage.getItem('liff_group')||'';}catch(e){}}
 dlog('📤 doSubmit groupId="'+groupId+'" amount='+ta());
-var data={accessToken:accessToken,orderId:orderId,groupId:groupId,customerName:custName,orderDatetime:orderDT,items:cart.map(it=>{var tl=[];Object.entries(it.tp).forEach(([k,v])=>{for(var i=0;i<v;i++)tl.push(k);});var m=M.find(x=>x.id===it.mid);var base=it.sz==='大碗'?m.L:m.S;var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);return{name:it.nm,size:it.sz,qty:it.qty,unitBase:base,unitTotal:base+topP,conds:it.cd,spice:it.sp,toppings:tl,toppingQty:it.tp,price:pr2(it)};}),totalBowls:tb(),totalAmount:ta(),timestamp:new Date().toISOString()};
+var data={accessToken:accessToken,orderId:orderId,groupId:groupId,customerName:custName,orderDatetime:orderDT,isPreorder:_preorderMode,items:cart.map(it=>{var tl=[];Object.entries(it.tp).forEach(([k,v])=>{for(var i=0;i<v;i++)tl.push(k);});var m=M.find(x=>x.id===it.mid);var base=it.sz==='大碗'?m.L:m.S;var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);return{name:it.nm,size:it.sz,qty:it.qty,unitBase:base,unitTotal:base+topP,conds:it.cd,spice:it.sp,toppings:tl,toppingQty:it.tp,price:pr2(it)};}),totalBowls:tb(),totalAmount:ta(),timestamp:new Date().toISOString()};
 try{
 var resp=await fetch(SURL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
 var rd=await resp.json();
