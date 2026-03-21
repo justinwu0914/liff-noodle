@@ -109,11 +109,12 @@ var LID='2009530264-3xA9VL4a',SURL='https://n8n.justinaiauto.com/webhook/food-or
 // SHOP_UID & LTOKEN moved to n8n backend for security
 var M=[{id:'oyster',nm:'鮮蚵麵線',ds:'新鮮蚵仔搭配麵線',L:65,S:60,top:1},{id:'mixed',nm:'綜合麵線',ds:'鮮蚵＋滷製豬腸搭配麵線',L:65,S:60,top:1},{id:'intestine',nm:'豬腸麵線',ds:'滷製豬腸搭配麵線',L:60,S:55,top:1},{id:'plain',nm:'清麵線',ds:'純麵線湯底',L:45,S:40,top:0}];
 var CD=['香菜','醬油','烏醋','蒜蓉'],SP=['不加辣','微辣','小辣','中辣','大辣'],TP=[{nm:'加豬腸',p:30},{nm:'加鮮蚵',p:30}];
-var cart=[],uid='',uname='',orderId='',orderDT='',custName='';
+var GROUP_JOIN_URL='https://n8n.justinaiauto.com/webhook/food-bot';
+var cart=[],uid='',uname='',orderId='',orderDT='',custName='',groupId='',groupInfo=null;
 function genOID(){var n=new Date(),ds=''+n.getFullYear()+String(n.getMonth()+1).padStart(2,'0')+String(n.getDate()).padStart(2,'0');var sq=String(n.getHours())+String(n.getMinutes()).padStart(2,'0')+String(n.getSeconds()).padStart(2,'0');return 'ORD-'+ds+'-'+sq;}
 function fmtDT(){var n=new Date();return n.getFullYear()+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+String(n.getDate()).padStart(2,'0')+' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
 var accessToken='';async function init(){try{accessToken=sessionStorage.getItem('liff_token')||'';uid=sessionStorage.getItem('liff_uid')||'';uname=sessionStorage.getItem('liff_name')||'';}catch(e){}
-if(!accessToken){try{await liff.init({liffId:LID});if(liff.isLoggedIn()){var p=await liff.getProfile();uid=p.userId;uname=p.displayName;accessToken=liff.getAccessToken()||'';}}catch(e){}}var cn=document.getElementById('custName');if(cn&&uname&&!cn.value)cn.value=uname;orderId=genOID();orderDT=fmtDT();document.getElementById('oidD').textContent=orderId;document.getElementById('odtD').textContent=orderDT;if(uname)document.getElementById('ousrD').textContent='👤 '+uname;render();}
+if(!accessToken){try{await liff.init({liffId:LID});if(liff.isLoggedIn()){var p=await liff.getProfile();uid=p.userId;uname=p.displayName;accessToken=liff.getAccessToken()||'';try{sessionStorage.setItem('liff_token',accessToken);sessionStorage.setItem('liff_uid',uid);sessionStorage.setItem('liff_name',uname);}catch(se){}}else{liff.login({redirectUri:window.location.href});return;}}catch(e){console.warn('LIFF init failed:',e);}}orderId=genOID();orderDT=fmtDT();document.getElementById('oidD').textContent=orderId;document.getElementById('odtD').textContent=orderDT;if(uname)document.getElementById('ousrD').textContent='👤 '+uname;render();var cn=document.getElementById('cname');if(cn&&uname&&!cn.value){cn.value=uname;custName=uname;}}
 function render(){
 var nm=custName||uname||'';
 document.getElementById('app').innerHTML='<div class="nsec"><div class="nlbl">👤 取餐姓名（必填）</div><div class="nwrap"><input type="text" id="cname" placeholder="請輸入您的姓名" maxlength="20" value="'+nm.replace(/"/g,'&quot;')+'" oninput="custName=this.value.trim();document.getElementById(\x27nerr\x27).style.display=\x27none\x27;rc();"></div><div class="nerr" id="nerr">⚠ 請輸入取餐姓名才能送出訂單</div></div><div class="sec">選擇品項加入購物車</div><div class="grid">'+M.map(m=>'<div class="mc"><div class="nm">'+m.nm+'</div><div class="ds">'+m.ds+'</div><div class="sr"><div class="sb on" onclick="add(\x27'+m.id+'\x27,\x27小碗\x27)">小碗 $'+m.S+'</div><div class="sb" onclick="add(\x27'+m.id+'\x27,\x27大碗\x27)">大碗 $'+m.L+'</div></div></div>').join('')+'</div><div id="ca"></div>';
@@ -190,16 +191,19 @@ setTimeout(function(){
     groupId=g;
     sessionStorage.setItem('liff_group',g);
     if(!accessToken)return;
-    fetch(GROUP_JOIN_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({groupId:g})})
+    fetch(GROUP_JOIN_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'group_join',groupId:g,accessToken:accessToken})})
     .then(function(r){return r.json();})
     .then(function(d){
       if(d.success){
         groupInfo=d;
+        var existing=document.getElementById('group-banner');
+        if(existing)existing.remove();
         var gb=document.createElement('div');
-        gb.style.cssText='background:linear-gradient(135deg,#FFF0E8,#FFE0D0);padding:14px 16px;margin:0 0 8px;border-radius:14px;text-align:center;border:2px solid #F0C8B0';
-        gb.innerHTML='<div style="font-size:15px;font-weight:700;color:#D85A30">\ud83c\udf89 \u4f60\u6b63\u5728\u53c3\u52a0 '+d.hostName+' \u7684\u63ea\u5718</div><div style="font-size:12px;color:#888;margin-top:4px">\u76ee\u524d '+d.totalMembers+' \u4eba / '+d.totalBowls+' \u7897 | \u6eff 5 \u7897\u4eab 95 \u6298</div>';
-        var app=document.getElementById('app');
-        if(app)app.parentNode.insertBefore(gb,app);
+        gb.id='group-banner';
+        gb.style.cssText='background:linear-gradient(135deg,#FFF0E8,#FFE0D0);padding:14px 16px;margin:12px 16px 4px;border-radius:14px;text-align:center;border:2px solid #F0C8B0';
+        gb.innerHTML='<div style="font-size:15px;font-weight:700;color:#D85A30">🎉 你正在參加 '+d.hostName+' 的揪團</div><div style="font-size:12px;color:#888;margin-top:4px">目前 '+d.totalMembers+' 人 / '+d.totalBowls+' 碗 | 滿 5 碗享 95 折</div>';
+        var hd=document.querySelector('.obar');
+        if(hd)hd.parentNode.insertBefore(gb,hd.nextSibling);
       }else{groupId='';sessionStorage.removeItem('liff_group');}
     }).catch(function(){groupId='';});
   }catch(e){}
