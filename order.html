@@ -267,25 +267,47 @@ _recs=getRecommendations();
 if(_recs.length>0&&!recShown){
   recShown=true;
   document.getElementById('ft').style.display='none';
-  var html='<div class="rec-hd"><h2>💡 加料推薦</h2><p>根據你的訂單，推薦以下升級</p></div><div class="rec-panel">';
+  var app=document.getElementById('app');
+  app.innerHTML='';
+
+  var hd=document.createElement('div');
+  hd.className='rec-hd';
+  hd.innerHTML='<h2>💡 加料推薦</h2><p>根據你的訂單，推薦以下升級</p>';
+  app.appendChild(hd);
+
+  var panel=document.createElement('div');
+  panel.className='rec-panel';
   _recs.forEach(function(r,i){
-    html+='<div class="rec-card"><span class="rec-tag'+(r.tagColor?' green':'')+'">'+r.tag+'</span><div class="rec-title">'+r.icon+' '+r.title+'</div><div class="rec-desc">'+r.desc+'</div>';
-    if(r.extra>0)html+='<div class="rec-price"><span class="new">+$'+r.extra+'</span><span class="save">超值推薦</span></div>';
-    html+='<button type="button" class="rec-btn" data-rec="'+i+'">加入訂單</button></div>';
+    var card=document.createElement('div');
+    card.className='rec-card';
+    var tagHtml='<span class="rec-tag'+(r.tagColor?' green':'')+'">'+r.tag+'</span>';
+    var titleHtml='<div class="rec-title">'+r.icon+' '+r.title+'</div>';
+    var descHtml='<div class="rec-desc">'+r.desc+'</div>';
+    var priceHtml=r.extra>0?'<div class="rec-price"><span class="new">+$'+r.extra+'</span><span class="save">超值推薦</span></div>':'';
+    card.innerHTML=tagHtml+titleHtml+descHtml+priceHtml;
+
+    var btn=document.createElement('button');
+    btn.type='button';
+    btn.className='rec-btn';
+    btn.textContent='加入訂單';
+    btn.addEventListener('touchend',function(e){e.preventDefault();applyRec(i);});
+    btn.addEventListener('click',function(){applyRec(i);});
+    card.appendChild(btn);
+    panel.appendChild(card);
   });
-  html+='</div><div style="padding:0 16px 40px"><button type="button" class="fbtn" id="rec-skip-btn">不用了，直接確認訂單</button></div>';
-  document.getElementById('app').innerHTML=html;
-  // 用 setTimeout 確保 DOM 渲染完再綁定事件
-  setTimeout(function(){
-    var recBtns=document.querySelectorAll('.rec-btn[data-rec]');
-    for(var j=0;j<recBtns.length;j++){
-      (function(idx){
-        recBtns[idx].addEventListener('click',function(){applyRec(idx);});
-      })(j);
-    }
-    var skipBtn=document.getElementById('rec-skip-btn');
-    if(skipBtn)skipBtn.addEventListener('click',function(){showConfirmReal();});
-  },50);
+  app.appendChild(panel);
+
+  var bottomDiv=document.createElement('div');
+  bottomDiv.style.cssText='padding:0 16px 40px';
+  var skipBtn=document.createElement('button');
+  skipBtn.type='button';
+  skipBtn.className='fbtn';
+  skipBtn.textContent='不用了，直接確認訂單';
+  skipBtn.addEventListener('touchend',function(e){e.preventDefault();showConfirmReal();});
+  skipBtn.addEventListener('click',function(){showConfirmReal();});
+  bottomDiv.appendChild(skipBtn);
+  app.appendChild(bottomDiv);
+
   window.scrollTo(0,0);
   return;
 }
