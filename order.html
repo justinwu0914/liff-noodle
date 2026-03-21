@@ -93,6 +93,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .rt{background:#fff;border-radius:14px;padding:16px;margin:0 16px 16px;text-align:center}
 .rt .a{font-size:30px;font-weight:800;color:#D85A30}
 .group-banner{background:linear-gradient(135deg,#FFF0E8,#FFE0D0);padding:14px 16px;text-align:center;border-bottom:3px solid #D85A30;border-radius:0 0 14px 14px}
+.rec-panel{padding:12px 16px}
+.rec-hd{text-align:center;padding:16px 20px 8px}
+.rec-hd h2{font-size:20px;font-weight:700;color:#D85A30;margin-bottom:4px}
+.rec-hd p{font-size:13px;color:#888}
+.rec-card{background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:10px;border:2px solid #FFE0D0;position:relative;overflow:hidden}
+.rec-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:#D85A30}
+.rec-tag{display:inline-block;background:#D85A30;color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;margin-bottom:8px}
+.rec-tag.green{background:#0F6E56}
+.rec-title{font-size:15px;font-weight:700;color:#333;margin-bottom:4px}
+.rec-desc{font-size:12px;color:#888;margin-bottom:10px;line-height:1.4}
+.rec-price{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.rec-price .old{color:#999;text-decoration:line-through;font-size:13px}
+.rec-price .new{color:#D85A30;font-weight:800;font-size:18px}
+.rec-price .save{background:#E1F5EE;color:#0F6E56;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px}
+.rec-btn{width:100%;padding:10px;background:#FFF5F0;color:#D85A30;border:1.5px solid #D85A30;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:center}
+.rec-btn:active{background:#D85A30;color:#fff}
+.rec-skip{text-align:center;padding:8px;color:#999;font-size:13px;cursor:pointer;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -202,7 +219,75 @@ a.innerHTML='<div class="sec">🛒 購物車（'+cart.length+' 筆，共 '+bw+' 
 var m=M.find(x=>x.id===it.mid);var base=it.sz==='大碗'?m.L:m.S;var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);var unit=base+topP;
 return '<div class="ci"><div class="ci-inner"><div class="ci-hd"><div style="display:flex;align-items:center"><span class="ci-badge">'+(i+1)+'</span><span class="ci-nm">'+it.nm+'（'+it.sz+'）</span></div><span class="ci-del" onclick="del('+it.uid+')">✕</span></div>'+'<div class="ci-summary">📋 <b>'+it.nm+'（'+it.sz+'）x'+it.qty+'</b> — '+sumText(it)+' — <b>$'+pr2(it)+'</b></div>'+'<div class="note">⬇ 以下設定套用到此筆所有 '+it.qty+' 碗（都一樣）</div>'+(i===0?'<div class="note2">💡 不同設定請分開加入（例如：2碗不辣 + 1碗小辣 = 分兩筆）</div>':'')+'<div class="lbl">碗數</div><div class="qr"><div class="qb" onclick="cq('+it.uid+',-1)">−</div><div class="qn">'+it.qty+'</div><div class="qb" onclick="cq('+it.uid+',1)">+</div></div><div class="sub">$'+unit+' × '+it.qty+' = $'+pr2(it)+'</div>'+'<div class="lbl">醬料（點擊切換）</div><div class="chips">'+CD.map(c=>'<span class="ch '+(it.cd[c]?'on':'off')+'" onclick="tc('+it.uid+',\x27'+c+'\x27)">'+(it.cd[c]?'✓ ':'✗ ')+c+'</span>').join('')+'</div>'+'<div class="lbl">辣度</div><div class="chips">'+SP.map(s=>'<span class="ch '+(it.sp===s?'sp':'')+'" onclick="ss('+it.uid+',\x27'+s+'\x27)">'+s+'</span>').join('')+'</div>'+(it.canTop?'<div class="lbl">加料（選擇份數，每份 $30）</div>'+TP.map(t=>'<div class="tr"><span class="tn">'+t.nm+' +$30/份</span><select class="ts" onchange="st('+it.uid+',\x27'+t.nm+'\x27,this.value)">'+[0,1,2,3,4,5,6,7,8,9,10].map(n=>'<option value="'+n+'" '+(it.tp[t.nm]===n?'selected':'')+'>'+n+' 份</option>').join('')+'</select></div>').join(''):'')+'</div></div>';}).join('')+'</div>';
 }
+// === Upsell Recommendation Engine ===
+var recShown=false;
+function getRecommendations(){
+var recs=[];var bw=tb();
+// 1. 小碗升大碗（每碗只多 $5）
+cart.forEach(function(it){
+  if(it.sz==='小碗'){
+    var m=M.find(function(x){return x.id===it.mid;});
+    var diff=m.L-m.S;
+    recs.push({type:'upgrade',icon:'📐',tag:'升級推薦',title:it.nm+'升大碗',desc:'每碗只要多 $'+diff+'，份量多更滿足！（'+it.qty+' 碗共多 $'+(diff*it.qty)+'）',action:function(){it.sz='大碗';rc();showConfirm();},extra:diff*it.qty});
+  }
+});
+// 2. 沒加料的碗推薦加料（清麵線除外）
+cart.forEach(function(it){
+  if(it.canTop){
+    var hasTop=Object.values(it.tp).some(function(v){return v>0;});
+    if(!hasTop){
+      var recTop=it.mid==='intestine'?'加鮮蚵':'加豬腸';
+      recs.push({type:'topping',icon:'🍖',tag:'加料推薦',title:it.nm+'加'+recTop.replace('加',''),desc:'每份只要 $30，讓你的麵線更豐盛！',action:function(){it.tp[recTop]=1;rc();showConfirm();},extra:30*it.qty});
+    }
+  }
+});
+// 3. 揪團湊碗（差幾碗到 5 碗享 95 折）
+if(groupId&&bw<5&&bw>=2){
+  var need=5-bw;
+  var cheapest=M.reduce(function(a,b){return a.S<b.S?a:b;});
+  recs.push({type:'group',icon:'👥',tag:'揪團優惠',tagColor:'green',title:'再點 '+need+' 碗就享 95 折！',desc:'全團滿 5 碗即享 95 折優惠，加點'+cheapest.nm+'（小碗 $'+cheapest.S+'）最划算',action:function(){add(cheapest.id,'小碗');for(var i=1;i<need;i++)add(cheapest.id,'小碗');rc();showConfirm();},extra:0});
+}
+// 4. 清麵線升級有料
+cart.forEach(function(it){
+  if(it.mid==='plain'){
+    var curPrice=it.sz==='大碗'?45:40;var newPrice=it.sz==='大碗'?65:60;var diff=newPrice-curPrice;
+    recs.push({type:'switch',icon:'⬆️',tag:'升級推薦',title:'清麵線升級鮮蚵麵線',desc:'只要每碗多 $'+diff+'，從清湯變成鮮蚵滿滿！',action:function(){it.mid='oyster';it.nm='鮮蚵麵線';it.canTop=1;rc();showConfirm();},extra:diff*it.qty});
+  }
+});
+// 最多顯示 3 個推薦
+return recs.slice(0,3);
+}
+
 function showConfirm(){
+var ni=document.getElementById('cname');custName=(ni?ni.value:'').trim();
+if(!custName){document.getElementById('nerr').style.display='block';if(ni)ni.focus();return;}
+if(!cart.length)return;
+// 推薦引擎：第一次進確認頁時顯示
+var recs=getRecommendations();
+if(recs.length>0&&!recShown){
+  recShown=true;
+  var bw=tb(),tt=ta();
+  document.getElementById('ft').style.display='none';
+  var html='<div class="rec-hd"><h2>💡 加料推薦</h2><p>根據你的訂單，推薦以下升級</p></div><div class="rec-panel">';
+  recs.forEach(function(r){
+    var btnId='rec-btn-'+Math.random().toString(36).substr(2,6);
+    html+='<div class="rec-card"><span class="rec-tag'+(r.tagColor?' green':'')+'">'+r.tag+'</span><div class="rec-title">'+r.icon+' '+r.title+'</div><div class="rec-desc">'+r.desc+'</div>';
+    if(r.extra>0)html+='<div class="rec-price"><span class="new">+$'+r.extra+'</span><span class="save">超值推薦</span></div>';
+    html+='<div class="rec-btn" id="'+btnId+'">加入訂單</div></div>';
+  });
+  html+='</div><div style="padding:0 16px 40px"><button class="fbtn" onclick="recShown=true;showConfirmReal()">不用了，直接確認訂單</button></div>';
+  document.getElementById('app').innerHTML=html;
+  // 綁定推薦按鈕事件
+  recs.forEach(function(r,i){
+    var btns=document.querySelectorAll('.rec-btn');
+    if(btns[i])btns[i].onclick=function(){r.action();};
+  });
+  window.scrollTo(0,0);
+  return;
+}
+showConfirmReal();
+}
+function showConfirmReal(){
 var ni=document.getElementById('cname');custName=(ni?ni.value:'').trim();
 if(!custName){document.getElementById('nerr').style.display='block';if(ni)ni.focus();return;}
 if(!cart.length)return;var bw=tb(),tt=ta();
@@ -214,7 +299,7 @@ var tps=[];for(var k in it.tp)if(it.tp[k]>0)tps.push(k+' x'+it.tp[k]+' = $'+(it.
 return '<div class="cf-item"><div style="display:flex;align-items:center;margin-bottom:8px"><span class="ci-badge" style="background:'+(i%2===0?'#D85A30':'#0F6E56')+'">'+(i+1)+'</span><span style="font-size:17px;font-weight:700;margin-left:8px">'+it.nm+'（'+it.sz+'）</span></div>'+'<div class="cf-row"><span class="k">單碗底價</span><span class="v">$'+base+'</span></div>'+'<div class="cf-row"><span class="k">醬料</span><span class="v">'+cT+'</span></div>'+'<div class="cf-row"><span class="k">辣度</span><span class="v">'+it.sp+'</span></div>'+(tps.length?tps.map(t=>'<div class="cf-row"><span class="k">加料</span><span class="v">'+t+'</span></div>').join(''):'')+  (topP>0?'<div class="cf-row"><span class="k">單碗含加料</span><span class="v">$'+(base+topP)+'</span></div>':'')+'<div class="cf-row"><span class="k">碗數</span><span class="v">x '+it.qty+'</span></div>'+'<div class="cf-row" style="border-top:1.5px solid #eee;margin-top:6px;padding-top:6px"><span class="k" style="font-size:15px">小計</span><span class="v" style="color:#D85A30;font-size:18px">$'+pr2(it)+'</span></div>'+'<div class="cf-actions"><div class="cf-edit" onclick="backToEdit()">✏️ 修改</div><div class="cf-del" onclick="cfDel('+it.uid+')">🗑️ 刪除</div></div></div>';}).join('')+'</div>'+'<div class="cf-total"><div style="font-size:14px;color:#888;margin-bottom:4px">合計（'+bw+' 碗）</div><div class="amt">$'+tt+'</div></div>'+'<div style="padding:12px 16px 40px"><button class="fbtn" onclick="doSubmit()">✅ 確認送出訂單</button><button class="fbtn2" onclick="backToEdit()" style="margin-top:8px">⬅️ 返回修改</button></div>';
 window.scrollTo(0,0);
 }
-function backToEdit(){render();rc();}
+function backToEdit(){recShown=false;render();rc();}
 function cfDel(u){cart=cart.filter(c=>c.uid!==u);if(cart.length)showConfirm();else render();}
 async function doSubmit(){
 var btns=document.querySelectorAll('.fbtn');btns.forEach(b=>{b.disabled=true;b.textContent='送出中...';});
