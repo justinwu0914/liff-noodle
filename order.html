@@ -282,9 +282,16 @@ setTimeout(function(){
     if(!accessToken){dlog('⚠️ [GROUP] no accessToken, skip fetch');return;}
     dlog('📡 [GROUP] fetch: '+GROUP_JOIN_URL);
     fetch(GROUP_JOIN_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'group_join',groupId:g,accessToken:accessToken})})
-    .then(function(r){dlog('📡 [GROUP] status='+r.status);return r.json();})
-    .then(function(d){
-      dlog('📡 [GROUP] resp: '+JSON.stringify(d).substring(0,200));
+    .then(function(r){dlog('📡 [GROUP] status='+r.status+' type='+r.headers.get('content-type'));return r.text();})
+    .then(function(txt){
+      dlog('📡 [GROUP] raw response(100): '+txt.substring(0,100));
+      var d;
+      try{d=JSON.parse(txt);}catch(pe){
+        dlog('❌ [GROUP] JSON parse fail, response is not JSON');
+        showBanner('🎉 揪團點餐模式', '揪團代碼: '+g+' | 滿 5 碗享 95 折');
+        return;
+      }
+      dlog('📡 [GROUP] parsed: '+JSON.stringify(d).substring(0,200));
       if(d.success){
         groupInfo=d;
         showBanner(
