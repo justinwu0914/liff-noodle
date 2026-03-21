@@ -119,7 +119,7 @@ function dlog(msg){
 }
 // Debug panel: only shows when URL has ?debug=1
 (function(){
-  var show=window.location.search.indexOf('debug=flase')!==-1;
+  var show=window.location.search.indexOf('debug=1')!==-1;
   if(show){var d=document.getElementById('dbg');if(d)d.style.display='block';}
   dlog('🚀 order.html loaded');
   dlog('📍 URL: '+window.location.href);
