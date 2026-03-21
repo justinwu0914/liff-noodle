@@ -3,193 +3,211 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>會員中心</title>
+<title>會員中心 — 老全麵線</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f0eb;color:#333;padding-bottom:40px}
-.hd{background:#D85A30;color:#fff;padding:16px 20px;position:sticky;top:0;z-index:100;text-align:center}
-.hd h1{font-size:20px;font-weight:700}
-.hd .sub{font-size:12px;opacity:.8;margin-top:2px}
-.card{background:#fff;border-radius:14px;margin:16px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.avatar{text-align:center;margin-bottom:16px}
-.avatar img{width:72px;height:72px;border-radius:50%;border:3px solid #D85A30}
-.avatar .name{font-size:17px;font-weight:700;margin-top:8px}
-.avatar .uid{font-size:11px;color:#aaa;margin-top:2px}
-.field{margin-bottom:16px}
-.field label{display:block;font-size:13px;font-weight:600;color:#888;margin-bottom:6px}
-.field label .req{color:#D85A30}
-.field input,.field select,.field textarea{width:100%;padding:12px 14px;border:2px solid #eee;border-radius:10px;font-size:15px;font-family:inherit;background:#fff;color:#333;outline:none}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:#D85A30}
-.field textarea{height:60px;resize:none}
-.field .hint{font-size:11px;color:#aaa;margin-top:4px}
-.field .err{font-size:11px;color:#A32D2D;margin-top:4px;display:none}
-.btn{width:100%;padding:16px;border:none;border-radius:14px;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px}
-.btn-primary{background:#D85A30;color:#fff}
-.btn-primary:active{opacity:.8}
-.btn-primary:disabled{background:#ccc}
-.btn-secondary{background:#fff;color:#D85A30;border:2px solid #D85A30;margin-top:8px}
-.btn-secondary:active{opacity:.8}
-.ok{text-align:center;padding:40px 20px}
-.ok .ic{font-size:60px;margin-bottom:12px}
-.ok h2{font-size:22px;margin-bottom:8px}
-.ok p{color:#888;font-size:14px;line-height:1.6}
-.ok .pts{display:inline-block;background:#FFF5F0;color:#D85A30;font-size:24px;font-weight:800;padding:8px 24px;border-radius:12px;margin:12px 0}
-.info-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0;font-size:14px}
-.info-row:last-child{border:none}
-.info-row .k{color:#888}
-.info-row .v{font-weight:600;color:#333}
-.info-row .v.accent{color:#D85A30}
-.edit-link{text-align:center;margin-top:12px;font-size:13px;color:#D85A30;font-weight:600;cursor:pointer}
-.tabs{display:flex;margin:16px 16px 0;border-radius:14px 14px 0 0;overflow:hidden}
-.tab{flex:1;padding:12px;text-align:center;font-size:14px;font-weight:600;cursor:pointer;background:#eee;color:#888}
-.tab.active{background:#D85A30;color:#fff}
-.order-item{background:#fff;border-radius:10px;margin:0 16px 10px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-.order-item .oi-hd{display:flex;justify-content:space-between;margin-bottom:6px}
-.order-item .oi-id{font-size:12px;color:#D85A30;font-weight:600}
-.order-item .oi-date{font-size:12px;color:#888}
-.order-item .oi-items{font-size:13px;color:#555;margin-bottom:6px}
-.order-item .oi-ft{display:flex;justify-content:space-between;font-size:13px}
-.order-item .oi-amt{font-weight:700;color:#D85A30}
-.order-item .oi-pts{color:#0F6E56;font-size:12px}
-.no-orders{text-align:center;padding:40px 20px;color:#999;font-size:14px}
-.loading{text-align:center;padding:80px 20px;color:#999}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f0eb;color:#333;padding-bottom:80px}
+.hd{background:#D85A30;color:#fff;padding:16px 20px;position:sticky;top:0;z-index:100}
+.hd h1{font-size:18px;font-weight:700;text-align:center}
+.profile{background:#fff;padding:24px 20px;text-align:center;border-bottom:1px solid #eee}
+.avatar{width:72px;height:72px;border-radius:50%;border:3px solid #D85A30;margin:0 auto 12px;background:#f5f0eb;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.pname{font-size:20px;font-weight:700;margin-bottom:4px}
+.pmid{font-size:12px;color:#999;font-family:monospace}
+.pts-card{background:linear-gradient(135deg,#D85A30,#B04520);border-radius:14px;margin:16px 20px;padding:20px;color:#fff;text-align:center}
+.pts-card .lbl{font-size:12px;opacity:.8;margin-bottom:4px}
+.pts-card .val{font-size:36px;font-weight:800;margin-bottom:4px}
+.pts-card .sub{font-size:11px;opacity:.6}
+.pts-row{display:flex;justify-content:space-around;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2)}
+.pts-row .col{text-align:center}
+.pts-row .col .n{font-size:18px;font-weight:700}
+.pts-row .col .l{font-size:10px;opacity:.7}
+.tabs{display:flex;background:#fff;border-bottom:2px solid #eee;position:sticky;top:53px;z-index:99}
+.tab{flex:1;padding:12px;text-align:center;font-size:14px;font-weight:600;color:#999;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s}
+.tab.on{color:#D85A30;border-bottom-color:#D85A30}
+.panel{display:none;padding:12px 16px}
+.panel.on{display:block}
+.info-card{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px}
+.info-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f5f0eb}
+.info-row:last-child{border-bottom:none}
+.info-row .k{color:#888;font-size:14px}
+.info-row .v{font-weight:600;font-size:14px}
+.order-card{background:#fff;border-radius:12px;margin-bottom:10px;border-left:4px solid #D85A30;overflow:hidden}
+.order-card.preorder{border-left-color:#BA7517}
+.order-hd{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #f5f0eb}
+.order-id{font-family:monospace;font-size:12px;color:#D85A30;font-weight:600}
+.order-date{font-size:12px;color:#999}
+.order-body{padding:10px 14px}
+.order-items{font-size:13px;color:#666;line-height:1.6}
+.order-ft{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:#faf8f5}
+.order-ft .bowls{font-size:12px;color:#888}
+.order-ft .amt{font-size:16px;font-weight:800;color:#D85A30}
+.order-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;margin-left:8px}
+.badge-completed{background:#E1F5EE;color:#0F6E56}
+.badge-preorder{background:#FAEEDA;color:#854F0B}
+.empty{text-align:center;padding:40px 20px;color:#999}
+.empty .ic{font-size:48px;margin-bottom:12px}
+.empty p{font-size:14px}
+.loading-spinner{text-align:center;padding:40px;color:#999}
+.loading-spinner .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#D85A30;margin:0 4px;animation:pulse .6s infinite alternate}
+.loading-spinner .dot:nth-child(2){animation-delay:.2s}
+.loading-spinner .dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{from{opacity:.3;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.ft-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;padding:10px 20px;z-index:100}
+.ft-btn{width:100%;padding:14px;background:#D85A30;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer}
+.ft-btn:active{opacity:.8}
 </style>
 </head>
 <body>
-<div class="hd"><h1>🍜 麵線會員中心</h1><div class="sub">加入會員享專屬優惠</div></div>
-<div id="app"><div class="loading">載入中...</div></div>
+<div class="hd"><h1>會員中心</h1></div>
+<div id="app">
+  <div class="loading-spinner" style="padding:80px 20px">
+    <div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    <div style="margin-top:12px;font-size:13px">載入會員資料中...</div>
+  </div>
+</div>
+<div class="ft-bar" id="ftbar" style="display:none">
+  <button class="ft-btn" onclick="goOrder()">🍜 前往點餐</button>
+</div>
+
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
-var LID='2009530264-3xA9VL4a';
+var LIFF_ID='2009530264-3xA9VL4a';
 var CHECK_URL='https://n8n.justinaiauto.com/webhook/member-check';
-var SUBMIT_URL='https://n8n.justinaiauto.com/webhook/member-register';
 var HISTORY_URL='https://n8n.justinaiauto.com/webhook/order-history';
-var accessToken='',uid='',uname='',upic='';
-try{accessToken=sessionStorage.getItem('liff_token')||'';uid=sessionStorage.getItem('liff_uid')||'';uname=sessionStorage.getItem('liff_name')||'';upic=sessionStorage.getItem('liff_pic')||'';}catch(e){}
-var memberData=null;
-var mode='loading';
+var accessToken='',memberData=null,orderData=null;
 
 async function init(){
-  try{
-    await liff.init({liffId:LID});if(liff.isLoggedIn()){var p=await liff.getProfile();uid=p.userId;uname=p.displayName;upic=p.pictureUrl||'';accessToken=liff.getAccessToken()||'';}
-  }catch(e){}
-  // no blocking - always proceed to check or register
-  if(accessToken){showPage('loading');try{var res=await fetch(CHECK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({accessToken:accessToken})});var d=await res.json();if(d.registered){memberData=d;showPage('member-center');}else{showPage('register');}}catch(e){showPage('register');}}else{showPage('register');}
+try{
+  accessToken=sessionStorage.getItem('liff_token')||'';
+  if(!accessToken){
+    await liff.init({liffId:LIFF_ID});
+    if(!liff.isLoggedIn()){liff.login({redirectUri:location.href});return;}
+    accessToken=liff.getAccessToken()||'';
+    var p=await liff.getProfile();
+    try{sessionStorage.setItem('liff_token',accessToken);sessionStorage.setItem('liff_uid',p.userId);sessionStorage.setItem('liff_name',p.displayName);sessionStorage.setItem('liff_pic',p.pictureUrl||'');}catch(e){}
+  }
+
+  // Fetch member info
+  var resp=await fetch(CHECK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({accessToken:accessToken})});
+  memberData=await resp.json();
+
+  if(!memberData.registered){
+    document.getElementById('app').innerHTML='<div class="empty"><div class="ic">👤</div><p>您尚未加入會員</p><p style="margin-top:8px;font-size:13px;color:#aaa">請在 LINE 聊天室輸入「加入會員」</p></div>';
+    document.getElementById('ftbar').style.display='block';
+    return;
+  }
+
+  renderMember();
+  document.getElementById('ftbar').style.display='block';
+
+  // Fetch order history in background
+  loadHistory();
+
+}catch(e){
+  document.getElementById('app').innerHTML='<div class="empty"><div class="ic">⚠️</div><p>載入失敗，請重試</p><p style="margin-top:8px;font-size:12px;color:#ccc">'+e.message+'</p></div>';
+}
 }
 
-function showPage(p){
-  mode=p;var app=document.getElementById('app');
-  if(p==='loading'){app.innerHTML='<div class="loading">\u8f09\u5165\u4e2d...</div>';}
-  else if(p==='no-login'){app.innerHTML='<div class="ok"><div class="ic">\ud83d\udd12</div><h2>\u8acb\u5f9e LINE \u958b\u555f</h2><p>\u8acb\u900f\u904e LINE App \u958b\u555f\u6b64\u9801\u9762\u4ee5\u9032\u884c\u6703\u54e1\u8a3b\u518a</p></div>';}
-  else if(p==='register'){showRegisterForm();}
-  else if(p==='member-center'){showMemberCenter();}
-  else if(p==='edit'){showEditForm();}
+function renderMember(){
+var d=memberData;
+var pic=sessionStorage.getItem('liff_pic')||'';
+var avatarHtml=pic?'<img src="'+pic+'" alt="">':'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px">👤</div>';
+
+document.getElementById('app').innerHTML=
+'<div class="profile">'+
+'<div class="avatar">'+avatarHtml+'</div>'+
+'<div class="pname">'+d.real_name+'</div>'+
+'<div class="pmid">'+(d.member_id?'MBR-'+d.member_id:'會員')+'</div>'+
+'</div>'+
+'<div class="pts-card">'+
+'<div class="lbl">累積積分</div>'+
+'<div class="val">'+d.total_points+'</div>'+
+'<div class="sub">'+d.level+'</div>'+
+'<div class="pts-row">'+
+'<div class="col"><div class="n">'+(d.total_points>=50?Math.floor(d.total_points/50):'0')+'</div><div class="l">可兌換碗數</div></div>'+
+'<div class="col"><div class="n">'+(50-d.total_points%50)+'</div><div class="l">距下次兌換</div></div>'+
+'</div>'+
+'</div>'+
+'<div class="tabs">'+
+'<div class="tab on" onclick="switchTab(0)">會員資訊</div>'+
+'<div class="tab" onclick="switchTab(1)">購買記錄</div>'+
+'</div>'+
+'<div class="panel on" id="panel0">'+
+'<div class="info-card">'+
+'<div class="info-row"><span class="k">姓名</span><span class="v">'+d.real_name+'</span></div>'+
+'<div class="info-row"><span class="k">電話</span><span class="v">'+(d.phone||'未設定')+'</span></div>'+
+'<div class="info-row"><span class="k">生日月份</span><span class="v">'+(d.birthday_month||'未設定')+'</span></div>'+
+'<div class="info-row"><span class="k">LINE 暱稱</span><span class="v">'+(d.display_name||'')+'</span></div>'+
+'<div class="info-row"><span class="k">會員等級</span><span class="v">'+d.level+'</span></div>'+
+'<div class="info-row"><span class="k">累積積分</span><span class="v" style="color:#D85A30">'+d.total_points+' 點</span></div>'+
+'</div>'+
+'<div style="text-align:center;padding:8px;font-size:11px;color:#ccc">每消費 $10 累積 1 點 | 50 點兌換豬腸麵線(小)</div>'+
+'</div>'+
+'<div class="panel" id="panel1">'+
+'<div class="loading-spinner" id="history-loading"><div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><div style="margin-top:8px;font-size:13px">載入購買記錄...</div></div>'+
+'<div id="history-list"></div>'+
+'</div>';
 }
 
-function showRegisterForm(){
-  var app=document.getElementById('app');
-  app.innerHTML='<div class="card"><div class="avatar">'+(upic?'<img src="'+upic+'">':'')+'<div class="name">'+uname+'</div><div class="uid">\u6b61\u8fce\u52a0\u5165\u6703\u54e1</div></div>'
-    +'<div class="field"><label>\u771f\u5be6\u59d3\u540d <span class="req">*</span></label><input type="text" id="rname" placeholder="\u8acb\u8f38\u5165\u60a8\u7684\u59d3\u540d" maxlength="20"><div class="err" id="enm">\u8acb\u8f38\u5165\u59d3\u540d</div></div>'
-    +'<div class="field"><label>\u806f\u7d61\u96fb\u8a71 <span class="req">*</span></label><input type="tel" id="rphone" placeholder="09XX-XXX-XXX" maxlength="15"><div class="err" id="eph">\u8acb\u8f38\u5165\u6b63\u78ba\u7684\u96fb\u8a71\u865f\u78bc</div></div>'
-    +'<div class="field"><label>\u751f\u65e5\u6708\u4efd\uff08\u58fd\u661f\u512a\u60e0\uff09</label><select id="rbday"><option value="">\u8acb\u9078\u64c7</option><option value="1\u6708">1\u6708</option><option value="2\u6708">2\u6708</option><option value="3\u6708">3\u6708</option><option value="4\u6708">4\u6708</option><option value="5\u6708">5\u6708</option><option value="6\u6708">6\u6708</option><option value="7\u6708">7\u6708</option><option value="8\u6708">8\u6708</option><option value="9\u6708">9\u6708</option><option value="10\u6708">10\u6708</option><option value="11\u6708">11\u6708</option><option value="12\u6708">12\u6708</option></select></div>'
-    +'<div class="field"><label>\u98f2\u98df\u504f\u597d / \u904e\u654f\u539f</label><textarea id="rdiet" placeholder="\u4f8b\u5982\uff1a\u4e0d\u5403\u9999\u83dc\u3001\u6d77\u9bae\u904e\u654f..."></textarea><div class="hint">\u8b93\u6211\u5011\u66f4\u597d\u5730\u670d\u52d9\u60a8</div></div>'
-    +'<button class="btn btn-primary" onclick="doRegister()">\u2705 \u78ba\u8a8d\u8a3b\u518a</button></div>';
+function switchTab(n){
+var tabs=document.querySelectorAll('.tab');
+var panels=document.querySelectorAll('.panel');
+tabs.forEach(function(t,i){t.className=i===n?'tab on':'tab';});
+panels.forEach(function(p,i){p.className=i===n?'panel on':'panel';});
 }
 
-var currentTab='info';
-var orderHistory=[];
-
-async function loadOrderHistory(){
-  if(!accessToken)return;
-  try{
-    var res=await fetch(HISTORY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({accessToken:accessToken})});
-    var d=await res.json();
-    if(d.success)orderHistory=d.orders||[];
-  }catch(e){}
+async function loadHistory(){
+try{
+  var resp=await fetch(HISTORY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({accessToken:accessToken})});
+  orderData=await resp.json();
+  renderHistory();
+}catch(e){
+  var el=document.getElementById('history-loading');
+  if(el)el.innerHTML='<div class="empty"><div class="ic">⚠️</div><p>載入失敗</p></div>';
+}
 }
 
-function showHistoryTab(){
-  var container=document.getElementById('tab-content');
-  if(!orderHistory.length){container.innerHTML='<div class="no-orders">暫無購買記錄</div>';return;}
-  var html=orderHistory.map(function(o){
-    return '<div class="order-item"><div class="oi-hd"><span class="oi-id">'+o.orderId+'</span><span class="oi-date">'+o.date+'</span></div><div class="oi-items">'+o.items+'</div><div class="oi-ft"><span class="oi-amt">$'+o.totalAmount+'</span><span class="oi-pts">+'+o.pointsEarned+' 點</span></div></div>';
-  }).join('');
-  container.innerHTML=html;
+function renderHistory(){
+var el=document.getElementById('history-loading');
+if(el)el.style.display='none';
+var list=document.getElementById('history-list');
+if(!list)return;
+
+if(!orderData||!orderData.success||!orderData.orders||orderData.orders.length===0){
+  list.innerHTML='<div class="empty"><div class="ic">📋</div><p>尚無購買記錄</p><p style="margin-top:8px;font-size:12px;color:#aaa">下單後會自動記錄在這裡</p></div>';
+  return;
 }
 
-function switchTab(t){
-  currentTab=t;
-  document.querySelectorAll('.tab').forEach(function(el){el.classList.remove('active');});
-  document.querySelector('.tab[data-tab="'+t+'"]').classList.add('active');
-  if(t==='info')showInfoTab();
-  else showHistoryTab();
+var totalSpent=0,totalOrders=orderData.orders.length;
+orderData.orders.forEach(function(o){totalSpent+=o.totalAmount;});
+
+var html='<div class="info-card" style="text-align:center;margin-bottom:16px">'+
+'<div style="display:flex;justify-content:space-around">'+
+'<div><div style="font-size:24px;font-weight:800;color:#D85A30">'+totalOrders+'</div><div style="font-size:11px;color:#888">總訂單數</div></div>'+
+'<div><div style="font-size:24px;font-weight:800;color:#D85A30">$'+totalSpent.toLocaleString()+'</div><div style="font-size:11px;color:#888">總消費金額</div></div>'+
+'</div></div>';
+
+orderData.orders.forEach(function(o){
+var isPre=o.status==='preorder';
+var badge=isPre?'<span class="order-badge badge-preorder">預約</span>':'<span class="order-badge badge-completed">完成</span>';
+var dateStr=o.date||'';
+if(dateStr.length===10){var parts=dateStr.split('-');dateStr=parts[1]+'/'+parts[2];}
+
+html+='<div class="order-card'+(isPre?' preorder':'')+'">'+
+'<div class="order-hd"><span class="order-id">'+o.orderId+badge+'</span><span class="order-date">'+dateStr+'</span></div>'+
+'<div class="order-body"><div class="order-items">'+o.items.replace(/,\s*/g,'<br>')+'</div></div>'+
+'<div class="order-ft"><span class="bowls">'+o.totalBowls+' 碗 | +'+o.pointsEarned+' 點</span><span class="amt">$'+o.totalAmount+'</span></div>'+
+'</div>';
+});
+
+list.innerHTML=html;
 }
 
-function showInfoTab(){
-  var d=memberData;
-  document.getElementById('tab-content').innerHTML='<div class="card" style="margin-top:0;border-radius:0 0 14px 14px"><div class="avatar">'+(upic?'<img src="'+upic+'">':'')+'<div class="name">'+(d.real_name||uname)+'</div><div class="uid">會員編號 #'+(d.member_id||'---')+'</div></div>'
-    +'<div class="info-row"><span class="k">電話</span><span class="v">'+(d.phone||'---')+'</span></div>'
-    +'<div class="info-row"><span class="k">生日月份</span><span class="v">'+(d.birthday_month||'---')+'</span></div>'
-    +'<div class="info-row"><span class="k">飲食偏好</span><span class="v">'+(d.dietary_preferences||'---')+'</span></div>'
-    +'<div class="info-row"><span class="k">累計點數</span><span class="v accent">'+(d.total_points||0)+' 點</span></div>'
-    +'<div class="info-row"><span class="k">會員等級</span><span class="v accent">'+(d.level||'一般會員')+'</span></div>'
-    +'<div class="edit-link" onclick="showPage(\x27edit\x27)">✏️ 修改個人資料</div></div>';
+function goOrder(){
+var baseUrl=location.origin+location.pathname.replace(/member\.html$/,'').replace(/\/$/,'');
+location.href=baseUrl+'/order.html';
 }
-
-function showMemberCenter(){
-  loadOrderHistory();
-  var app=document.getElementById('app');
-  app.innerHTML='<div class="tabs"><div class="tab active" data-tab="info" onclick="switchTab(\x27info\x27)">\u270b \u6703\u54e1\u8cc7\u8a0a</div><div class="tab" data-tab="history" onclick="switchTab(\x27history\x27)">\ud83d\udce6 \u8cfc\u8cb7\u7d00\u9304</div></div><div id="tab-content"></div><div style="padding:0 16px 40px"><button class="btn btn-secondary" onclick="closePage()">\u95dc\u9589</button></div>';
-  showInfoTab();
-}
-
-function showEditForm(){
-  var d=memberData||{};var app=document.getElementById('app');
-  app.innerHTML='<div class="card"><div class="avatar">'+(upic?'<img src="'+upic+'">':'')+'<div class="name">\u4fee\u6539\u500b\u4eba\u8cc7\u6599</div></div>'
-    +'<div class="field"><label>\u771f\u5be6\u59d3\u540d <span class="req">*</span></label><input type="text" id="rname" value="'+(d.real_name||'').replace(/"/g,'&quot;')+'" maxlength="20"><div class="err" id="enm">\u8acb\u8f38\u5165\u59d3\u540d</div></div>'
-    +'<div class="field"><label>\u806f\u7d61\u96fb\u8a71 <span class="req">*</span></label><input type="tel" id="rphone" value="'+(d.phone||'')+'" maxlength="15"><div class="err" id="eph">\u8acb\u8f38\u5165\u6b63\u78ba\u7684\u96fb\u8a71\u865f\u78bc</div></div>'
-    +'<div class="field"><label>\u751f\u65e5\u6708\u4efd</label><select id="rbday">'+buildMonthOptions(d.birthday_month||'')+'</select></div>'
-    +'<div class="field"><label>\u98f2\u98df\u504f\u597d / \u904e\u654f\u539f</label><textarea id="rdiet">'+(d.dietary_preferences||'')+'</textarea></div>'
-    +'<button class="btn btn-primary" onclick="doUpdate()">\u2705 \u5132\u5b58\u8b8a\u66f4</button><button class="btn btn-secondary" onclick="showPage(\x27member-center\x27)">\u2b05\ufe0f \u8fd4\u56de</button></div>';
-}
-
-function buildMonthOptions(sel){var h='<option value="">\u8acb\u9078\u64c7</option>';for(var i=1;i<=12;i++){var v=i+'\u6708';h+='<option value="'+v+'"'+(sel===v?' selected':'')+'>'+v+'</option>';}return h;}
-
-function validate(){
-  var nm=document.getElementById('rname').value.trim();
-  var ph=document.getElementById('rphone').value.trim();
-  var ok=true;
-  if(!nm){document.getElementById('enm').style.display='block';ok=false;}else{document.getElementById('enm').style.display='none';}
-  if(!ph||ph.length<8){document.getElementById('eph').style.display='block';ok=false;}else{document.getElementById('eph').style.display='none';}
-  return ok;
-}
-
-async function doRegister(){
-  if(!validate())return;
-  var btn=document.querySelector('.btn-primary');btn.disabled=true;btn.textContent='\u8655\u7406\u4e2d...';
-  var data={accessToken:accessToken,action:'register',real_name:document.getElementById('rname').value.trim(),phone:document.getElementById('rphone').value.trim(),birthday_month:document.getElementById('rbday').value,dietary_preferences:document.getElementById('rdiet').value.trim()};
-  try{
-    var res=await fetch(SUBMIT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-    var d=await res.json();
-    if(d.success){
-      document.getElementById('app').innerHTML='<div class="ok"><div class="ic">\ud83c\udf89</div><h2>\u6b61\u8fce\u52a0\u5165\u6703\u54e1\uff01</h2><p><strong>'+data.real_name+'</strong> \u60a8\u597d\uff0c<br>\u8a3b\u518a\u6210\u529f\uff0c\u5df2\u8d08\u9001\u9996\u6b21\u52a0\u5165\u512a\u60e0\uff01</p><div class="pts">+ 10 \u9ede</div><p>\u8acb\u67e5\u770b LINE \u8a0a\u606f\u78ba\u8a8d</p><div style="padding:16px"><button class="btn btn-primary" onclick="closePage()">\u5b8c\u6210</button></div></div>';
-    }else{btn.disabled=false;btn.textContent='\u2705 \u78ba\u8a8d\u8a3b\u518a';alert(d.error||'\u8a3b\u518a\u5931\u6557');}
-  }catch(e){btn.disabled=false;btn.textContent='\u2705 \u78ba\u8a8d\u8a3b\u518a';alert('\u7db2\u8def\u932f\u8aa4\uff0c\u8acb\u91cd\u8a66');}
-}
-
-async function doUpdate(){
-  if(!validate())return;
-  var btn=document.querySelector('.btn-primary');btn.disabled=true;btn.textContent='\u5132\u5b58\u4e2d...';
-  var data={accessToken:accessToken,action:'update',real_name:document.getElementById('rname').value.trim(),phone:document.getElementById('rphone').value.trim(),birthday_month:document.getElementById('rbday').value,dietary_preferences:document.getElementById('rdiet').value.trim()};
-  try{
-    var res=await fetch(SUBMIT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-    var d=await res.json();
-    if(d.success){memberData.real_name=data.real_name;memberData.phone=data.phone;memberData.birthday_month=data.birthday_month;memberData.dietary_preferences=data.dietary_preferences;showPage('member-center');}
-    else{btn.disabled=false;btn.textContent='\u2705 \u5132\u5b58\u8b8a\u66f4';alert(d.error||'\u5132\u5b58\u5931\u6557');}
-  }catch(e){btn.disabled=false;btn.textContent='\u2705 \u5132\u5b58\u8b8a\u66f4';alert('\u7db2\u8def\u932f\u8aa4');}
-}
-
-function closePage(){try{if(liff.isInClient()){liff.closeWindow();return;}}catch(e){}try{window.close();}catch(e){}}
 
 init();
 </script>
