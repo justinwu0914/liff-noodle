@@ -66,7 +66,20 @@ async function init() {
     if (page === 'member') {
       location.replace(baseUrl + '/member.html');
     } else {
-      var grp=new URLSearchParams(window.location.search).get('group')||'';
+      var grp='';
+      try{
+        grp=new URLSearchParams(window.location.search).get('group')||'';
+        if(!grp){
+          var hash=window.location.hash;
+          if(hash&&hash.includes('group=')){
+            grp=new URLSearchParams(hash.substring(hash.indexOf('?'))).get('group')||'';
+          }
+        }
+        if(!grp&&typeof liff!=='undefined'){
+          try{var ctx=liff.getContext();if(ctx&&ctx.liffUrl){grp=new URL(ctx.liffUrl).searchParams.get('group')||'';}}catch(e){}
+        }
+      }catch(e){}
+      if(grp){sessionStorage.setItem('liff_group',grp);}
       location.replace(baseUrl + '/order.html' + (grp ? '?group=' + grp : ''));
     }
 
