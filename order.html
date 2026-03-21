@@ -133,7 +133,7 @@ var LID='2009530264-3xA9VL4a',SURL='https://n8n.justinaiauto.com/webhook/food-or
 // SHOP_UID & LTOKEN moved to n8n backend for security
 var M=[{id:'oyster',nm:'鮮蚵麵線',ds:'新鮮蚵仔搭配麵線',L:65,S:60,top:1},{id:'mixed',nm:'綜合麵線',ds:'鮮蚵＋滷製豬腸搭配麵線',L:65,S:60,top:1},{id:'intestine',nm:'豬腸麵線',ds:'滷製豬腸搭配麵線',L:60,S:55,top:1},{id:'plain',nm:'清麵線',ds:'純麵線湯底',L:45,S:40,top:0}];
 var CD=['香菜','醬油','烏醋','蒜蓉'],SP=['不加辣','微辣','小辣','中辣','大辣'],TP=[{nm:'加豬腸',p:30},{nm:'加鮮蚵',p:30}];
-var GROUP_JOIN_URL='https://n8n.justinaiauto.com/webhook/food-bot';
+var GROUP_JOIN_URL='https://n8n.justinaiauto.com/webhook/group-order-join';
 var cart=[],uid='',uname='',orderId='',orderDT='',custName='',groupId='',groupInfo=null;
 function genOID(){var n=new Date(),ds=''+n.getFullYear()+String(n.getMonth()+1).padStart(2,'0')+String(n.getDate()).padStart(2,'0');var sq=String(n.getHours())+String(n.getMinutes()).padStart(2,'0')+String(n.getSeconds()).padStart(2,'0');return 'ORD-'+ds+'-'+sq;}
 function fmtDT(){var n=new Date();return n.getFullYear()+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+String(n.getDate()).padStart(2,'0')+' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
