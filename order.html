@@ -218,6 +218,9 @@ function backToEdit(){render();rc();}
 function cfDel(u){cart=cart.filter(c=>c.uid!==u);if(cart.length)showConfirm();else render();}
 async function doSubmit(){
 var btns=document.querySelectorAll('.fbtn');btns.forEach(b=>{b.disabled=true;b.textContent='送出中...';});
+// 確保 groupId 有值（fallback from sessionStorage）
+if(!groupId){try{groupId=sessionStorage.getItem('liff_group')||'';}catch(e){}}
+dlog('📤 doSubmit groupId="'+groupId+'" amount='+ta());
 var data={accessToken:accessToken,orderId:orderId,groupId:groupId,customerName:custName,orderDatetime:orderDT,items:cart.map(it=>{var tl=[];Object.entries(it.tp).forEach(([k,v])=>{for(var i=0;i<v;i++)tl.push(k);});var m=M.find(x=>x.id===it.mid);var base=it.sz==='大碗'?m.L:m.S;var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);return{name:it.nm,size:it.sz,qty:it.qty,unitBase:base,unitTotal:base+topP,conds:it.cd,spice:it.sp,toppings:tl,toppingQty:it.tp,price:pr2(it)};}),totalBowls:tb(),totalAmount:ta(),timestamp:new Date().toISOString()};
 try{
 var resp=await fetch(SURL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
