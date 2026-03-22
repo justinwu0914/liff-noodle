@@ -177,8 +177,36 @@ if(cn&&uname&&!cn.value){cn.value=uname;custName=uname;}
 dlog('✅ init() done');
 // Load last order for reorder
 loadLastOrder();
+loadPromo();
 }
 var lastOrderData=null;
+var activePromo=null;
+async function loadPromo(){
+try{
+  if(!accessToken)return;
+  var resp=await fetch('https://n8n.justinaiauto.com/webhook/admin-api',{method:'POST',headers:{'Content-Type':'application/json','Cache-Control':'no-cache'},body:JSON.stringify({accessToken:accessToken,action:'get_promo',_t:Date.now()})});
+  var d=await resp.json();
+  if(d.success&&d.promo&&d.promo.enabled){
+    // Check date and time
+    var now=new Date();
+    var today=now.toISOString().split('T')[0];
+    var p=d.promo;
+    if(p.date&&p.date!==today)return;
+    var hm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+    if(p.startTime&&hm<p.startTime)return;
+    if(p.endTime&&hm>p.endTime)return;
+    activePromo=p;
+    dlog('🔥 promo active: '+JSON.stringify(p));
+    render(); // Re-render with promo prices
+  }
+}catch(e){dlog('⚠️ loadPromo error: '+e.message);}
+}
+function getPromoDiscount(itemName){
+  if(!activePromo||!activePromo.enabled)return 100;
+  if(!activePromo.items||activePromo.items.length===0)return activePromo.discount;
+  if(activePromo.items.includes(itemName))return activePromo.discount;
+  return 100;
+}
 async function loadLastOrder(){
 try{
   if(!accessToken)return;
@@ -254,8 +282,9 @@ var biz=getBizStatus();
 if(!biz.open){showClosed(biz);return;}
 }
 var preTag=_preorderMode?'<div style="background:#FFF5F0;padding:10px 16px;text-align:center;border-bottom:2px solid #D85A30;font-size:13px;color:#D85A30;font-weight:600">📝 預約模式 — 此訂單將於下次營業時段製作</div>':'';
+var promoTag=activePromo?'<div style="background:#FFE0E0;padding:10px 16px;text-align:center;border-bottom:2px solid #E24B4A;font-size:13px;color:#E24B4A;font-weight:700">🔥 限時優惠進行中！'+(activePromo.items&&activePromo.items.length?activePromo.items.join('、'):'全品項')+' '+activePromo.discount+' 折</div>':'';
 var nm=custName||uname||'';
-document.getElementById('app').innerHTML=preTag+'<div class="nsec"><div class="nlbl">👤 取餐姓名（必填）</div><div class="nwrap"><input type="text" id="cname" placeholder="請輸入您的姓名" maxlength="20" value="'+nm.replace(/"/g,'&quot;')+'" oninput="custName=this.value.trim();document.getElementById(\x27nerr\x27).style.display=\x27none\x27;rc();"></div><div class="nerr" id="nerr">⚠ 請輸入取餐姓名才能送出訂單</div></div><div id="reorder-area"></div><div class="sec">選擇品項加入購物車</div><div class="grid">'+M.map(m=>'<div class="mc"><div class="nm">'+m.nm+'</div><div class="ds">'+m.ds+'</div><div class="sr"><div class="sb on" onclick="add(\x27'+m.id+'\x27,\x27小碗\x27)">小碗 $'+m.S+'</div><div class="sb" onclick="add(\x27'+m.id+'\x27,\x27大碗\x27)">大碗 $'+m.L+'</div></div></div>').join('')+'</div><div id="ca"></div>';
+document.getElementById('app').innerHTML=promoTag+preTag+'<div class="nsec"><div class="nlbl">👤 取餐姓名（必填）</div><div class="nwrap"><input type="text" id="cname" placeholder="請輸入您的姓名" maxlength="20" value="'+nm.replace(/"/g,'&quot;')+'" oninput="custName=this.value.trim();document.getElementById(\x27nerr\x27).style.display=\x27none\x27;rc();"></div><div class="nerr" id="nerr">⚠ 請輸入取餐姓名才能送出訂單</div></div><div id="reorder-area"></div><div class="sec">選擇品項加入購物車</div><div class="grid">'+M.map(m=>{var disc=getPromoDiscount(m.nm);var hasDisc=disc<100;var dS=hasDisc?Math.round(m.S*disc/100):m.S;var dL=hasDisc?Math.round(m.L*disc/100):m.L;var badge=hasDisc?'<div style="position:absolute;top:-6px;right:-6px;background:#E24B4A;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:8px">'+disc+'折</div>':'';return '<div class="mc" style="position:relative">'+badge+'<div class="nm">'+m.nm+'</div><div class="ds">'+m.ds+'</div><div class="sr"><div class="sb on" onclick="add(\x27'+m.id+'\x27,\x27小碗\x27)">'+(hasDisc?'<s style="color:#aaa;font-size:11px">$'+m.S+'</s> ':'')+'小碗 $'+dS+'</div><div class="sb" onclick="add(\x27'+m.id+'\x27,\x27大碗\x27)">'+(hasDisc?'<s style="color:#aaa;font-size:11px">$'+m.L+'</s> ':'')+'大碗 $'+dL+'</div></div></div>';}).join('')+'</div><div id="ca"></div>';
 document.getElementById('ft').style.display='block';rc();if(lastOrderData&&!cart.length)showReorderBanner();
 }
 function add(id,sz){var m=M.find(x=>x.id===id);cart.push({uid:Date.now(),mid:id,nm:m.nm,sz:sz,qty:1,cd:{香菜:1,醬油:1,烏醋:1,蒜蓉:1},sp:'不加辣',tp:{加豬腸:0,加鮮蚵:0},canTop:m.top});rc();setTimeout(function(){document.getElementById('ca').scrollIntoView({behavior:'smooth'});},100);}
@@ -264,7 +293,7 @@ function cq(u,d){var it=cart.find(c=>c.uid===u);if(it)it.qty=Math.max(1,Math.min
 function tc(u,cd){var it=cart.find(c=>c.uid===u);if(it)it.cd[cd]=it.cd[cd]?0:1;rc();}
 function ss(u,sp){var it=cart.find(c=>c.uid===u);if(it)it.sp=sp;rc();}
 function st(u,tn,v){var it=cart.find(c=>c.uid===u);if(it)it.tp[tn]=parseInt(v)||0;rc();}
-function pr2(it){var m=M.find(x=>x.id===it.mid);var base=it.sz==='大碗'?m.L:m.S;var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);return(base+topP)*it.qty;}
+function pr2(it){var m=M.find(x=>x.id===it.mid);var disc=getPromoDiscount(it.nm);var base=it.sz==='大碗'?m.L:m.S;if(disc<100)base=Math.round(base*disc/100);var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);return(base+topP)*it.qty;}
 function ta(){return cart.reduce((s,i)=>s+pr2(i),0);}
 function tb(){return cart.reduce((s,i)=>s+i.qty,0);}
 function sumText(it){var rm=CD.filter(c=>!it.cd[c]);var cT=rm.length?'去'+rm.join('、'):'全加';var sT=it.sp==='不加辣'?'不辣':it.sp;var tps=[];for(var k in it.tp)if(it.tp[k]>0)tps.push(k+'x'+it.tp[k]);return cT+' / '+sT+(tps.length?' / '+tps.join('、'):'');}
