@@ -1,70 +1,135 @@
-// ============================================================
-// order.html — 統一活動管理 前端連動程式碼
-// 插入位置：order.html 的 <script> 區塊內
-// 搜尋原本的 loadMenu() 與 renderCart() 函式並整合以下邏輯
-// ============================================================
+<!-- ============================================================
+  整合二：order.html 活動顯示完整整合
+  操作方式：在 order.html 中找到對應位置，插入以下各段
+  共需修改 4 個位置（每個位置都有「搜尋這段」說明）
+  ============================================================ -->
 
-// ── 全域活動狀態（從後端載入） ────────────────────────────
-let activePromos = {
-  groupBoost: null,     // 揪團加碼活動資料
-  bonusPoints: [],      // 加贈積分活動列表
-  redeemPromo: null     // 積分兌換連動活動
-};
+<!-- ════════════════════════════════════════════════════════
+  位置 A：在 </style> 結束標籤前插入活動 CSS
+  搜尋：</style>
+  在它前面插入以下 CSS
+════════════════════════════════════════════════════════ -->
+<style id="promo-styles">
+/* ── 活動橫幅 ── */
+.promo-banner-container { margin: 0 0 12px; }
+.promo-banner {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-radius: 10px; margin-bottom: 8px;
+  font-size: 13px; animation: promoBannerIn 0.3s ease;
+}
+.promo-banner--orange { background: #fff3e0; border-left: 4px solid #ff9800; }
+.promo-banner--green  { background: #e8f5e9; border-left: 4px solid #4caf50; }
+.promo-banner--red    { background: #fce4ec; border-left: 4px solid #e91e63; }
+.promo-banner--purple { background: #f3e5f5; border-left: 4px solid #9c27b0; }
+.promo-banner__icon { font-size: 18px; flex-shrink: 0; }
+.promo-banner__text { flex: 1; line-height: 1.4; }
+.promo-banner__text strong { display: block; font-weight: 600; }
+.promo-banner__end { font-size: 11px; color: #999; white-space: nowrap; }
+/* ── 品項活動標籤 ── */
+.item-promo-tag {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 1px 5px; border-radius: 4px; margin-left: 4px; vertical-align: middle;
+}
+.item-promo-tag--green { background: #e8f5e9; color: #2e7d32; }
+.item-promo-tag--orange{ background: #fff3e0; color: #e65100; }
+.item-promo-tag--purple{ background: #f3e5f5; color: #6a1b9a; }
+/* ── 揪團進度條 ── */
+.group-progress { padding: 10px 14px; background: #fff8e1; border-radius: 10px; margin-bottom: 8px; }
+.group-progress--success { background: #e8f5e9; }
+.group-progress__info { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
+.group-progress__bar { height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
+.group-progress__bar-fill { height: 100%; background: linear-gradient(90deg, #ff9800, #f44336); border-radius: 4px; transition: width 0.5s ease; }
+/* ── 購物車活動摘要 ── */
+.cart-promo-summary .promo-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; border-bottom: 1px solid #f5f5f5; }
+.cart-promo-summary .promo-row--discount { color: #e53935; }
+.cart-promo-summary .promo-row--points   { color: #388e3c; }
+.cart-promo-summary .promo-row--redeem   { color: #7b1fa2; }
+.cart-promo-summary .promo-row--total    { font-size: 15px; font-weight: 600; border-bottom: none; padding-top: 8px; }
+@keyframes promoBannerIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+</style>
 
-// ============================================================
-// 【A】載入活動資料（在 loadMenu() 之前呼叫）
-// ============================================================
+<!-- ════════════════════════════════════════════════════════
+  位置 B：在菜單容器最上方插入活動橫幅容器
+  搜尋：<div id="menu-container">  （或你的菜單外層 div）
+  在它裡面的最開頭插入：
+════════════════════════════════════════════════════════ -->
+<div id="promo-banner-container" class="promo-banner-container"></div>
+
+<!-- ════════════════════════════════════════════════════════
+  位置 C：在揪團狀態顯示區域附近插入進度條容器
+  搜尋：id="group-status"  或  揪團相關 div
+  在附近合適位置插入：
+════════════════════════════════════════════════════════ -->
+<div id="group-progress-container"></div>
+
+<!-- ════════════════════════════════════════════════════════
+  位置 D：在購物車金額顯示區域插入活動摘要容器
+  搜尋：id="cart-total"  或  合計金額顯示的 div
+  在它上方插入：
+════════════════════════════════════════════════════════ -->
+<div id="cart-promo-summary" class="cart-promo-summary"></div>
+
+<!-- ════════════════════════════════════════════════════════
+  位置 E：在 </body> 前插入活動 JavaScript
+  搜尋：</body>
+  在它前面插入以下整段 <script>
+════════════════════════════════════════════════════════ -->
+<script>
+// ── 全域活動狀態 ─────────────────────────────────────────
+window.activePromos = { groupBoost: null, bonusPoints: [], redeemPromo: null };
+
+// ── 格式化日期 ───────────────────────────────────────────
+function formatPromoDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+
+// ── 載入活動資料 ─────────────────────────────────────────
 async function loadActivePromos() {
   try {
+    const accessToken = liff.getAccessToken();
     const res = await fetch('/webhook/admin-api', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'get_active_promos' })
+      body: JSON.stringify({ action: 'get_active_promos', accessToken })
     });
     const data = await res.json();
     if (data.promos) {
-      activePromos.groupBoost  = data.promos.find(p => p.promo_type === 'group_boost') || null;
-      activePromos.bonusPoints = data.promos.filter(p => p.promo_type === 'bonus_points');
-      activePromos.redeemPromo = data.promos.find(p => p.promo_type === 'redeem_promo') || null;
+      window.activePromos.groupBoost  = data.promos.find(p => p.promo_type === 'group_boost') || null;
+      window.activePromos.bonusPoints = data.promos.filter(p => p.promo_type === 'bonus_points');
+      window.activePromos.redeemPromo = data.promos.find(p => p.promo_type === 'redeem_promo') || null;
     }
-  } catch (e) {
-    console.warn('載入活動資料失敗，使用預設值', e);
+  } catch(e) {
+    console.warn('[活動] 載入失敗，使用預設值', e);
   }
 }
 
-// ============================================================
-// 【B】活動橫幅（插入菜單頁頂部）
-// 呼叫時機：loadMenu() 成功後呼叫 renderPromoBanner()
-// ============================================================
+// ── 渲染活動橫幅 ─────────────────────────────────────────
 function renderPromoBanner() {
   const container = document.getElementById('promo-banner-container');
   if (!container) return;
-
   const banners = [];
 
-  // 揪團加碼橫幅
-  if (activePromos.groupBoost) {
-    const p = activePromos.groupBoost;
+  // 揪團加碼
+  if (window.activePromos.groupBoost) {
+    const p = window.activePromos.groupBoost;
     const minBowls = p.group_min_bowls || 5;
     const pct = Math.round((p.group_discount_rate || 0.95) * 100);
     const badge = p.display_badge || '🎉 揪團加碼';
-    const color = p.display_color || 'orange';
     banners.push(`
-      <div class="promo-banner promo-banner--${color}">
+      <div class="promo-banner promo-banner--orange">
         <span class="promo-banner__icon">${badge.split(' ')[0]}</span>
-        <span class="promo-banner__text">
-          <strong>${badge.replace(/^[^\s]+\s/, '')}</strong>
+        <div class="promo-banner__text">
+          <strong>${badge.replace(/^\S+\s*/, '')}</strong>
           揪 ${minBowls} 碗以上享 ${pct} 折！
-        </span>
-        <span class="promo-banner__end">
-          活動至 ${formatDate(p.end_date)}
-        </span>
-      </div>
-    `);
+        </div>
+        <span class="promo-banner__end">至 ${formatPromoDate(p.end_date)}</span>
+      </div>`);
   }
 
-  // 加贈積分橫幅
-  activePromos.bonusPoints.forEach(p => {
+  // 加贈積分
+  window.activePromos.bonusPoints.forEach(p => {
     const badge = p.display_badge || '⭐ 積分活動';
     const color = p.display_color || 'green';
     let desc = '';
@@ -72,247 +137,132 @@ function renderPromoBanner() {
       desc = `全館 ${p.points_multiplier} 倍積分！`;
     } else if (p.spend_threshold > 0) {
       desc = `消費滿 $${p.spend_threshold} 額外贈 ${p.spend_bonus_points} 點！`;
-    } else if (p.bonus_points_per_item > 0) {
-      desc = `指定品項每份額外加贈 ${p.bonus_points_per_item} 積分！`;
+    } else if (p.bonus_points_per_item > 0 && p.target_items) {
+      desc = `指定品項每份加贈 ${p.bonus_points_per_item} 積分！`;
     }
     if (desc) {
       banners.push(`
         <div class="promo-banner promo-banner--${color}">
           <span class="promo-banner__icon">${badge.split(' ')[0]}</span>
-          <span class="promo-banner__text">
-            <strong>${badge.replace(/^[^\s]+\s/, '')}</strong>
+          <div class="promo-banner__text">
+            <strong>${badge.replace(/^\S+\s*/, '')}</strong>
             ${desc}
-          </span>
-          <span class="promo-banner__end">
-            活動至 ${formatDate(p.end_date)}
-          </span>
-        </div>
-      `);
+          </div>
+          <span class="promo-banner__end">至 ${formatPromoDate(p.end_date)}</span>
+        </div>`);
     }
   });
 
-  // 積分兌換連動橫幅
-  if (activePromos.redeemPromo) {
-    const p = activePromos.redeemPromo;
+  // 積分兌換連動
+  if (window.activePromos.redeemPromo) {
+    const p = window.activePromos.redeemPromo;
     const pts = p.redeem_points_required || 50;
     const item = p.redeem_item_name || '豬腸麵線(小)';
     banners.push(`
       <div class="promo-banner promo-banner--purple">
         <span class="promo-banner__icon">🎫</span>
-        <span class="promo-banner__text">
+        <div class="promo-banner__text">
           <strong>限時積分優惠</strong>
           ${pts} 點即可兌換 ${item}！
-        </span>
-        <span class="promo-banner__end">
-          活動至 ${formatDate(p.end_date)}
-        </span>
-      </div>
-    `);
+        </div>
+        <span class="promo-banner__end">至 ${formatPromoDate(p.end_date)}</span>
+      </div>`);
   }
 
   container.innerHTML = banners.join('') || '';
 }
 
-// ============================================================
-// 【C】菜單品項活動標籤（整合至 renderMenuItem()）
-// 在原本 renderMenuItem() 函式中找到品項卡片 HTML，插入以下標籤邏輯
-// ============================================================
+// ── 取得品項活動標籤（插入菜單品項 HTML 用）───────────────
 function getItemPromoTag(itemName) {
   const tags = [];
-
-  // 指定品項加贈積分標籤
-  activePromos.bonusPoints.forEach(p => {
+  window.activePromos.bonusPoints.forEach(p => {
     if (!p.target_items) return;
     const targets = p.target_items.split(',').map(s => s.trim());
     if (targets.includes(itemName) && p.bonus_points_per_item > 0) {
       const badge = p.display_badge || `+${p.bonus_points_per_item}pts`;
-      tags.push(`<span class="item-promo-tag item-promo-tag--green">${badge}</span>`);
+      const color = p.display_color === 'orange' ? 'orange' : p.display_color === 'purple' ? 'purple' : 'green';
+      tags.push(`<span class="item-promo-tag item-promo-tag--${color}">${badge}</span>`);
     }
   });
-
   return tags.join('');
 }
 
-// 使用範例 — 在 renderMenuItem() 的品項卡片 HTML 內插入：
-// <div class="menu-item__tags">
-//   ${getItemPromoTag(item.item_name)}
-// </div>
-
-// ============================================================
-// 【D】揪團頁面：差幾碗達標提示（整合至 renderGroupStatus()）
-// ============================================================
+// ── 揪團進度條 ───────────────────────────────────────────
 function renderGroupProgress(currentBowls) {
   const container = document.getElementById('group-progress-container');
   if (!container) return;
-
-  // 取得當前有效門檻（活動覆蓋或預設 5 碗）
-  const minBowls = activePromos.groupBoost?.group_min_bowls || 5;
-  const discountRate = activePromos.groupBoost?.group_discount_rate || 0.95;
-  const discountPct  = Math.round(discountRate * 100);
-  const remaining    = Math.max(0, minBowls - currentBowls);
+  const minBowls = window.activePromos.groupBoost?.group_min_bowls || 5;
+  const discountRate = window.activePromos.groupBoost?.group_discount_rate || 0.95;
+  const pct = Math.round(discountRate * 100);
+  const remaining = Math.max(0, minBowls - currentBowls);
+  const progressPct = Math.min(100, Math.round((currentBowls / minBowls) * 100));
 
   if (currentBowls >= minBowls) {
-    // 已達標
     container.innerHTML = `
       <div class="group-progress group-progress--success">
-        <span class="group-progress__icon">🎉</span>
-        <span class="group-progress__text">
-          已達標！共 <strong>${currentBowls} 碗</strong>，享 <strong>${discountPct} 折</strong> 優惠
-        </span>
-      </div>
-    `;
+        <div class="group-progress__info">
+          <span>🎉 已達標！共 <strong>${currentBowls} 碗</strong>，享 <strong>${pct} 折</strong>！</span>
+        </div>
+        <div class="group-progress__bar">
+          <div class="group-progress__bar-fill" style="width:100%"></div>
+        </div>
+      </div>`;
   } else {
-    // 未達標
-    const progressPct = Math.min(100, Math.round((currentBowls / minBowls) * 100));
     container.innerHTML = `
       <div class="group-progress">
         <div class="group-progress__info">
-          <span>🧑‍🤝‍🧑 再揪 <strong>${remaining} 碗</strong> 就能享 ${discountPct} 折！</span>
-          <span class="group-progress__count">${currentBowls} / ${minBowls} 碗</span>
+          <span>🧑‍🤝‍🧑 再揪 <strong>${remaining} 碗</strong> 享 ${pct} 折</span>
+          <span>${currentBowls} / ${minBowls} 碗</span>
         </div>
         <div class="group-progress__bar">
-          <div class="group-progress__bar-fill" style="width: ${progressPct}%"></div>
+          <div class="group-progress__bar-fill" style="width:${progressPct}%"></div>
         </div>
-      </div>
-    `;
+      </div>`;
   }
 }
 
-// ============================================================
-// 【E】購物車：活動折扣與積分預覽（整合至 renderCartSummary()）
-// ============================================================
-function renderCartPromoSummary(cartData) {
-  // cartData 為 WF-02 回傳的計算結果
+// ── 購物車活動摘要 ────────────────────────────────────────
+// 呼叫時機：計算完購物車後呼叫，傳入計算結果
+// cartCalc 格式：{ originalAmount, discountedAmount, discountSaved, discountRate,
+//                  basePoints, pointsMultiplier, totalEarnedPoints, totalBonusPoints,
+//                  redeemItem, redeemPointsCost }
+function renderCartPromoSummary(cartCalc) {
   const container = document.getElementById('cart-promo-summary');
-  if (!container || !cartData) return;
-
+  if (!container || !cartCalc) return;
   const rows = [];
 
-  // 原始金額
-  rows.push(`
-    <div class="cart-summary-row">
-      <span>小計</span>
-      <span>$${cartData.originalAmount}</span>
-    </div>
-  `);
-
-  // 揪團折扣
-  if (cartData.discountSaved > 0) {
-    rows.push(`
-      <div class="cart-summary-row cart-summary-row--discount">
-        <span>${cartData.discountRate < 1 ? `揪團 ${Math.round(cartData.discountRate * 100)} 折` : '折扣'}</span>
-        <span>- $${cartData.discountSaved}</span>
-      </div>
-    `);
+  if (cartCalc.discountSaved > 0) {
+    rows.push(`<div class="promo-row promo-row--discount">
+      <span>${Math.round((cartCalc.discountRate||0.95)*100)} 折優惠</span>
+      <span>- $${cartCalc.discountSaved}</span>
+    </div>`);
   }
-
-  // 應付金額
-  rows.push(`
-    <div class="cart-summary-row cart-summary-row--total">
-      <span><strong>應付金額</strong></span>
-      <span><strong>$${cartData.discountedAmount}</strong></span>
-    </div>
-  `);
-
-  // 積分預覽
-  if (cartData.totalEarnedPoints > 0) {
-    let pointsText = `+ ${cartData.basePoints} 積分`;
-    if (cartData.pointsMultiplier > 1) {
-      pointsText = `+ ${cartData.multipliedPoints} 積分（${cartData.pointsMultiplier} 倍）`;
-    }
-    if (cartData.totalBonusPoints > 0) {
-      pointsText += ` + ${cartData.totalBonusPoints} 加贈`;
-    }
-    rows.push(`
-      <div class="cart-summary-row cart-summary-row--points">
-        <span>⭐ 本次獲得</span>
-        <span class="points-preview">${pointsText} = ${cartData.totalEarnedPoints} 點</span>
-      </div>
-    `);
+  if (cartCalc.totalEarnedPoints > 0) {
+    let ptsTxt = `+ ${cartCalc.basePoints} 點`;
+    if ((cartCalc.pointsMultiplier||1) > 1) ptsTxt = `+ ${Math.floor(cartCalc.basePoints * cartCalc.pointsMultiplier)} 點（${cartCalc.pointsMultiplier}×）`;
+    if (cartCalc.totalBonusPoints > 0) ptsTxt += ` + ${cartCalc.totalBonusPoints} 加贈`;
+    rows.push(`<div class="promo-row promo-row--points">
+      <span>⭐ 本次獲得</span><span>${ptsTxt} = ${cartCalc.totalEarnedPoints} 點</span>
+    </div>`);
   }
-
-  // 積分兌換
-  if (cartData.redeemItem) {
-    rows.push(`
-      <div class="cart-summary-row cart-summary-row--redeem">
-        <span>🎫 積分兌換</span>
-        <span>${cartData.redeemItem} (- ${cartData.redeemPointsCost} 點)</span>
-      </div>
-    `);
+  if (cartCalc.redeemItem) {
+    rows.push(`<div class="promo-row promo-row--redeem">
+      <span>🎫 積分兌換</span><span>${cartCalc.redeemItem} (-${cartCalc.redeemPointsCost}點)</span>
+    </div>`);
   }
 
   container.innerHTML = rows.join('');
 }
 
-// ============================================================
-// 【F】活動 CSS 樣式（插入 order.html 的 <style> 區塊）
-// ============================================================
-const PROMO_CSS = `
-/* ── 活動橫幅 ── */
-.promo-banner {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  margin-bottom: 8px;
-  font-size: 13px;
-  animation: slideFadeIn 0.3s ease;
-}
-.promo-banner--orange { background: #fff3e0; border-left: 4px solid #ff9800; }
-.promo-banner--green  { background: #e8f5e9; border-left: 4px solid #4caf50; }
-.promo-banner--red    { background: #fce4ec; border-left: 4px solid #e91e63; }
-.promo-banner--purple { background: #f3e5f5; border-left: 4px solid #9c27b0; }
-.promo-banner__icon   { font-size: 20px; flex-shrink: 0; }
-.promo-banner__text   { flex: 1; }
-.promo-banner__end    { font-size: 11px; color: #999; white-space: nowrap; }
-
-/* ── 品項活動標籤 ── */
-.item-promo-tag {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-left: 4px;
-}
-.item-promo-tag--green { background: #e8f5e9; color: #2e7d32; }
-.item-promo-tag--red   { background: #fce4ec; color: #c62828; }
-
-/* ── 揪團進度條 ── */
-.group-progress { padding: 10px 14px; background: #fff8e1; border-radius: 10px; }
-.group-progress--success { background: #e8f5e9; }
-.group-progress__info { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
-.group-progress__bar { height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
-.group-progress__bar-fill { height: 100%; background: linear-gradient(90deg, #ff9800, #f44336); border-radius: 4px; transition: width 0.4s ease; }
-
-/* ── 購物車活動摘要 ── */
-.cart-summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
-.cart-summary-row--discount { color: #e53935; }
-.cart-summary-row--total { border-top: 1px solid #eee; padding-top: 10px; font-size: 16px; }
-.cart-summary-row--points { color: #388e3c; font-size: 13px; }
-.cart-summary-row--redeem { color: #7b1fa2; font-size: 13px; }
-.points-preview { font-weight: 600; }
-
-@keyframes slideFadeIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-`;
-
-// ── 工具函式 ────────────────────────────────────────────────
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr);
-  return `${d.getMonth() + 1}/${d.getDate()}`;
-}
-
-// ============================================================
-// 【G】初始化整合（在原本 init() 或 DOMContentLoaded 內加入）
-// ============================================================
-// document.addEventListener('DOMContentLoaded', async () => {
-//   await loadActivePromos();   // 1. 先載入活動
-//   await loadMenu();           // 2. 載入菜單
-//   renderPromoBanner();        // 3. 顯示活動橫幅
-//   // renderGroupProgress() 在取得揪團狀態後呼叫
-// });
+// ── 在現有 init / DOMContentLoaded 裡加入以下兩行 ────────
+// ★ 在你原本的 loadMenu() 呼叫前加入：
+//    await loadActivePromos();
+//    renderPromoBanner();
+//
+// ★ 在你渲染品項卡片的地方（renderMenuItem 函式），
+//    在品項名稱 HTML 後面加入：
+//    ${getItemPromoTag(item.item_name || item.name)}
+//
+// ★ 在揪團加入/更新後呼叫：
+//    renderGroupProgress(totalBowls);
+</script>
