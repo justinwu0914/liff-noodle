@@ -1,11 +1,196 @@
-<button class="tab-btn" id="tab-btn-promos" onclick="switchTab('promos')">🎯 活動</button>
-<section id="tab-promos" class="tab-content" style="display:none">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-    <h2 style="margin:0;font-size:18px">🎯 活動管理</h2>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>老全麵線 — 商家後台</title>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; }
+.header { background: #1a1a2e; color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.header h1 { font-size: 16px; font-weight: 600; }
+.header-user { font-size: 12px; color: #aaa; }
+.tabs { display: flex; background: #fff; border-bottom: 1px solid #eee; overflow-x: auto; scrollbar-width: none; position: sticky; top: 48px; z-index: 99; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab-btn { flex-shrink: 0; padding: 12px 14px; border: none; background: none; font-size: 13px; color: #888; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; transition: all 0.2s; }
+.tab-btn.active { color: #1976d2; border-bottom-color: #1976d2; font-weight: 600; }
+.tab-content { display: none; padding: 16px; max-width: 800px; margin: 0 auto; }
+.tab-content.active { display: block; }
+.card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.card-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 12px; }
+.btn { padding: 9px 18px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: opacity 0.2s; }
+.btn:active { opacity: 0.7; }
+.btn-primary { background: #1976d2; color: #fff; }
+.btn-danger  { background: #e53935; color: #fff; }
+.btn-success { background: #43a047; color: #fff; }
+.btn-gray    { background: #f0f0f0; color: #333; }
+.badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge-new       { background: #e3f2fd; color: #1565c0; }
+.badge-preparing { background: #fff3e0; color: #e65100; }
+.badge-ready     { background: #e8f5e9; color: #2e7d32; }
+.badge-completed { background: #f5f5f5; color: #616161; }
+.badge-preorder  { background: #f3e5f5; color: #6a1b9a; }
+.badge-cancelled { background: #fce4ec; color: #b71c1c; }
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+.stat-box { background: #f9f9f9; border-radius: 10px; padding: 12px; text-align: center; }
+.stat-value { font-size: 22px; font-weight: 700; color: #1976d2; }
+.stat-label { font-size: 11px; color: #888; margin-top: 2px; }
+.order-item { border: 1px solid #f0f0f0; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+.order-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.order-id { font-size: 12px; font-weight: 700; color: #333; }
+.order-name { font-size: 13px; color: #555; margin-bottom: 4px; }
+.order-items { font-size: 12px; color: #777; margin-bottom: 6px; line-height: 1.5; }
+.order-footer { display: flex; justify-content: space-between; align-items: center; }
+.order-amount { font-size: 15px; font-weight: 700; color: #1976d2; }
+.order-date { font-size: 11px; color: #aaa; }
+.status-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.status-btns button { padding: 5px 10px; border: none; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: 600; }
+.member-item { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid #f0f0f0; border-radius: 10px; margin-bottom: 8px; }
+.member-avatar { width: 40px; height: 40px; border-radius: 50%; background: #e3f2fd; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.member-info { flex: 1; }
+.member-name { font-size: 14px; font-weight: 600; }
+.member-sub { font-size: 12px; color: #888; }
+.member-pts { font-size: 13px; font-weight: 700; color: #1976d2; text-align: right; }
+.level-badge { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+.level-vip    { background: #ede7f6; color: #4527a0; }
+.level-gold   { background: #fff8e1; color: #f57f17; }
+.level-silver { background: #f5f5f5; color: #616161; }
+.level-bronze { background: #fbe9e7; color: #bf360c; }
+.level-normal { background: #f0f4f8; color: #546e7a; }
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 12px; color: #888; margin-bottom: 4px; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+.form-group textarea { height: 80px; resize: vertical; }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
+.toast.show { opacity: 1; }
+.loading-overlay { display: flex; align-items: center; justify-content: center; padding: 40px; color: #aaa; font-size: 14px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.section-header h2 { font-size: 16px; font-weight: 700; }
+.date-filter { display: flex; gap: 8px; margin-bottom: 14px; align-items: center; }
+.date-filter input { flex: 1; padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; }
+.date-filter button { padding: 8px 14px; }
+.empty-state { text-align: center; padding: 40px 20px; color: #bbb; }
+.empty-state .icon { font-size: 40px; margin-bottom: 8px; }
+.setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+.setting-row:last-child { border-bottom: none; }
+.setting-label { font-size: 14px; font-weight: 600; }
+.setting-sub { font-size: 12px; color: #888; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏪 老全麵線 商家後台</h1>
+  <span class="header-user" id="admin-name">載入中...</span>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('orders')">📋 訂單</button>
+  <button class="tab-btn" onclick="switchTab('revenue')">💰 營收</button>
+  <button class="tab-btn" onclick="switchTab('members')">👥 會員</button>
+  <button class="tab-btn" onclick="switchTab('preorders')">⏰ 預約</button>
+  <button class="tab-btn" onclick="switchTab('broadcast')">📢 推播</button>
+  <button class="tab-btn" onclick="switchTab('settings')">⚙️ 設定</button>
+  <button class="tab-btn" onclick="switchTab('promos')">🎯 活動</button>
+</div>
+
+<!-- ══ 訂單 Tab ══════════════════════════════════════════════ -->
+<section id="tab-orders" class="tab-content active">
+  <div class="section-header">
+    <h2>📋 今日訂單</h2>
+    <button class="btn btn-gray" onclick="refreshOrders()" style="font-size:12px;padding:7px 12px">🔄 重整</button>
+  </div>
+  <div class="date-filter">
+    <input type="date" id="order-date-filter" onchange="loadOrdersByDate()">
+    <button class="btn btn-primary" onclick="loadTodayOrders()" style="font-size:12px;padding:8px 12px">今日</button>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="stat-value" id="stat-orders">-</div><div class="stat-label">訂單數</div></div>
+    <div class="stat-box"><div class="stat-value" id="stat-bowls">-</div><div class="stat-label">總碗數</div></div>
+    <div class="stat-box"><div class="stat-value" id="stat-revenue">-</div><div class="stat-label">營收</div></div>
+  </div>
+  <div id="orders-list"><div class="loading-overlay">載入中...</div></div>
+</section>
+
+<!-- ══ 營收 Tab ══════════════════════════════════════════════ -->
+<section id="tab-revenue" class="tab-content">
+  <div class="section-header"><h2>💰 營收統計</h2>
+    <button class="btn btn-gray" onclick="loadRevenue()" style="font-size:12px;padding:7px 12px">🔄 重整</button>
+  </div>
+  <div id="revenue-content"><div class="loading-overlay">載入中...</div></div>
+</section>
+
+<!-- ══ 會員 Tab ══════════════════════════════════════════════ -->
+<section id="tab-members" class="tab-content">
+  <div class="section-header"><h2>👥 會員列表</h2></div>
+  <div style="display:flex;gap:8px;margin-bottom:14px">
+    <input type="text" id="member-search" placeholder="搜尋會員姓名..." style="flex:1;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px">
+    <button class="btn btn-primary" onclick="searchMembers()" style="font-size:12px">搜尋</button>
+  </div>
+  <div id="members-list"><div class="loading-overlay">載入中...</div></div>
+</section>
+
+<!-- ══ 預約 Tab ══════════════════════════════════════════════ -->
+<section id="tab-preorders" class="tab-content">
+  <div class="section-header"><h2>⏰ 預約訂單</h2>
+    <button class="btn btn-gray" onclick="loadPreorders()" style="font-size:12px;padding:7px 12px">🔄 重整</button>
+  </div>
+  <div id="preorders-list"><div class="loading-overlay">載入中...</div></div>
+</section>
+
+<!-- ══ 推播 Tab ══════════════════════════════════════════════ -->
+<section id="tab-broadcast" class="tab-content">
+  <div class="section-header"><h2>📢 推播訊息</h2></div>
+  <div class="card">
+    <div class="card-title">發送推播給所有會員</div>
+    <div class="form-group">
+      <label>推播內容</label>
+      <textarea id="broadcast-msg" placeholder="輸入要傳送給所有會員的訊息..."></textarea>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:12px;color:#888">將發送給所有已註冊會員</span>
+      <button class="btn btn-primary" onclick="sendBroadcast()">📤 發送推播</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 設定 Tab ══════════════════════════════════════════════ -->
+<section id="tab-settings" class="tab-content">
+  <div class="section-header"><h2>⚙️ 店家設定</h2>
+    <button class="btn btn-primary" onclick="saveSettings()" style="font-size:12px;padding:7px 12px">💾 儲存</button>
+  </div>
+  <div class="card">
+    <div class="card-title">基本資訊</div>
+    <div class="form-group"><label>店家名稱</label><input type="text" id="set-name" placeholder="老全麵線"></div>
+    <div class="form-group"><label>電話</label><input type="tel" id="set-phone" placeholder="02-XXXX-XXXX"></div>
+    <div class="form-group"><label>地址</label><input type="text" id="set-address" placeholder="台北市..."></div>
+  </div>
+  <div class="card">
+    <div class="card-title">營業時間</div>
+    <div class="form-group"><label>週一至週六</label><input type="text" id="set-hours" placeholder="06:30-13:00"></div>
+    <div class="form-group"><label>公休日</label><input type="text" id="set-holiday" placeholder="週日"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">系統資訊</div>
+    <div class="setting-row">
+      <div><div class="setting-label">版本</div><div class="setting-sub">老全麵線後台 v4.1</div></div>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">點餐 LIFF</div><div class="setting-sub">2009530264-3xA9VL4a</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 活動 Tab ══════════════════════════════════════════════ -->
+<section id="tab-promos" class="tab-content">
+  <div class="section-header">
+    <h2>🎯 活動管理</h2>
     <button class="btn btn-primary" onclick="openPromoModal()">＋ 新增活動</button>
   </div>
-
-  <!-- 篩選列 -->
   <div style="display:flex;gap:8px;margin-bottom:16px">
     <select id="filter-promo-type" onchange="filterPromos()" style="flex:1;padding:8px;border-radius:8px;border:1px solid #ddd;font-size:13px">
       <option value="">全部類型</option>
@@ -21,25 +206,17 @@
       <option value="ended">⚫ 已結束</option>
     </select>
   </div>
-
-  <!-- 活動列表 -->
-  <div id="promo-list"></div>
+  <div id="promo-list"><div class="loading-overlay">載入中...</div></div>
 </section>
 
-<!-- ════════════════════════════════════════════════════════
-  位置 C：Modal — 加入新增/編輯活動 Modal
-  搜尋：</body>
-  在它前面插入以下 Modal HTML：
-════════════════════════════════════════════════════════ -->
+<!-- ══ 活動 Modal ══════════════════════════════════════════════ -->
 <div id="promo-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);align-items:flex-end;justify-content:center">
-  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;position:relative">
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid #eee;position:sticky;top:0;background:#fff;z-index:1">
       <h3 id="promo-modal-title" style="margin:0;font-size:16px">新增活動</h3>
       <button onclick="closePromoModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#666">✕</button>
     </div>
     <div style="padding:20px">
-
-      <!-- 基本資訊 -->
       <div style="border:1px solid #e0e0e0;border-radius:10px;padding:14px;margin-bottom:14px">
         <div style="font-weight:600;font-size:13px;color:#555;margin-bottom:10px">基本資訊</div>
         <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">活動名稱 *</label>
@@ -76,32 +253,27 @@
           </div>
         </div>
       </div>
-
-      <!-- 揪團加碼 -->
       <div id="pm-section-group" style="display:none;border:1px solid #ffe0b2;border-radius:10px;padding:14px;margin-bottom:14px;background:#fffaf5">
         <div style="font-weight:600;font-size:13px;color:#e65100;margin-bottom:10px">🧑‍🤝‍🧑 揪團加碼設定</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div>
-            <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">最低碗數門檻（預設5）</label>
+            <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">最低碗數門檻</label>
             <input id="pm-min-bowls" type="number" value="5" min="2" max="20" oninput="updateGroupPreview()" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
           </div>
           <div>
-            <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">折扣率（0.92 = 92折）</label>
+            <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">折扣率（0.92=92折）</label>
             <input id="pm-discount" type="number" value="0.95" min="0.5" max="0.99" step="0.01" oninput="updateGroupPreview()" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
           </div>
         </div>
-        <div id="group-preview" style="margin-top:10px;padding:8px 12px;background:#fff3e0;border-radius:8px;font-size:13px;text-align:center">
+        <div style="margin-top:10px;padding:8px 12px;background:#fff3e0;border-radius:8px;font-size:13px;text-align:center">
           預覽：揪 <strong id="gp-bowls">5</strong> 碗以上享 <strong id="gp-pct">95</strong> 折
         </div>
       </div>
-
-      <!-- 加贈積分 -->
       <div id="pm-section-points" style="display:none;border:1px solid #c8e6c9;border-radius:10px;padding:14px;margin-bottom:14px;background:#f9fff9">
         <div style="font-weight:600;font-size:13px;color:#2e7d32;margin-bottom:10px">⭐ 加贈積分設定</div>
         <div style="margin-bottom:10px">
           <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
-            <input type="checkbox" id="pm-use-multi" onchange="document.getElementById('pm-multi-sec').style.display=this.checked?'block':'none'">
-            全館積分倍率
+            <input type="checkbox" id="pm-use-multi" onchange="document.getElementById('pm-multi-sec').style.display=this.checked?'block':'none'"> 全館積分倍率
           </label>
           <div id="pm-multi-sec" style="display:none;margin-top:6px">
             <input id="pm-multiplier" type="number" value="2" min="2" max="10" step="0.5" placeholder="倍率（例：2）" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
@@ -109,30 +281,26 @@
         </div>
         <div style="margin-bottom:10px">
           <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
-            <input type="checkbox" id="pm-use-item" onchange="document.getElementById('pm-item-sec').style.display=this.checked?'block':'none'">
-            指定品項額外加贈
+            <input type="checkbox" id="pm-use-item" onchange="document.getElementById('pm-item-sec').style.display=this.checked?'block':'none'"> 指定品項額外加贈
           </label>
           <div id="pm-item-sec" style="display:none;margin-top:6px">
-            <input id="pm-target-items" type="text" placeholder="品項名稱，逗號分隔（例：鮮蚵麵線(小),綜合麵線(大)）" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;box-sizing:border-box;margin-bottom:6px">
+            <input id="pm-target-items" type="text" placeholder="品項名稱，逗號分隔" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;box-sizing:border-box;margin-bottom:6px">
             <input id="pm-bonus-per-item" type="number" value="5" min="1" placeholder="每份加贈積分" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
           </div>
         </div>
         <div>
           <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
-            <input type="checkbox" id="pm-use-spend" onchange="document.getElementById('pm-spend-sec').style.display=this.checked?'block':'none'">
-            消費滿額送積分
+            <input type="checkbox" id="pm-use-spend" onchange="document.getElementById('pm-spend-sec').style.display=this.checked?'grid':'none'"> 消費滿額送積分
           </label>
-          <div id="pm-spend-sec" style="display:none;margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div id="pm-spend-sec" style="display:none;margin-top:6px;grid-template-columns:1fr 1fr;gap:8px">
             <input id="pm-spend-threshold" type="number" value="100" min="1" placeholder="滿額門檻（元）" style="padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
             <input id="pm-spend-bonus" type="number" value="20" min="1" placeholder="贈送積分（點）" style="padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
           </div>
         </div>
       </div>
-
-      <!-- 積分兌換連動 -->
       <div id="pm-section-redeem" style="display:none;border:1px solid #e1bee7;border-radius:10px;padding:14px;margin-bottom:14px;background:#fdf5ff">
         <div style="font-weight:600;font-size:13px;color:#6a1b9a;margin-bottom:4px">🎫 積分兌換連動設定</div>
-        <div style="font-size:12px;color:#999;margin-bottom:10px">活動期間覆蓋預設（50點 = 豬腸麵線小）</div>
+        <div style="font-size:12px;color:#999;margin-bottom:10px">活動期間覆蓋預設（50點=豬腸麵線小）</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div>
             <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">活動兌換品項</label>
@@ -144,8 +312,6 @@
           </div>
         </div>
       </div>
-
-      <!-- 前端顯示 -->
       <div style="border:1px solid #e0e0e0;border-radius:10px;padding:14px">
         <div style="font-weight:600;font-size:13px;color:#555;margin-bottom:10px">前端顯示設定</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
@@ -167,77 +333,298 @@
         <input id="pm-notes" type="text" placeholder="內部備忘" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
       </div>
     </div>
-
-    <!-- Footer -->
     <div style="padding:16px 20px;border-top:1px solid #eee;display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:#fff">
-      <button onclick="closePromoModal()" style="padding:10px 20px;border:1px solid #ddd;border-radius:10px;background:#f5f5f5;cursor:pointer;font-size:14px">取消</button>
-      <button onclick="savePromo()" style="padding:10px 20px;border:none;border-radius:10px;background:#1976d2;color:#fff;cursor:pointer;font-size:14px;font-weight:600">💾 儲存活動</button>
+      <button onclick="closePromoModal()" class="btn btn-gray">取消</button>
+      <button onclick="savePromo()" class="btn btn-primary">💾 儲存活動</button>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════════════
-  位置 D：JavaScript — 在 </body> 前插入活動管理 JS
-════════════════════════════════════════════════════════ -->
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
 <script>
-// ── 活動管理全域狀態 ──────────────────────────────────────
+const API_URL = 'https://n8n.justinaiauto.com/webhook/admin-api';
+let accessToken = '';
 let _allPromos = [];
 let _editingPromoId = null;
 
-// ── 載入活動列表 ──────────────────────────────────────────
-async function loadPromos() {
-  const listEl = document.getElementById('promo-list');
-  if (!listEl) return;
-  listEl.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa">載入中...</div>';
+// ── 初始化 ────────────────────────────────────────────────
+async function init() {
   try {
-    const at = liff.getAccessToken();
-    const res = await fetch('/webhook/admin-api', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'get_promos', accessToken: at })
-    });
-    const data = await res.json();
-    _allPromos = data.promos || [];
-    renderPromoList(_allPromos);
+    await liff.init({ liffId: '2009544983-m3y37mqI' });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+    accessToken = liff.getAccessToken();
+    const profile = await liff.getProfile();
+    document.getElementById('admin-name').textContent = profile.displayName;
+    // 設定今日日期
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('order-date-filter').value = today;
+    loadTodayOrders();
+    loadSettings();
   } catch(e) {
-    listEl.innerHTML = '<div style="text-align:center;padding:30px;color:#e53935">載入失敗，請重試</div>';
+    document.getElementById('admin-name').textContent = '初始化失敗';
+    console.error(e);
   }
 }
 
-// ── 渲染活動列表 ──────────────────────────────────────────
-function renderPromoList(promos) {
-  const listEl = document.getElementById('promo-list');
-  if (!listEl) return;
-  if (!promos.length) {
-    listEl.innerHTML = '<div style="text-align:center;padding:40px;color:#bbb">尚無活動，點擊「＋ 新增活動」開始建立</div>';
-    return;
-  }
-  const typeMap  = { group_boost:'🧑‍🤝‍🧑 揪團加碼', bonus_points:'⭐ 加贈積分', redeem_promo:'🎫 積分兌換' };
-  const statusMap= { active:'<span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:12px;font-size:11px">🟢 進行中</span>', scheduled:'<span style="background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:12px;font-size:11px">🔵 排程中</span>', paused:'<span style="background:#fffde7;color:#f57f17;padding:2px 8px;border-radius:12px;font-size:11px">🟡 暫停</span>', ended:'<span style="background:#f5f5f5;color:#616161;padding:2px 8px;border-radius:12px;font-size:11px">⚫ 已結束</span>' };
-  const borderMap= { orange:'#ff9800', green:'#4caf50', red:'#e91e63', purple:'#9c27b0' };
+async function apiCall(payload) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...payload, accessToken })
+  });
+  return res.json();
+}
 
-  listEl.innerHTML = promos.map(p => {
-    let summary = '';
-    if (p.promo_type === 'group_boost')  summary = `揪 ${p.group_min_bowls||5} 碗享 ${Math.round((p.group_discount_rate||0.95)*100)} 折`;
-    if (p.promo_type === 'bonus_points') {
-      const pts = [];
-      if ((p.points_multiplier||1)>1) pts.push(`全館 ${p.points_multiplier} 倍`);
-      if (p.bonus_points_per_item>0)   pts.push(`品項 +${p.bonus_points_per_item}點`);
-      if (p.spend_threshold>0)         pts.push(`滿$${p.spend_threshold}送${p.spend_bonus_points}點`);
-      summary = pts.join(' ＋ ') || '—';
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ── Tab 切換 ──────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'revenue')   loadRevenue();
+  if (name === 'members')   loadMembers();
+  if (name === 'preorders') loadPreorders();
+  if (name === 'settings')  loadSettings();
+  if (name === 'promos')    loadPromos();
+}
+
+// ── 訂單 ──────────────────────────────────────────────────
+async function loadTodayOrders() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('order-date-filter').value = today;
+  loadOrdersByDate();
+}
+async function refreshOrders() { loadOrdersByDate(); }
+
+async function loadOrdersByDate() {
+  const date = document.getElementById('order-date-filter').value;
+  const listEl = document.getElementById('orders-list');
+  listEl.innerHTML = '<div class="loading-overlay">載入中...</div>';
+  try {
+    const data = await apiCall({ action: 'today_orders', date });
+    if (!data.success) { listEl.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div>載入失敗</div>'; return; }
+    document.getElementById('stat-orders').textContent  = data.count || 0;
+    document.getElementById('stat-bowls').textContent   = data.totalBowls || 0;
+    document.getElementById('stat-revenue').textContent = '$' + (data.totalAmount || 0);
+    if (!data.orders || !data.orders.length) {
+      listEl.innerHTML = '<div class="empty-state"><div class="icon">🍜</div>今日尚無訂單</div>'; return;
     }
-    if (p.promo_type === 'redeem_promo') summary = `${p.redeem_points_required||50}點換${p.redeem_item_name||'豬腸麵線(小)'}`;
-    const borderColor = borderMap[p.display_color||'orange'] || '#ff9800';
-    const isPausable  = p.status === 'active' || p.status === 'scheduled' || p.status === 'paused';
+    listEl.innerHTML = data.orders.map(o => renderOrderCard(o)).join('');
+  } catch(e) { listEl.innerHTML = '<div class="empty-state">載入失敗，請重試</div>'; }
+}
 
-    return `<div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;border-left:5px solid ${borderColor};box-shadow:0 1px 6px rgba(0,0,0,0.06)">
+function renderOrderCard(o) {
+  const statusMap = { new:'badge-new', preparing:'badge-preparing', ready:'badge-ready', completed:'badge-completed', preorder:'badge-preorder', cancelled:'badge-cancelled' };
+  const statusLabel = { new:'新訂單', preparing:'製作中', ready:'可取餐', completed:'已完成', preorder:'預約', cancelled:'已取消' };
+  const cls = statusMap[o.status] || 'badge-new';
+  const lbl = statusLabel[o.status] || o.status;
+  return `<div class="order-item">
+    <div class="order-header">
+      <div>
+        <div class="order-id">🔖 ${o.orderId}</div>
+        <div class="order-name">👤 ${o.customerName || '訪客'}</div>
+      </div>
+      <span class="badge ${cls}">${lbl}</span>
+    </div>
+    <div class="order-items">${o.items}</div>
+    <div class="order-footer">
+      <span class="order-amount">$${o.totalAmount} (${o.totalBowls}碗)</span>
+      <span class="order-date">${o.date}</span>
+    </div>
+    <div class="status-btns">
+      ${o.status === 'new'       ? `<button onclick="updateStatus('${o.pageId}','preparing','${o.userId}','${o.orderId}')" style="background:#fff3e0;color:#e65100">製作中</button>` : ''}
+      ${o.status === 'preparing' ? `<button onclick="updateStatus('${o.pageId}','ready','${o.userId}','${o.orderId}')" style="background:#e8f5e9;color:#2e7d32">可取餐</button>` : ''}
+      ${o.status === 'ready'     ? `<button onclick="updateStatus('${o.pageId}','picked_up','${o.userId}','${o.orderId}')" style="background:#f5f5f5;color:#616161">已取餐</button>` : ''}
+      ${!['completed','cancelled'].includes(o.status) ? `<button onclick="updateStatus('${o.pageId}','cancelled','${o.userId}','${o.orderId}')" style="background:#fce4ec;color:#c62828">取消</button>` : ''}
+    </div>
+  </div>`;
+}
+
+async function updateStatus(pageId, newStatus, customerUserId, orderId) {
+  try {
+    const data = await apiCall({ action:'update_order_status', pageId, newStatus, customerUserId, orderId });
+    if (data.success) { showToast('狀態已更新 ✅'); loadOrdersByDate(); }
+    else alert('更新失敗：' + (data.error || ''));
+  } catch(e) { alert('網路錯誤'); }
+}
+
+// ── 營收 ──────────────────────────────────────────────────
+async function loadRevenue() {
+  const el = document.getElementById('revenue-content');
+  el.innerHTML = '<div class="loading-overlay">載入中...</div>';
+  try {
+    const data = await apiCall({ action: 'revenue_stats' });
+    if (!data.success) { el.innerHTML = '<div class="empty-state">載入失敗</div>'; return; }
+    const { today, week, month } = data;
+    el.innerHTML = `
+      <div class="card">
+        <div class="card-title">📅 今日</div>
+        <div class="stat-grid">
+          <div class="stat-box"><div class="stat-value">$${today.amount}</div><div class="stat-label">營收</div></div>
+          <div class="stat-box"><div class="stat-value">${today.bowls}</div><div class="stat-label">碗數</div></div>
+          <div class="stat-box"><div class="stat-value">${today.orders}</div><div class="stat-label">訂單</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📆 本週（近7天）</div>
+        <div class="stat-grid">
+          <div class="stat-box"><div class="stat-value">$${week.amount}</div><div class="stat-label">營收</div></div>
+          <div class="stat-box"><div class="stat-value">${week.bowls}</div><div class="stat-label">碗數</div></div>
+          <div class="stat-box"><div class="stat-value">${week.orders}</div><div class="stat-label">訂單</div></div>
+        </div>
+        <div style="text-align:center;font-size:12px;color:#888">平均每單 $${week.avg}</div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 本月</div>
+        <div class="stat-grid">
+          <div class="stat-box"><div class="stat-value">$${month.amount}</div><div class="stat-label">營收</div></div>
+          <div class="stat-box"><div class="stat-value">${month.bowls}</div><div class="stat-label">碗數</div></div>
+          <div class="stat-box"><div class="stat-value">${month.orders}</div><div class="stat-label">訂單</div></div>
+        </div>
+        <div style="text-align:center;font-size:12px;color:#888">平均每單 $${month.avg}</div>
+      </div>`;
+  } catch(e) { el.innerHTML = '<div class="empty-state">載入失敗，請重試</div>'; }
+}
+
+// ── 會員 ──────────────────────────────────────────────────
+async function loadMembers() { searchMembers(''); }
+async function searchMembers(keyword) {
+  const search = keyword !== undefined ? keyword : (document.getElementById('member-search').value || '');
+  const el = document.getElementById('members-list');
+  el.innerHTML = '<div class="loading-overlay">載入中...</div>';
+  try {
+    const data = await apiCall({ action:'members', search });
+    if (!data.success) { el.innerHTML = '<div class="empty-state">載入失敗</div>'; return; }
+    if (!data.members || !data.members.length) { el.innerHTML = '<div class="empty-state"><div class="icon">👥</div>尚無會員資料</div>'; return; }
+    const levelMap = { 'VIP 鑽石':'level-vip','金卡會員':'level-gold','銀卡會員':'level-silver','銅卡會員':'level-bronze','一般會員':'level-normal' };
+    el.innerHTML = data.members.map(m => `
+      <div class="member-item">
+        <div class="member-avatar">👤</div>
+        <div class="member-info">
+          <div class="member-name">${m.name || '—'} <span class="level-badge ${levelMap[m.level]||'level-normal'}">${m.level}</span></div>
+          <div class="member-sub">${m.phone || ''} ${m.birthday ? '🎂'+m.birthday+'月' : ''}</div>
+          <div class="member-sub">消費 ${m.visits} 次</div>
+        </div>
+        <div class="member-pts">⭐ ${m.points}<br><span style="font-size:10px;color:#aaa">積分</span></div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = '<div class="empty-state">載入失敗，請重試</div>'; }
+}
+
+// ── 預約 ──────────────────────────────────────────────────
+async function loadPreorders() {
+  const el = document.getElementById('preorders-list');
+  el.innerHTML = '<div class="loading-overlay">載入中...</div>';
+  try {
+    const data = await apiCall({ action: 'preorders' });
+    if (!data.success) { el.innerHTML = '<div class="empty-state">載入失敗</div>'; return; }
+    if (!data.preorders || !data.preorders.length) { el.innerHTML = '<div class="empty-state"><div class="icon">⏰</div>目前無預約訂單</div>'; return; }
+    el.innerHTML = data.preorders.map(o => `
+      <div class="order-item">
+        <div class="order-header">
+          <div><div class="order-id">🔖 ${o.orderId}</div><div class="order-name">👤 ${o.customerName}</div></div>
+          <span class="badge badge-preorder">預約</span>
+        </div>
+        <div class="order-items">${o.items}</div>
+        <div class="order-footer">
+          <span class="order-amount">$${o.totalAmount} (${o.totalBowls}碗)</span>
+          <span class="order-date">${o.date}</span>
+        </div>
+        <div class="status-btns">
+          <button onclick="completePreorder('${o.pageId}')" style="background:#e8f5e9;color:#2e7d32">✅ 標記完成</button>
+        </div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = '<div class="empty-state">載入失敗，請重試</div>'; }
+}
+
+async function completePreorder(pageId) {
+  if (!confirm('確定將此預約訂單標記為完成？')) return;
+  const data = await apiCall({ action:'complete_preorder', pageId });
+  if (data.success) { showToast('預約訂單已完成 ✅'); loadPreorders(); }
+}
+
+// ── 推播 ──────────────────────────────────────────────────
+async function sendBroadcast() {
+  const msg = document.getElementById('broadcast-msg').value.trim();
+  if (!msg) { alert('請輸入推播內容'); return; }
+  if (!confirm(`確定要推播以下訊息給所有會員？\n\n${msg}`)) return;
+  try {
+    const data = await apiCall({ action:'broadcast', message:msg });
+    if (data.success) { showToast(`推播完成！成功 ${data.pushed} 人 ✅`); document.getElementById('broadcast-msg').value = ''; }
+    else alert('推播失敗：' + (data.error || ''));
+  } catch(e) { alert('網路錯誤'); }
+}
+
+// ── 設定 ──────────────────────────────────────────────────
+async function loadSettings() {
+  try {
+    const data = await apiCall({ action: 'get_settings' });
+    if (data.success && data.settings) {
+      const s = data.settings;
+      if (s.shop_name)    document.getElementById('set-name').value    = s.shop_name;
+      if (s.shop_phone)   document.getElementById('set-phone').value   = s.shop_phone;
+      if (s.shop_address) document.getElementById('set-address').value = s.shop_address;
+      if (s.business_hours) document.getElementById('set-hours').value = s.business_hours;
+      if (s.holiday)      document.getElementById('set-holiday').value = s.holiday;
+    }
+  } catch(e) {}
+}
+async function saveSettings() {
+  const settings = [
+    { key:'shop_name',       value: document.getElementById('set-name').value.trim() },
+    { key:'shop_phone',      value: document.getElementById('set-phone').value.trim() },
+    { key:'shop_address',    value: document.getElementById('set-address').value.trim() },
+    { key:'business_hours',  value: document.getElementById('set-hours').value.trim() },
+    { key:'holiday',         value: document.getElementById('set-holiday').value.trim() },
+  ];
+  try {
+    for (const s of settings) {
+      if (s.value) await apiCall({ action:'update_setting', key:s.key, value:s.value });
+    }
+    showToast('設定已儲存 ✅');
+  } catch(e) { alert('儲存失敗'); }
+}
+
+// ── 活動管理 ──────────────────────────────────────────────
+async function loadPromos() {
+  const el = document.getElementById('promo-list');
+  el.innerHTML = '<div class="loading-overlay">載入中...</div>';
+  try {
+    const data = await apiCall({ action: 'get_promos' });
+    _allPromos = data.promos || [];
+    renderPromoList(_allPromos);
+  } catch(e) { el.innerHTML = '<div class="empty-state">載入失敗，請重試</div>'; }
+}
+
+function renderPromoList(promos) {
+  const el = document.getElementById('promo-list');
+  if (!promos.length) { el.innerHTML = '<div class="empty-state"><div class="icon">🎯</div>尚無活動，點擊「＋ 新增活動」開始建立</div>'; return; }
+  const typeMap   = { group_boost:'🧑‍🤝‍🧑 揪團加碼', bonus_points:'⭐ 加贈積分', redeem_promo:'🎫 積分兌換' };
+  const statusMap = { active:'<span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:12px;font-size:11px">🟢 進行中</span>', scheduled:'<span style="background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:12px;font-size:11px">🔵 排程中</span>', paused:'<span style="background:#fffde7;color:#f57f17;padding:2px 8px;border-radius:12px;font-size:11px">🟡 暫停</span>', ended:'<span style="background:#f5f5f5;color:#616161;padding:2px 8px;border-radius:12px;font-size:11px">⚫ 已結束</span>' };
+  const borderMap = { orange:'#ff9800', green:'#4caf50', red:'#e91e63', purple:'#9c27b0' };
+  el.innerHTML = promos.map(p => {
+    let summary = '';
+    if (p.promo_type==='group_boost')  summary = `揪 ${p.group_min_bowls||5} 碗享 ${Math.round((p.group_discount_rate||0.95)*100)} 折`;
+    if (p.promo_type==='bonus_points') { const pts=[]; if((p.points_multiplier||1)>1)pts.push(`全館${p.points_multiplier}倍`); if(p.bonus_points_per_item>0)pts.push(`品項+${p.bonus_points_per_item}點`); if(p.spend_threshold>0)pts.push(`滿$${p.spend_threshold}送${p.spend_bonus_points}點`); summary=pts.join(' + ')||'—'; }
+    if (p.promo_type==='redeem_promo') summary = `${p.redeem_points_required||50}點換${p.redeem_item_name||'豬腸麵線(小)'}`;
+    const bc = borderMap[p.display_color||'orange']||'#ff9800';
+    const canToggle = ['active','scheduled','paused'].includes(p.status);
+    return `<div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;border-left:5px solid ${bc};box-shadow:0 1px 6px rgba(0,0,0,0.06)">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-          <span style="font-size:11px;background:#f0f0f0;border-radius:6px;padding:2px 8px">${typeMap[p.promo_type]||p.promo_type}</span>
-          ${statusMap[p.status]||''}
+          <span style="font-size:11px;background:#f0f0f0;border-radius:6px;padding:2px 8px">${typeMap[p.promo_type]||p.promo_type}</span>${statusMap[p.status]||''}
         </div>
         <div style="display:flex;gap:8px">
-          <button onclick="editPromo('${p.page_id}')" style="background:none;border:none;font-size:16px;cursor:pointer" title="編輯">✏️</button>
-          ${isPausable ? `<button onclick="togglePromoStatus('${p.page_id}','${p.status}')" style="background:none;border:none;font-size:16px;cursor:pointer" title="${p.status==='active'?'暫停':'啟動'}">${p.status==='active'?'⏸️':'▶️'}</button>` : ''}
+          <button onclick="editPromo('${p.page_id}')" style="background:none;border:none;font-size:16px;cursor:pointer">✏️</button>
+          ${canToggle?`<button onclick="togglePromoStatus('${p.page_id}','${p.status}')" style="background:none;border:none;font-size:16px;cursor:pointer">${p.status==='active'?'⏸️':'▶️'}</button>`:''}
         </div>
       </div>
       <div style="font-size:15px;font-weight:600;margin-bottom:4px">${p.promo_name||'—'}</div>
@@ -250,134 +637,104 @@ function renderPromoList(promos) {
   }).join('');
 }
 
-// ── 篩選 ──────────────────────────────────────────────────
 function filterPromos() {
-  const type   = document.getElementById('filter-promo-type')?.value   || '';
-  const status = document.getElementById('filter-promo-status')?.value || '';
-  renderPromoList(_allPromos.filter(p =>
-    (!type   || p.promo_type === type) &&
-    (!status || p.status === status)
-  ));
+  const type   = document.getElementById('filter-promo-type').value;
+  const status = document.getElementById('filter-promo-status').value;
+  renderPromoList(_allPromos.filter(p => (!type||p.promo_type===type) && (!status||p.status===status)));
 }
 
-// ── 開啟 Modal ────────────────────────────────────────────
-function openPromoModal(promoData = null) {
-  _editingPromoId = promoData?.page_id || null;
+function openPromoModal(promoData) {
+  _editingPromoId = promoData ? promoData.page_id : null;
   document.getElementById('promo-modal-title').textContent = promoData ? '編輯活動' : '新增活動';
-  _resetPromoForm();
-  if (promoData) _fillPromoForm(promoData);
+  resetPromoForm();
+  if (promoData) fillPromoForm(promoData);
   document.getElementById('promo-modal').style.display = 'flex';
 }
-function closePromoModal() {
-  document.getElementById('promo-modal').style.display = 'none';
-}
-function _resetPromoForm() {
-  ['pm-name','pm-badge','pm-notes','pm-target-items','pm-redeem-item'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
-  const pm = v => { const el=document.getElementById(v); if(el) return el; };
-  if(pm('pm-type'))        pm('pm-type').value = '';
-  if(pm('pm-status'))      pm('pm-status').value = 'active';
-  if(pm('pm-priority'))    pm('pm-priority').value = 10;
-  if(pm('pm-color'))       pm('pm-color').value = 'orange';
-  if(pm('pm-min-bowls'))   pm('pm-min-bowls').value = 5;
-  if(pm('pm-discount'))    pm('pm-discount').value = 0.95;
-  if(pm('pm-multiplier'))  pm('pm-multiplier').value = 2;
-  if(pm('pm-bonus-per-item')) pm('pm-bonus-per-item').value = 5;
-  if(pm('pm-spend-threshold'))pm('pm-spend-threshold').value = 100;
-  if(pm('pm-spend-bonus')) pm('pm-spend-bonus').value = 20;
-  if(pm('pm-redeem-pts'))  pm('pm-redeem-pts').value = 30;
-  ['pm-use-multi','pm-use-item','pm-use-spend'].forEach(id => { const el=document.getElementById(id); if(el) el.checked=false; });
-  ['pm-multi-sec','pm-item-sec','pm-spend-sec','pm-section-group','pm-section-points','pm-section-redeem'].forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
+function closePromoModal() { document.getElementById('promo-modal').style.display = 'none'; }
+
+function resetPromoForm() {
+  ['pm-name','pm-badge','pm-notes','pm-target-items','pm-redeem-item'].forEach(id => { const el=document.getElementById(id); if(el)el.value=''; });
+  document.getElementById('pm-type').value=''; document.getElementById('pm-status').value='active';
+  document.getElementById('pm-color').value='orange'; document.getElementById('pm-priority').value=10;
+  document.getElementById('pm-min-bowls').value=5; document.getElementById('pm-discount').value=0.95;
+  document.getElementById('pm-multiplier').value=2; document.getElementById('pm-bonus-per-item').value=5;
+  document.getElementById('pm-spend-threshold').value=100; document.getElementById('pm-spend-bonus').value=20;
+  document.getElementById('pm-redeem-pts').value=30;
+  ['pm-use-multi','pm-use-item','pm-use-spend'].forEach(id=>{ document.getElementById(id).checked=false; });
+  ['pm-multi-sec','pm-item-sec','pm-spend-sec','pm-section-group','pm-section-points','pm-section-redeem'].forEach(id=>{ document.getElementById(id).style.display='none'; });
   updateGroupPreview();
 }
-function _fillPromoForm(p) {
-  const set = (id, v) => { const el=document.getElementById(id); if(el&&v!==undefined) el.value=v; };
-  set('pm-name', p.promo_name); set('pm-type', p.promo_type); set('pm-start', p.start_date);
-  set('pm-end', p.end_date); set('pm-status', p.status); set('pm-priority', p.priority);
-  set('pm-badge', p.display_badge); set('pm-color', p.display_color); set('pm-notes', p.notes);
+
+function fillPromoForm(p) {
+  const set=(id,v)=>{ const el=document.getElementById(id); if(el&&v!==undefined&&v!==null)el.value=v; };
+  set('pm-name',p.promo_name); set('pm-type',p.promo_type); set('pm-start',p.start_date);
+  set('pm-end',p.end_date); set('pm-status',p.status); set('pm-priority',p.priority);
+  set('pm-badge',p.display_badge); set('pm-color',p.display_color); set('pm-notes',p.notes);
   onPromoTypeChange();
-  if (p.promo_type === 'group_boost') {
-    set('pm-min-bowls', p.group_min_bowls); set('pm-discount', p.group_discount_rate); updateGroupPreview();
+  if(p.promo_type==='group_boost'){ set('pm-min-bowls',p.group_min_bowls); set('pm-discount',p.group_discount_rate); updateGroupPreview(); }
+  if(p.promo_type==='bonus_points'){
+    if((p.points_multiplier||1)>1){ document.getElementById('pm-use-multi').checked=true; document.getElementById('pm-multi-sec').style.display='block'; set('pm-multiplier',p.points_multiplier); }
+    if(p.bonus_points_per_item>0){ document.getElementById('pm-use-item').checked=true; document.getElementById('pm-item-sec').style.display='block'; set('pm-target-items',p.target_items); set('pm-bonus-per-item',p.bonus_points_per_item); }
+    if(p.spend_threshold>0){ document.getElementById('pm-use-spend').checked=true; document.getElementById('pm-spend-sec').style.display='grid'; set('pm-spend-threshold',p.spend_threshold); set('pm-spend-bonus',p.spend_bonus_points); }
   }
-  if (p.promo_type === 'bonus_points') {
-    if ((p.points_multiplier||1)>1) { document.getElementById('pm-use-multi').checked=true; document.getElementById('pm-multi-sec').style.display='block'; set('pm-multiplier', p.points_multiplier); }
-    if (p.bonus_points_per_item>0)  { document.getElementById('pm-use-item').checked=true; document.getElementById('pm-item-sec').style.display='block'; set('pm-target-items', p.target_items); set('pm-bonus-per-item', p.bonus_points_per_item); }
-    if (p.spend_threshold>0)        { document.getElementById('pm-use-spend').checked=true; document.getElementById('pm-spend-sec').style.display='grid'; set('pm-spend-threshold', p.spend_threshold); set('pm-spend-bonus', p.spend_bonus_points); }
-  }
-  if (p.promo_type === 'redeem_promo') { set('pm-redeem-item', p.redeem_item_name); set('pm-redeem-pts', p.redeem_points_required); }
+  if(p.promo_type==='redeem_promo'){ set('pm-redeem-item',p.redeem_item_name); set('pm-redeem-pts',p.redeem_points_required); }
 }
 
-// ── 類型切換 ──────────────────────────────────────────────
 function onPromoTypeChange() {
-  const type = document.getElementById('pm-type')?.value;
-  document.getElementById('pm-section-group').style.display  = type==='group_boost'  ? 'block' : 'none';
-  document.getElementById('pm-section-points').style.display = type==='bonus_points' ? 'block' : 'none';
-  document.getElementById('pm-section-redeem').style.display = type==='redeem_promo' ? 'block' : 'none';
+  const type = document.getElementById('pm-type').value;
+  document.getElementById('pm-section-group').style.display  = type==='group_boost'  ?'block':'none';
+  document.getElementById('pm-section-points').style.display = type==='bonus_points' ?'block':'none';
+  document.getElementById('pm-section-redeem').style.display = type==='redeem_promo' ?'block':'none';
 }
 function updateGroupPreview() {
-  const bowls = document.getElementById('pm-min-bowls')?.value || 5;
-  const rate  = document.getElementById('pm-discount')?.value  || 0.95;
-  const el1 = document.getElementById('gp-bowls'), el2 = document.getElementById('gp-pct');
-  if (el1) el1.textContent = bowls;
-  if (el2) el2.textContent = Math.round(rate * 100);
+  const b=document.getElementById('pm-min-bowls').value||5;
+  const r=document.getElementById('pm-discount').value||0.95;
+  document.getElementById('gp-bowls').textContent=b;
+  document.getElementById('gp-pct').textContent=Math.round(r*100);
 }
 
-// ── 儲存活動 ──────────────────────────────────────────────
 async function savePromo() {
-  const g = id => document.getElementById(id);
-  const v = id => g(id)?.value?.trim() || '';
-  const n = (id, def) => Number(g(id)?.value) || def;
-  const c = id => g(id)?.checked || false;
+  const g=id=>document.getElementById(id);
+  const v=id=>(g(id)?.value||'').trim();
+  const n=(id,d)=>Number(g(id)?.value)||d;
+  const c=id=>g(id)?.checked||false;
   const payload = {
-    action:    _editingPromoId ? 'update_promo' : 'create_promo',
-    page_id:   _editingPromoId,
-    accessToken: liff.getAccessToken(),
-    promo_name: v('pm-name'), promo_type: v('pm-type'),
-    start_date: v('pm-start'), end_date: v('pm-end'),
-    status: v('pm-status'), priority: n('pm-priority', 10),
-    display_badge: v('pm-badge'), display_color: v('pm-color'), notes: v('pm-notes'),
-    group_min_bowls:      n('pm-min-bowls', 5),
-    group_discount_rate:  n('pm-discount', 0.95),
-    points_multiplier:    c('pm-use-multi') ? n('pm-multiplier', 2) : 1,
-    target_items:         c('pm-use-item')  ? v('pm-target-items') : '',
-    bonus_points_per_item:c('pm-use-item')  ? n('pm-bonus-per-item', 0) : 0,
-    spend_threshold:      c('pm-use-spend') ? n('pm-spend-threshold', 0) : 0,
-    spend_bonus_points:   c('pm-use-spend') ? n('pm-spend-bonus', 0) : 0,
-    redeem_item_name:     v('pm-redeem-item'),
-    redeem_points_required: n('pm-redeem-pts', 50),
+    action: _editingPromoId?'update_promo':'create_promo',
+    page_id: _editingPromoId,
+    promo_name:v('pm-name'), promo_type:v('pm-type'),
+    start_date:v('pm-start'), end_date:v('pm-end'),
+    status:v('pm-status'), priority:n('pm-priority',10),
+    display_badge:v('pm-badge'), display_color:v('pm-color'), notes:v('pm-notes'),
+    group_min_bowls:n('pm-min-bowls',5), group_discount_rate:n('pm-discount',0.95),
+    points_multiplier:c('pm-use-multi')?n('pm-multiplier',2):1,
+    target_items:c('pm-use-item')?v('pm-target-items'):'',
+    bonus_points_per_item:c('pm-use-item')?n('pm-bonus-per-item',0):0,
+    spend_threshold:c('pm-use-spend')?n('pm-spend-threshold',0):0,
+    spend_bonus_points:c('pm-use-spend')?n('pm-spend-bonus',0):0,
+    redeem_item_name:v('pm-redeem-item'), redeem_points_required:n('pm-redeem-pts',50)
   };
-  if (!payload.promo_name || !payload.promo_type || !payload.start_date || !payload.end_date) {
-    alert('請填寫活動名稱、類型及日期'); return;
-  }
+  if(!payload.promo_name||!payload.promo_type||!payload.start_date||!payload.end_date){ alert('請填寫活動名稱、類型及日期'); return; }
   try {
-    const res = await fetch('/webhook/admin-api', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-    const data = await res.json();
-    if (data.success) {
-      showToast && showToast(_editingPromoId ? '活動已更新 ✅' : '活動已建立 ✅');
-      closePromoModal(); loadPromos();
-    } else { alert('儲存失敗：' + (data.error||'未知錯誤')); }
-  } catch(e) { alert('網路錯誤，請重試'); }
+    const data = await apiCall(payload);
+    if(data.success){ showToast(_editingPromoId?'活動已更新 ✅':'活動已建立 ✅'); closePromoModal(); loadPromos(); }
+    else alert('儲存失敗：'+(data.error||'未知錯誤'));
+  } catch(e){ alert('網路錯誤，請重試'); }
 }
 
-// ── 暫停 / 啟動 ───────────────────────────────────────────
 async function togglePromoStatus(pageId, currentStatus) {
-  const newStatus = currentStatus === 'active' ? 'paused' : 'active';
-  if (!confirm(`確定要${newStatus==='active'?'啟動':'暫停'}此活動？`)) return;
-  try {
-    await fetch('/webhook/admin-api', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'update_promo_status', page_id:pageId, status:newStatus, accessToken:liff.getAccessToken() }) });
-    showToast && showToast(`活動已${newStatus==='active'?'啟動':'暫停'}`);
-    loadPromos();
-  } catch(e) { alert('操作失敗'); }
+  const newStatus = currentStatus==='active'?'paused':'active';
+  if(!confirm(`確定要${newStatus==='active'?'啟動':'暫停'}此活動？`)) return;
+  const data = await apiCall({ action:'update_promo_status', page_id:pageId, status:newStatus });
+  if(data.success){ showToast(`活動已${newStatus==='active'?'啟動':'暫停'}`); loadPromos(); }
 }
 
-// ── 編輯 ──────────────────────────────────────────────────
 function editPromo(pageId) {
-  const p = _allPromos.find(x => x.page_id === pageId);
-  if (p) openPromoModal(p);
+  const p = _allPromos.find(x=>x.page_id===pageId);
+  if(p) openPromoModal(p);
 }
 
-// ════════════════════════════════════════════════════════
-// ★ 在你現有的 switchTab() 函式中加入：
-//   if (tabName === 'promos') loadPromos();
-// ════════════════════════════════════════════════════════
+// 啟動
+init();
 </script>
+</body>
+</html>
