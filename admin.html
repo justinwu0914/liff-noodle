@@ -74,6 +74,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="tab" onclick="switchTab(1)">營收</div>
   <div class="tab" onclick="switchTab(2)">會員</div>
   <div class="tab" onclick="switchTab(3)">預約</div>
+  <div class="tab" onclick="switchTab(4)">推播</div>
+  <div class="tab" onclick="switchTab(5)">設定</div>
 </div>
 <div id="app">
   <div class="loading" style="padding:80px 20px">
@@ -128,7 +130,9 @@ function renderApp(){
     '<div class="panel on" id="p0"></div>'+
     '<div class="panel" id="p1"></div>'+
     '<div class="panel" id="p2"></div>'+
-    '<div class="panel" id="p3"></div>';
+    '<div class="panel" id="p3"></div>'+
+    '<div class="panel" id="p4"></div>'+
+    '<div class="panel" id="p5"></div>';
   renderOrders();
 }
 
@@ -142,6 +146,8 @@ function switchTab(n){
   if(n===1)loadRevenue();
   if(n===2)renderMembers();
   if(n===3)loadPreorders();
+  if(n===4)renderBroadcast();
+  if(n===5)loadSettings();
 }
 
 function refreshCurrent(){cachedData={};switchTab(currentTab);}
@@ -304,6 +310,72 @@ async function updateStatus(btn,pageId,newStatus,customerUserId,orderId){
       setTimeout(function(){loadOrders();},800);
     }else{btn.textContent='失敗';btn.disabled=false;}
   }catch(e){btn.textContent='失敗';btn.disabled=false;}
+}
+
+// === Tab 4: Broadcast ===
+function renderBroadcast(){
+  document.getElementById('p4').innerHTML=
+    '<div class="card">'+
+    '<div style="font-size:14px;font-weight:700;color:#e94560;margin-bottom:12px">📢 推播訊息給所有會員</div>'+
+    '<div style="margin-bottom:8px">'+
+    '<div style="font-size:11px;color:#888;margin-bottom:4px">快速範本</div>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:6px">'+
+    '<span class="badge-s" style="background:#e9456022;color:#e94560;padding:6px 10px;cursor:pointer;font-size:11px" onclick="setBroadcast(\'🔥 今日限定！全品項 85 折\\n\\n活動時間：今天營業時段\\n\\n老全麵線等你來 🍜\')">限時85折</span>'+
+    '<span class="badge-s" style="background:#e9456022;color:#e94560;padding:6px 10px;cursor:pointer;font-size:11px" onclick="setBroadcast(\'🍜 午餐時段加碼！\\n\\n今天 11:00-12:00 點餐\\n揪團不限碗數直接享 95 折\\n\\n快來揪團 👥\')">揪團加碼</span>'+
+    '<span class="badge-s" style="background:#e9456022;color:#e94560;padding:6px 10px;cursor:pointer;font-size:11px" onclick="setBroadcast(\'🎉 好消息！\\n\\n本週消費滿 $100 加贈 20 點\\n累積點數換免費麵線 🍜\\n\\n老全麵線感恩回饋\')">加贈積分</span>'+
+    '</div></div>'+
+    '<textarea id="broadcast-msg" placeholder="輸入要推播的訊息內容..." style="width:100%;height:120px;padding:10px;background:#0f3460;border:1px solid #1a1a4e;border-radius:10px;color:#eee;font-size:14px;resize:none;outline:none;font-family:inherit"></textarea>'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">'+
+    '<span style="font-size:11px;color:#555" id="broadcast-status"></span>'+
+    '<button class="btn-complete" style="padding:10px 24px;font-size:13px" onclick="doBroadcast()">📢 發送推播</button>'+
+    '</div></div>';
+}
+function setBroadcast(txt){document.getElementById('broadcast-msg').value=txt;}
+async function doBroadcast(){
+  var msg=document.getElementById('broadcast-msg').value.trim();
+  if(!msg){alert('請輸入推播內容');return;}
+  if(!confirm('確定要推播給所有會員嗎？')){return;}
+  var st=document.getElementById('broadcast-status');
+  st.textContent='推播中...';st.style.color='#EF9F27';
+  try{
+    var d=await callAPI('broadcast',{message:msg});
+    if(d.success){st.textContent='✅ 推播成功！送達 '+d.pushed+' 人'+(d.failed?' / 失敗 '+d.failed+' 人':'');st.style.color='#1D9E75';document.getElementById('broadcast-msg').value='';}
+    else{st.textContent='❌ '+d.error;st.style.color='#E24B4A';}
+  }catch(e){st.textContent='❌ 推播失敗';st.style.color='#E24B4A';}
+}
+
+// === Tab 5: Settings ===
+async function loadSettings(){
+  document.getElementById('p5').innerHTML='<div class="loading"><div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>';
+  try{
+    var d=await callAPI('get_settings');
+    if(!d.success)throw new Error(d.error);
+    var s=d.settings;
+    document.getElementById('p5').innerHTML=
+      '<div class="card">'+
+      '<div style="font-size:14px;font-weight:700;color:#e94560;margin-bottom:12px">⚙️ 店家設定</div>'+
+      '<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">店名</div><input id="s-shop_name" class="search-box" value="'+(s.shop_name||'').replace(/"/g,'&quot;')+'"></div>'+
+      '<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">電話</div><input id="s-phone" class="search-box" value="'+(s.phone||'').replace(/"/g,'&quot;')+'"></div>'+
+      '<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">地址</div><input id="s-address" class="search-box" value="'+(s.address||'').replace(/"/g,'&quot;')+'"></div>'+
+      '<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">營業時間（平日）</div><input id="s-hours_weekday" class="search-box" value="'+(s.hours_weekday||'').replace(/"/g,'&quot;')+'"></div>'+
+      '<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">公休日</div><input id="s-closed_day" class="search-box" value="'+(s.closed_day||'').replace(/"/g,'&quot;')+'"></div>'+
+      '<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">休假公告</div><textarea id="s-holiday_notice" class="search-box" style="height:60px;resize:none">'+(s.holiday_notice||'')+'</textarea></div>'+
+      '<div style="text-align:right;margin-top:12px"><span id="settings-status" style="font-size:11px;margin-right:8px"></span><button class="btn-complete" style="padding:10px 24px;font-size:13px" onclick="saveSettings()">💾 儲存設定</button></div>'+
+      '</div>';
+  }catch(e){document.getElementById('p5').innerHTML='<div class="empty">載入失敗</div>';}
+}
+async function saveSettings(){
+  var fields=['shop_name','phone','address','hours_weekday','closed_day','holiday_notice'];
+  var st=document.getElementById('settings-status');
+  st.textContent='儲存中...';st.style.color='#EF9F27';
+  var ok=0;
+  for(var f of fields){
+    var el=document.getElementById('s-'+f);
+    if(!el)continue;
+    var val=el.value.trim();
+    try{await callAPI('update_setting',{key:f,value:val});ok++;}catch(e){}
+  }
+  st.textContent='✅ 已儲存 '+ok+' 項設定';st.style.color='#1D9E75';
 }
 
 init();
