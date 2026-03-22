@@ -177,10 +177,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   <div class="card">
     <div class="card-title">系統資訊</div>
     <div class="setting-row">
-      <div><div class="setting-label">版本</div><div class="setting-sub">老全麵線後台 v4.1</div></div>
-    </div>
-    <div class="setting-row">
-      <div><div class="setting-label">點餐 LIFF</div><div class="setting-sub">2009530264-3xA9VL4a</div></div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <span style="font-size:13px;color:#888">老全麵線後台 v4.1 ｜ LIFF: 2009530264-3xA9VL4a</span>
+      </div>
     </div>
   </div>
 </section>
@@ -210,8 +209,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 </section>
 
 <!-- ══ 活動 Modal ══════════════════════════════════════════════ -->
-<div id="promo-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);align-items:flex-end;justify-content:center">
-  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto">
+<div id="promo-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);align-items:flex-end;justify-content:center;touch-action:none">
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;overflow-x:hidden;touch-action:pan-y">
     <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid #eee;position:sticky;top:0;background:#fff;z-index:1">
       <h3 id="promo-modal-title" style="margin:0;font-size:16px">新增活動</h3>
       <button onclick="closePromoModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#666">✕</button>
