@@ -1,23 +1,4 @@
-<!-- ============================================================
-  整合三：admin.html 活動管理 Tab 完整整合
-  操作方式：在 admin.html 中找到對應位置，插入以下各段
-  共需修改 4 個位置
-  ============================================================ -->
-
-<!-- ════════════════════════════════════════════════════════
-  位置 A：Tab 按鈕列 — 加入「活動」Tab 按鈕
-  搜尋：你現有 Tab 列最後一個 <button>，例如：
-    <button onclick="switchTab('settings')">設定</button>
-  在它後面加入：
-════════════════════════════════════════════════════════ -->
 <button class="tab-btn" id="tab-btn-promos" onclick="switchTab('promos')">🎯 活動</button>
-
-<!-- ════════════════════════════════════════════════════════
-  位置 B：Tab 內容區 — 加入活動管理 Section
-  搜尋：你現有最後一個 <section id="tab-...">，例如：
-    <section id="tab-settings" ...>
-  在它後面加入以下整段 section：
-════════════════════════════════════════════════════════ -->
 </section>
 <section id="tab-promos" class="tab-content" style="display:none">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
