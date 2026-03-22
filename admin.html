@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>商家後台 — 老全麵線</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -115,8 +118,8 @@ try{
 }
 
 async function callAPI(action,extra){
-  var body=Object.assign({accessToken:accessToken,action:action},extra||{});
-  var resp=await fetch(ADMIN_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  var body=Object.assign({accessToken:accessToken,action:action,_t:Date.now()},extra||{});
+  var resp=await fetch(ADMIN_URL,{method:'POST',headers:{'Content-Type':'application/json','Cache-Control':'no-cache'},body:JSON.stringify(body)});
   return await resp.json();
 }
 
