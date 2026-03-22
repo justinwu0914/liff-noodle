@@ -175,11 +175,20 @@ function renderOrders(){
         '<span style="font-size:11px;color:#666;margin-left:6px">'+dayBowls+' 碗</span></div></div>';
       dayOrders.forEach(function(o){
         var isPre=o.status==='preorder';
-        var badge=isPre?'<span class="badge-s badge-pre">預約</span>':'<span class="badge-s badge-ok">完成</span>';
-        h+='<div class="order-card'+(isPre?' preorder':'')+'">'+
+        var statusMap={'new':'🆕 新訂單','preparing':'🍳 製作中','ready':'✅ 完成取餐','picked_up':'📦 已取餐','completed':'✔ 完成','preorder':'📝 預約','cancelled':'❌ 取消'};
+        var statusColor={'new':'#378ADD','preparing':'#EF9F27','ready':'#1D9E75','picked_up':'#888780','completed':'#1D9E75','preorder':'#D85A30','cancelled':'#E24B4A'};
+        var nextMap={'new':'preparing','preparing':'ready','ready':'picked_up'};
+        var nextLabel={'new':'開始製作','preparing':'製作完成','ready':'已取餐'};
+        var st=o.status||'completed';
+        var badge='<span class="badge-s" style="background:'+statusColor[st]+'22;color:'+statusColor[st]+'">'+(statusMap[st]||st)+'</span>';
+        var actionBtn='';
+        if(nextMap[st]){
+          actionBtn='<button class="btn-complete" onclick="updateStatus(this,\''+o.pageId+'\',\''+nextMap[st]+'\',\''+o.userId+'\',\''+o.orderId+'\')">'+(nextLabel[st]||'下一步')+'</button>';
+        }
+        h+='<div class="order-card'+(isPre?' preorder':'')+'" style="border-left-color:'+statusColor[st]+'">'+
         '<div class="order-hd"><span class="order-id">'+o.orderId+badge+'</span><span class="order-time">'+o.customerName+'</span></div>'+
         '<div class="order-body">'+o.items.replace(/,\s*/g,' | ')+'</div>'+
-        '<div class="order-ft"><span class="bowls">'+o.totalBowls+' 碗 | +'+o.pointsEarned+'點</span><span class="amt">$'+o.totalAmount+'</span></div>'+
+        '<div class="order-ft"><span class="bowls">'+o.totalBowls+' 碗 | +'+o.pointsEarned+'點</span>'+actionBtn+'<span class="amt">$'+o.totalAmount+'</span></div>'+
         '</div>';
       });
     });
@@ -278,6 +287,19 @@ async function completePreorder(btn,pageId){
     if(d.success){btn.textContent='已完成 ✅';btn.style.background='#1d3d2e';
     setTimeout(function(){loadPreorders();},1000);}
     else{btn.textContent='失敗';btn.disabled=false;}
+  }catch(e){btn.textContent='失敗';btn.disabled=false;}
+}
+
+async function updateStatus(btn,pageId,newStatus,customerUserId,orderId){
+  btn.disabled=true;btn.textContent='處理中...';
+  try{
+    var d=await callAPI('update_order_status',{pageId:pageId,newStatus:newStatus,customerUserId:customerUserId,orderId:orderId});
+    if(d.success){
+      var labels={'preparing':'🍳 製作中','ready':'✅ 完成','picked_up':'📦 已取餐'};
+      btn.textContent=(labels[newStatus]||'已更新');
+      btn.style.background='#1d3d2e';
+      setTimeout(function(){loadOrders();},800);
+    }else{btn.textContent='失敗';btn.disabled=false;}
   }catch(e){btn.textContent='失敗';btn.disabled=false;}
 }
 
