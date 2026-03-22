@@ -1,416 +1,318 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>麵線點餐</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f0eb;color:#333;padding-bottom:140px}
-.hd{background:#D85A30;color:#fff;padding:16px 20px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center}
-.hd h1{font-size:20px;font-weight:700}
-.bg{background:#fff;color:#D85A30;padding:4px 12px;border-radius:20px;font-size:14px;font-weight:700}
-.obar{background:#fff;border-bottom:1px solid #eee;padding:10px 20px;display:flex;align-items:center;gap:12px;font-size:13px}
-.obar .oid{font-family:monospace;color:#D85A30;font-weight:700}
-.obar .sep{width:1px;height:14px;background:#ddd}
-.obar .odt{color:#999}
-.obar .ousr{color:#666;margin-left:auto;font-weight:500}
-.nsec{padding:12px 20px 4px}
-.nlbl{font-size:12px;color:#888;font-weight:600;margin-bottom:6px}
-.nwrap{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #eee;border-radius:12px;padding:10px 14px}
-.nwrap:focus-within{border-color:#D85A30}
-.nwrap input{flex:1;border:none;outline:none;font-size:15px;font-weight:500;font-family:inherit;background:none;color:#333}
-.nwrap input::placeholder{color:#ccc}
-.nerr{font-size:11px;color:#A32D2D;margin-top:4px;padding-left:4px;display:none}
-.okinfo{background:#fff;border-radius:12px;margin:0 20px 16px;padding:14px 18px;text-align:left}
-.okinfo .row{display:flex;justify-content:space-between;font-size:14px;padding:4px 0}
-.okinfo .row .k{color:#888}
-.okinfo .row .v{font-weight:600;color:#333}
-.okinfo .row .vid{font-family:monospace;color:#D85A30}
-.sec{padding:16px 20px 8px;font-size:15px;font-weight:700;color:#888}
-.grid{padding:0 12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.mc{background:#fff;border-radius:14px;padding:16px;border:2px solid transparent}
-.mc .nm{font-size:18px;font-weight:700;color:#D85A30;margin-bottom:2px}
-.mc .ds{font-size:12px;color:#999;margin-bottom:10px}
-.sr{display:flex;gap:6px}
-.sb{flex:1;padding:8px 4px;border-radius:8px;text-align:center;font-size:13px;font-weight:600;border:1.5px solid #ddd;background:#fff;color:#666;cursor:pointer}
-.sb.on{background:#D85A30;color:#fff;border-color:#D85A30}
-.cs{padding:12px 16px}
-.ci{background:#fff;border-radius:14px;margin-bottom:12px;border-left:5px solid #D85A30;overflow:hidden}
-.ci:nth-child(even){border-left-color:#0F6E56}
-.ci-inner{padding:14px 16px}
-.ci-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-.ci-badge{background:#D85A30;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
-.ci:nth-child(even) .ci-badge{background:#0F6E56}
-.ci-nm{font-size:16px;font-weight:700;margin-left:8px;flex:1}
-.ci-del{color:#ccc;font-size:22px;cursor:pointer;padding:0 6px}
-.ci-summary{font-size:12px;color:#888;background:#f9f7f4;padding:6px 10px;border-radius:8px;margin:6px 0 8px;line-height:1.5}
-.ci-summary b{color:#D85A30}
-.note{font-size:11px;color:#D85A30;background:#FFF5F0;padding:4px 8px;border-radius:6px;margin-bottom:8px;text-align:center}
-.note2{font-size:11px;color:#0F6E56;background:#E1F5EE;padding:4px 8px;border-radius:6px;margin-bottom:8px;text-align:center}
-.lbl{font-size:12px;color:#888;margin:8px 0 4px;font-weight:600}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.ch{padding:6px 12px;border-radius:20px;font-size:13px;cursor:pointer;border:1.5px solid #ddd;background:#fff;color:#666;user-select:none}
-.ch.on{background:#0F6E56;color:#fff;border-color:#0F6E56}
-.ch.off{background:#FCEBEB;color:#A32D2D;border-color:#F09595;text-decoration:line-through}
-.ch.sp{background:#D85A30;color:#fff;border-color:#D85A30}
-.qr{display:flex;align-items:center;justify-content:center;gap:16px;margin:8px 0}
-.qb{width:36px;height:36px;border-radius:50%;border:2px solid #D85A30;background:#fff;color:#D85A30;font-size:20px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.qb:active{background:#D85A30;color:#fff}
-.qn{font-size:24px;font-weight:700;min-width:30px;text-align:center}
-.tr{display:flex;align-items:center;gap:8px;margin:4px 0}
-.tn{font-size:14px;flex:1}
-.ts{padding:6px 10px;border-radius:8px;border:1.5px solid #ddd;font-size:14px;background:#fff;color:#333;font-weight:600;min-width:70px}
-.sub{text-align:center;font-size:14px;color:#D85A30;font-weight:700;margin-top:4px}
-.ft{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;padding:12px 20px;z-index:100}
-.ftrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.ftlbl{font-size:16px;color:#666}
-.ftamt{font-size:28px;font-weight:800;color:#D85A30}
-.fbtn{width:100%;padding:16px;background:#D85A30;color:#fff;border:none;border-radius:14px;font-size:18px;font-weight:700;cursor:pointer;margin-bottom:6px}
-.fbtn:active{opacity:.8}
-.fbtn:disabled{background:#ccc}
-.fbtn2{width:100%;padding:12px;background:#fff;color:#D85A30;border:2px solid #D85A30;border-radius:14px;font-size:16px;font-weight:600;cursor:pointer}
-.cf-item{background:#fff;border-radius:14px;margin-bottom:10px;border-left:5px solid #D85A30;padding:14px 16px}
-.cf-item:nth-child(even){border-left-color:#0F6E56}
-.cf-row{display:flex;justify-content:space-between;font-size:14px;padding:3px 0}
-.cf-row .k{color:#888}
-.cf-row .v{font-weight:600}
-.cf-actions{display:flex;gap:8px;margin-top:8px}
-.cf-edit{flex:1;padding:8px;background:#fff;color:#D85A30;border:1.5px solid #D85A30;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:center}
-.cf-del{flex:1;padding:8px;background:#fff;color:#A32D2D;border:1.5px solid #F09595;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;text-align:center}
-.cf-total{background:#fff;border-radius:14px;padding:16px;margin:12px 16px;text-align:center}
-.cf-total .amt{font-size:32px;font-weight:800;color:#D85A30}
-.ok{text-align:center;padding:40px 20px 20px}
-.ok .ic{font-size:60px;margin-bottom:12px}
-.ok h2{font-size:22px;margin-bottom:12px}
-.receipt{padding:0 16px 20px}
-.ri{background:#fff;border-radius:12px;margin-bottom:8px;padding:12px 14px;border-left:4px solid #D85A30}
-.ri:nth-child(even){border-left-color:#0F6E56}
-.ri-hd{font-size:15px;font-weight:700;margin-bottom:6px}
-.ri-row{display:flex;justify-content:space-between;font-size:13px;padding:2px 0;color:#666}
-.ri-row .rv{color:#333;font-weight:500}
-.ri-sub{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding-top:6px;margin-top:4px;border-top:1px dashed #eee;color:#D85A30}
-.rt{background:#fff;border-radius:14px;padding:16px;margin:0 16px 16px;text-align:center}
-.rt .a{font-size:30px;font-weight:800;color:#D85A30}
-.group-banner{background:linear-gradient(135deg,#FFF0E8,#FFE0D0);padding:14px 16px;text-align:center;border-bottom:3px solid #D85A30;border-radius:0 0 14px 14px}
-</style>
-</head>
-<body>
-<div id="dbg" style="background:#1a1a2e;color:#0f0;font-family:monospace;font-size:11px;padding:8px 12px;max-height:150px;overflow-y:auto;display:none;position:relative;z-index:9999"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><b style="color:#ff0">🔧 DEBUG</b><span onclick="document.getElementById('dbg').style.display='none'" style="color:#f66;cursor:pointer">✕ 關閉</span></div><div id="dbg-log"></div></div>
-<div class="hd"><h1>🍜 麵線點餐</h1><div class="bg" id="bdg">0 碗 $0</div></div>
-<div class="obar"><span class="oid" id="oidD">---</span><span class="sep"></span><span class="odt" id="odtD">---</span><span class="ousr" id="ousrD"></span></div>
-<div id="app"><div style="text-align:center;padding:80px 20px;color:#999">載入中...</div></div>
-<div class="ft" id="ft" style="display:none">
-<div class="ftrow"><span class="ftlbl">合計</span><span class="ftamt" id="tamt">$0</span></div>
-<button class="fbtn" id="sbtn" onclick="showConfirm()" disabled>選擇品項開始點餐</button>
-</div>
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<script>
-// === Debug Logger (visible on mobile) ===
-function dlog(msg){
-  try{
-    console.log(msg);
-    var el=document.getElementById('dbg-log');
-    if(!el)return;
-    var t=new Date();var ts=String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0')+':'+String(t.getSeconds()).padStart(2,'0')+'.'+String(t.getMilliseconds()).padStart(3,'0');
-    el.innerHTML+='<div><span style="color:#888">'+ts+'</span> '+msg+'</div>';
-    el.parentNode.scrollTop=el.parentNode.scrollHeight;
-  }catch(e){}
-}
-// Debug panel: only shows when URL has ?debug=1
-(function(){
-  var show=window.location.search.indexOf('debug=1')!==-1;
-  if(show){var d=document.getElementById('dbg');if(d)d.style.display='block';}
-  dlog('🚀 order.html loaded');
-  dlog('📍 URL: '+window.location.href);
-  dlog('🔍 search: '+window.location.search);
-  dlog('🔗 hash: '+(window.location.hash||'(none)'));
-  try{dlog('💾 ss.liff_group: '+(sessionStorage.getItem('liff_group')||'(empty)'));}catch(e){dlog('💾 ss error');}
-  try{dlog('💾 ss.liff_token: '+(sessionStorage.getItem('liff_token')?'YES ('+sessionStorage.getItem('liff_token').substring(0,10)+'...)':'(empty)'));}catch(e){}
-})();
+// ============================================================
+// order.html — 統一活動管理 前端連動程式碼
+// 插入位置：order.html 的 <script> 區塊內
+// 搜尋原本的 loadMenu() 與 renderCart() 函式並整合以下邏輯
+// ============================================================
 
-var LID='2009530264-3xA9VL4a',SURL='https://n8n.justinaiauto.com/webhook/food-order-submit';
-// SHOP_UID & LTOKEN moved to n8n backend for security
-var M=[{id:'oyster',nm:'鮮蚵麵線',ds:'新鮮蚵仔搭配麵線',L:65,S:60,top:1},{id:'mixed',nm:'綜合麵線',ds:'鮮蚵＋滷製豬腸搭配麵線',L:65,S:60,top:1},{id:'intestine',nm:'豬腸麵線',ds:'滷製豬腸搭配麵線',L:60,S:55,top:1},{id:'plain',nm:'清麵線',ds:'純麵線湯底',L:45,S:40,top:0}];
-var CD=['香菜','醬油','烏醋','蒜蓉'],SP=['不加辣','微辣','小辣','中辣','大辣'],TP=[{nm:'加豬腸',p:30},{nm:'加鮮蚵',p:30}];
-var GROUP_JOIN_URL='https://n8n.justinaiauto.com/webhook/group-order-join';
-var cart=[],uid='',uname='',orderId='',orderDT='',custName='',groupId='',groupInfo=null;
-function genOID(){var n=new Date(),ds=''+n.getFullYear()+String(n.getMonth()+1).padStart(2,'0')+String(n.getDate()).padStart(2,'0');var sq=String(n.getHours())+String(n.getMinutes()).padStart(2,'0')+String(n.getSeconds()).padStart(2,'0');var rnd='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';var r='';for(var i=0;i<3;i++)r+=rnd[Math.floor(Math.random()*rnd.length)];return 'ORD-'+ds+'-'+sq+'-'+r;}
-function fmtDT(){var n=new Date();return n.getFullYear()+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+String(n.getDate()).padStart(2,'0')+' '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');}
-var accessToken='';async function init(){
-dlog('⚙️ init() start');
-try{accessToken=sessionStorage.getItem('liff_token')||'';uid=sessionStorage.getItem('liff_uid')||'';uname=sessionStorage.getItem('liff_name')||'';}catch(e){}
-dlog('💾 from sessionStorage: token='+(accessToken?'YES':'NO')+' uid='+(uid||'(none)')+' name='+(uname||'(none)'));
+// ── 全域活動狀態（從後端載入） ────────────────────────────
+let activePromos = {
+  groupBoost: null,     // 揪團加碼活動資料
+  bonusPoints: [],      // 加贈積分活動列表
+  redeemPromo: null     // 積分兌換連動活動
+};
 
-if(!accessToken){
-  dlog('🔑 no token, trying LIFF init...');
-  try{
-    await liff.init({liffId:LID});
-    dlog('✅ LIFF init OK, isLoggedIn='+liff.isLoggedIn()+', isInClient='+liff.isInClient());
-    if(liff.isLoggedIn()){
-      var p=await liff.getProfile();
-      uid=p.userId;uname=p.displayName;accessToken=liff.getAccessToken()||'';
-      dlog('✅ profile: '+uname+' token='+(accessToken?'YES':'NO'));
-      try{sessionStorage.setItem('liff_token',accessToken);sessionStorage.setItem('liff_uid',uid);sessionStorage.setItem('liff_name',uname);}catch(se){}
-    }else{
-      // 保留 group 參數在 login redirect URL 中
-      var loginUrl=window.location.href;
-      dlog('🔄 not logged in, redirecting to login. URL='+loginUrl);
-      liff.login({redirectUri:loginUrl});
-      return;
+// ============================================================
+// 【A】載入活動資料（在 loadMenu() 之前呼叫）
+// ============================================================
+async function loadActivePromos() {
+  try {
+    const res = await fetch('/webhook/admin-api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_active_promos' })
+    });
+    const data = await res.json();
+    if (data.promos) {
+      activePromos.groupBoost  = data.promos.find(p => p.promo_type === 'group_boost') || null;
+      activePromos.bonusPoints = data.promos.filter(p => p.promo_type === 'bonus_points');
+      activePromos.redeemPromo = data.promos.find(p => p.promo_type === 'redeem_promo') || null;
     }
-  }catch(e){dlog('❌ LIFF init error: '+e.message);}
-}else{
-  dlog('✅ token from sessionStorage, skip LIFF init');
-  // 仍然 init LIFF 以便使用 sendMessage 等功能，但不阻塞
-  try{await liff.init({liffId:LID});dlog('✅ LIFF late init OK');}catch(e){dlog('⚠️ LIFF late init skip: '+e.message);}
-}
-
-orderId=genOID();orderDT=fmtDT();
-document.getElementById('oidD').textContent=orderId;
-document.getElementById('odtD').textContent=orderDT;
-if(uname)document.getElementById('ousrD').textContent='👤 '+uname;
-dlog('📋 orderId='+orderId+' rendering...');
-render();
-var cn=document.getElementById('cname');
-if(cn&&uname&&!cn.value){cn.value=uname;custName=uname;}
-dlog('✅ init() done');
-// Load last order for reorder
-loadLastOrder();
-loadPromo();
-}
-var lastOrderData=null;
-var activePromo=null;
-async function loadPromo(){
-try{
-  if(!accessToken)return;
-  var resp=await fetch('https://n8n.justinaiauto.com/webhook/admin-api',{method:'POST',headers:{'Content-Type':'application/json','Cache-Control':'no-cache'},body:JSON.stringify({accessToken:accessToken,action:'get_promo',_t:Date.now()})});
-  var d=await resp.json();
-  if(d.success&&d.promo&&d.promo.enabled){
-    // Check date and time
-    var now=new Date();
-    var today=now.toISOString().split('T')[0];
-    var p=d.promo;
-    if(p.date&&p.date!==today)return;
-    var hm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-    if(p.startTime&&hm<p.startTime)return;
-    if(p.endTime&&hm>p.endTime)return;
-    activePromo=p;
-    dlog('🔥 promo active: '+JSON.stringify(p));
-    render(); // Re-render with promo prices
+  } catch (e) {
+    console.warn('載入活動資料失敗，使用預設值', e);
   }
-}catch(e){dlog('⚠️ loadPromo error: '+e.message);}
 }
-function getPromoDiscount(itemName){
-  if(!activePromo||!activePromo.enabled)return 100;
-  if(!activePromo.items||activePromo.items.length===0)return activePromo.discount;
-  if(activePromo.items.includes(itemName))return activePromo.discount;
-  return 100;
-}
-async function loadLastOrder(){
-try{
-  if(!accessToken)return;
-  var resp=await fetch('https://n8n.justinaiauto.com/webhook/admin-api',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({accessToken:accessToken,action:'last_order'})});
-  var d=await resp.json();
-  if(d.success&&d.lastOrder){lastOrderData=d.lastOrder;showReorderBanner();}
-}catch(e){dlog('⚠️ loadLastOrder error: '+e.message);}
-}
-function showReorderBanner(){
-if(!lastOrderData||cart.length>0)return;
-var el=document.getElementById('reorder-area');
-if(!el)return;
-el.innerHTML='<div style="background:#FFF5F0;border:1.5px solid #FFE0D0;border-radius:14px;padding:14px;margin:0 16px 12px">'+
-'<div style="font-size:13px;font-weight:700;color:#D85A30;margin-bottom:6px">🔄 再來一份？</div>'+
-'<div style="font-size:12px;color:#888;margin-bottom:8px">上次：'+lastOrderData.items+' — $'+lastOrderData.totalAmount+'</div>'+
-'<button onclick="doReorder()" style="width:100%;padding:10px;background:#D85A30;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">🍜 一鍵重新下單</button>'+
-'</div>';
-}
-function doReorder(){
-try{
-  var items=JSON.parse(lastOrderData.itemsDetail||'[]');
-  if(!items.length){alert('無法讀取上次訂單資料');return;}
-  cart=[];
-  items.forEach(function(it){
-    var m=M.find(x=>x.id===it.name)||M.find(x=>x.nm===it.name);
-    if(!m)return;
-    cart.push({uid:Date.now()+Math.random(),mid:m.id,nm:m.nm,sz:it.size||'小碗',qty:it.qty||1,cd:it.conds||{香菜:1,醬油:1,烏醋:1,蒜蓉:1},sp:it.spice||'不加辣',tp:it.toppingQty||{加豬腸:0,加鮮蚵:0},canTop:m.top});
-  });
-  if(cart.length){rc();document.getElementById('reorder-area').innerHTML='';document.getElementById('ca').scrollIntoView({behavior:'smooth'});}
-  else{alert('菜單已更新，請重新選擇品項');}
-}catch(e){alert('載入失敗：'+e.message);}
-}
-// === 營業時間判斷 ===
-// 週一至週六 06:30-13:00，週日公休
-function getBizStatus(){
-var now=new Date();var day=now.getDay();// 0=Sun
-var h=now.getHours(),m=now.getMinutes(),t=h*60+m;
-var open=6*60+30,close=13*60;// 06:30~13:00
-if(day===0)return {open:false,reason:'sunday',msg:'週日公休',next:'週一 06:30'};
-if(t<open)return {open:false,reason:'before',msg:'尚未開始營業',next:'今天 06:30'};
-if(t>=close)return {open:false,reason:'after',msg:'今日營業已結束',next:day===6?'週一 06:30':'明天 06:30'};
-return {open:true};
-}
-function showClosed(biz){
-document.getElementById('ft').style.display='none';
-document.getElementById('app').innerHTML=
-'<div style="text-align:center;padding:60px 24px 20px">'+
-'<div style="font-size:64px;margin-bottom:12px">😴</div>'+
-'<h2 style="font-size:22px;font-weight:700;color:#333;margin-bottom:8px">目前休息中</h2>'+
-'<div style="font-size:15px;color:#888;margin-bottom:24px">'+biz.msg+'</div>'+
-'<div style="background:#fff;border-radius:14px;padding:20px;margin:0 auto;max-width:320px;text-align:left">'+
-'<div style="display:flex;justify-content:space-between;font-size:14px;padding:6px 0"><span style="color:#888">營業時間</span><span style="font-weight:600">週一至週六 06:30-13:00</span></div>'+
-'<div style="display:flex;justify-content:space-between;font-size:14px;padding:6px 0"><span style="color:#888">公休日</span><span style="font-weight:600">每週日</span></div>'+
-'<div style="display:flex;justify-content:space-between;font-size:14px;padding:6px 0;border-top:1px solid #eee;margin-top:6px;padding-top:10px"><span style="color:#888">下次營業</span><span style="font-weight:700;color:#D85A30">'+biz.next+'</span></div>'+
-'</div>'+
-'</div>'+
-'<div style="padding:24px 20px">'+
-'<div style="background:#FFF5F0;border:1.5px solid #FFE0D0;border-radius:14px;padding:16px;text-align:center;margin-bottom:16px">'+
-'<div style="font-size:14px;font-weight:700;color:#D85A30;margin-bottom:6px">📝 預約下次營業時段</div>'+
-'<div style="font-size:12px;color:#888">提前點餐，開店後優先製作</div>'+
-'</div>'+
-'<button class="fbtn" onclick="startPreorder()" style="background:#D85A30">🍜 預約點餐（'+biz.next+' 取餐）</button>'+
-'<button class="fbtn2" onclick="closeLiff()" style="margin-top:10px">關閉</button>'+
-'</div>';
-}
-var _preorderMode=false;
-function startPreorder(){_preorderMode=true;render();}
 
-function render(){
-// 營業時間檢查（預約模式跳過）
-if(!_preorderMode){
-var biz=getBizStatus();
-if(!biz.open){showClosed(biz);return;}
-}
-var preTag=_preorderMode?'<div style="background:#FFF5F0;padding:10px 16px;text-align:center;border-bottom:2px solid #D85A30;font-size:13px;color:#D85A30;font-weight:600">📝 預約模式 — 此訂單將於下次營業時段製作</div>':'';
-var promoTag=activePromo?'<div style="background:#FFE0E0;padding:10px 16px;text-align:center;border-bottom:2px solid #E24B4A;font-size:13px;color:#E24B4A;font-weight:700">🔥 限時優惠進行中！'+(activePromo.items&&activePromo.items.length?activePromo.items.join('、'):'全品項')+' '+activePromo.discount+' 折</div>':'';
-var nm=custName||uname||'';
-document.getElementById('app').innerHTML=promoTag+preTag+'<div class="nsec"><div class="nlbl">👤 取餐姓名（必填）</div><div class="nwrap"><input type="text" id="cname" placeholder="請輸入您的姓名" maxlength="20" value="'+nm.replace(/"/g,'&quot;')+'" oninput="custName=this.value.trim();document.getElementById(\x27nerr\x27).style.display=\x27none\x27;rc();"></div><div class="nerr" id="nerr">⚠ 請輸入取餐姓名才能送出訂單</div></div><div id="reorder-area"></div><div class="sec">選擇品項加入購物車</div><div class="grid">'+M.map(m=>{var disc=getPromoDiscount(m.nm);var hasDisc=disc<100;var dS=hasDisc?Math.round(m.S*disc/100):m.S;var dL=hasDisc?Math.round(m.L*disc/100):m.L;var badge=hasDisc?'<div style="position:absolute;top:-6px;right:-6px;background:#E24B4A;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:8px">'+disc+'折</div>':'';return '<div class="mc" style="position:relative">'+badge+'<div class="nm">'+m.nm+'</div><div class="ds">'+m.ds+'</div><div class="sr"><div class="sb on" onclick="add(\x27'+m.id+'\x27,\x27小碗\x27)">'+(hasDisc?'<s style="color:#aaa;font-size:11px">$'+m.S+'</s> ':'')+'小碗 $'+dS+'</div><div class="sb" onclick="add(\x27'+m.id+'\x27,\x27大碗\x27)">'+(hasDisc?'<s style="color:#aaa;font-size:11px">$'+m.L+'</s> ':'')+'大碗 $'+dL+'</div></div></div>';}).join('')+'</div><div id="ca"></div>';
-document.getElementById('ft').style.display='block';rc();if(lastOrderData&&!cart.length)showReorderBanner();
-}
-function add(id,sz){var m=M.find(x=>x.id===id);cart.push({uid:Date.now(),mid:id,nm:m.nm,sz:sz,qty:1,cd:{香菜:1,醬油:1,烏醋:1,蒜蓉:1},sp:'不加辣',tp:{加豬腸:0,加鮮蚵:0},canTop:m.top});rc();setTimeout(function(){document.getElementById('ca').scrollIntoView({behavior:'smooth'});},100);}
-function del(u){cart=cart.filter(c=>c.uid!==u);rc();}
-function cq(u,d){var it=cart.find(c=>c.uid===u);if(it)it.qty=Math.max(1,Math.min(99,it.qty+d));rc();}
-function tc(u,cd){var it=cart.find(c=>c.uid===u);if(it)it.cd[cd]=it.cd[cd]?0:1;rc();}
-function ss(u,sp){var it=cart.find(c=>c.uid===u);if(it)it.sp=sp;rc();}
-function st(u,tn,v){var it=cart.find(c=>c.uid===u);if(it)it.tp[tn]=parseInt(v)||0;rc();}
-function pr2(it){var m=M.find(x=>x.id===it.mid);var disc=getPromoDiscount(it.nm);var base=it.sz==='大碗'?m.L:m.S;if(disc<100)base=Math.round(base*disc/100);var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);return(base+topP)*it.qty;}
-function ta(){return cart.reduce((s,i)=>s+pr2(i),0);}
-function tb(){return cart.reduce((s,i)=>s+i.qty,0);}
-function sumText(it){var rm=CD.filter(c=>!it.cd[c]);var cT=rm.length?'去'+rm.join('、'):'全加';var sT=it.sp==='不加辣'?'不辣':it.sp;var tps=[];for(var k in it.tp)if(it.tp[k]>0)tps.push(k+'x'+it.tp[k]);return cT+' / '+sT+(tps.length?' / '+tps.join('、'):'');}
-function rc(){
-var a=document.getElementById('ca'),bw=tb(),tt=ta();
-document.getElementById('bdg').textContent=bw+' 碗 $'+tt;
-document.getElementById('tamt').textContent='$'+tt;
-var btn=document.getElementById('sbtn');
-if(!cart.length){a.innerHTML='';btn.disabled=true;btn.textContent='選擇品項開始點餐';return;}
-btn.disabled=false;btn.textContent='確認訂單（'+bw+' 碗 $'+tt+'）';
-a.innerHTML='<div class="sec">🛒 購物車（'+cart.length+' 筆，共 '+bw+' 碗）</div><div class="cs">'+cart.map((it,i)=>{
-var m=M.find(x=>x.id===it.mid);var base=it.sz==='大碗'?m.L:m.S;var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);var unit=base+topP;
-return '<div class="ci"><div class="ci-inner"><div class="ci-hd"><div style="display:flex;align-items:center"><span class="ci-badge">'+(i+1)+'</span><span class="ci-nm">'+it.nm+'（'+it.sz+'）</span></div><span class="ci-del" onclick="del('+it.uid+')">✕</span></div>'+'<div class="ci-summary">📋 <b>'+it.nm+'（'+it.sz+'）x'+it.qty+'</b> — '+sumText(it)+' — <b>$'+pr2(it)+'</b></div>'+'<div class="note">⬇ 以下設定套用到此筆所有 '+it.qty+' 碗（都一樣）</div>'+(i===0?'<div class="note2">💡 不同設定請分開加入（例如：2碗不辣 + 1碗小辣 = 分兩筆）</div>':'')+'<div class="lbl">碗數</div><div class="qr"><div class="qb" onclick="cq('+it.uid+',-1)">−</div><div class="qn">'+it.qty+'</div><div class="qb" onclick="cq('+it.uid+',1)">+</div></div><div class="sub">$'+unit+' × '+it.qty+' = $'+pr2(it)+'</div>'+'<div class="lbl">醬料（點擊切換）</div><div class="chips">'+CD.map(c=>'<span class="ch '+(it.cd[c]?'on':'off')+'" onclick="tc('+it.uid+',\x27'+c+'\x27)">'+(it.cd[c]?'✓ ':'✗ ')+c+'</span>').join('')+'</div>'+'<div class="lbl">辣度</div><div class="chips">'+SP.map(s=>'<span class="ch '+(it.sp===s?'sp':'')+'" onclick="ss('+it.uid+',\x27'+s+'\x27)">'+s+'</span>').join('')+'</div>'+(it.canTop?'<div class="lbl">加料（選擇份數，每份 $30）</div>'+TP.map(t=>'<div class="tr"><span class="tn">'+t.nm+' +$30/份</span><select class="ts" onchange="st('+it.uid+',\x27'+t.nm+'\x27,this.value)">'+[0,1,2,3,4,5,6,7,8,9,10].map(n=>'<option value="'+n+'" '+(it.tp[t.nm]===n?'selected':'')+'>'+n+' 份</option>').join('')+'</select></div>').join(''):'')+'</div></div>';}).join('')+'</div>';
-}
-function showConfirm(){
-var ni=document.getElementById('cname');custName=(ni?ni.value:'').trim();
-if(!custName){document.getElementById('nerr').style.display='block';if(ni)ni.focus();return;}
-if(!cart.length)return;var bw=tb(),tt=ta();
-document.getElementById('ft').style.display='none';
-document.getElementById('app').innerHTML=(_preorderMode?'<div style="background:#FFF5F0;padding:10px 16px;text-align:center;border-bottom:2px solid #D85A30;font-size:13px;color:#D85A30;font-weight:600">📝 預約模式 — 此訂單將於下次營業時段製作</div>':'')+'<div class="sec">📋 確認訂單明細</div><div class="okinfo"><div class="row"><span class="k">訂單編號</span><span class="v vid">'+orderId+'</span></div><div class="row"><span class="k">取餐姓名</span><span class="v">'+custName+'</span></div><div class="row"><span class="k">下單時間</span><span class="v">'+orderDT+'</span></div></div><div class="cs">'+cart.map((it,i)=>{
-var rm=CD.filter(c=>!it.cd[c]);var cT=rm.length?'去'+rm.join('、'):'全加（香菜、醬油、烏醋、蒜蓉）';
-var m=M.find(x=>x.id===it.mid);var base=it.sz==='大碗'?m.L:m.S;var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);
-var tps=[];for(var k in it.tp)if(it.tp[k]>0)tps.push(k+' x'+it.tp[k]+' = $'+(it.tp[k]*30));
-return '<div class="cf-item"><div style="display:flex;align-items:center;margin-bottom:8px"><span class="ci-badge" style="background:'+(i%2===0?'#D85A30':'#0F6E56')+'">'+(i+1)+'</span><span style="font-size:17px;font-weight:700;margin-left:8px">'+it.nm+'（'+it.sz+'）</span></div>'+'<div class="cf-row"><span class="k">單碗底價</span><span class="v">$'+base+'</span></div>'+'<div class="cf-row"><span class="k">醬料</span><span class="v">'+cT+'</span></div>'+'<div class="cf-row"><span class="k">辣度</span><span class="v">'+it.sp+'</span></div>'+(tps.length?tps.map(t=>'<div class="cf-row"><span class="k">加料</span><span class="v">'+t+'</span></div>').join(''):'')+  (topP>0?'<div class="cf-row"><span class="k">單碗含加料</span><span class="v">$'+(base+topP)+'</span></div>':'')+'<div class="cf-row"><span class="k">碗數</span><span class="v">x '+it.qty+'</span></div>'+'<div class="cf-row" style="border-top:1.5px solid #eee;margin-top:6px;padding-top:6px"><span class="k" style="font-size:15px">小計</span><span class="v" style="color:#D85A30;font-size:18px">$'+pr2(it)+'</span></div>'+'<div class="cf-actions"><div class="cf-edit" onclick="backToEdit()">✏️ 修改</div><div class="cf-del" onclick="cfDel('+it.uid+')">🗑️ 刪除</div></div></div>';}).join('')+'</div>'+'<div class="cf-total"><div style="font-size:14px;color:#888;margin-bottom:4px">合計（'+bw+' 碗）</div><div class="amt">$'+tt+'</div></div>'+'<div style="padding:12px 16px 40px"><button class="fbtn" onclick="doSubmit()">✅ 確認送出訂單</button><button class="fbtn2" onclick="backToEdit()" style="margin-top:8px">⬅️ 返回修改</button></div>';
-window.scrollTo(0,0);
-}
-function backToEdit(){render();rc();}
-function cfDel(u){cart=cart.filter(c=>c.uid!==u);if(cart.length)showConfirm();else render();}
-async function doSubmit(){
-var btns=document.querySelectorAll('.fbtn');btns.forEach(b=>{b.disabled=true;b.textContent='送出中...';});
-// 確保 groupId 有值（fallback from sessionStorage）
-if(!groupId){try{groupId=sessionStorage.getItem('liff_group')||'';}catch(e){}}
-dlog('📤 doSubmit groupId="'+groupId+'" amount='+ta());
-var data={accessToken:accessToken,orderId:orderId,groupId:groupId,customerName:custName,orderDatetime:orderDT,isPreorder:_preorderMode,items:cart.map(it=>{var tl=[];Object.entries(it.tp).forEach(([k,v])=>{for(var i=0;i<v;i++)tl.push(k);});var m=M.find(x=>x.id===it.mid);var base=it.sz==='大碗'?m.L:m.S;var topP=Object.values(it.tp).reduce((s,v)=>s+v*30,0);return{name:it.nm,size:it.sz,qty:it.qty,unitBase:base,unitTotal:base+topP,conds:it.cd,spice:it.sp,toppings:tl,toppingQty:it.tp,price:pr2(it)};}),totalBowls:tb(),totalAmount:ta(),timestamp:new Date().toISOString()};
-try{
-var resp=await fetch(SURL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-var rd=await resp.json();
-if(!rd.success){if(rd.error==='NOT_MEMBER'){document.getElementById('app').innerHTML='<div style="text-align:center;padding:60px 20px"><div style="font-size:60px;margin-bottom:16px">👤</div><h2 style="font-size:22px;margin-bottom:12px;color:#D85A30">請先加入會員</h2><p style="color:#888;font-size:14px;line-height:1.6;margin-bottom:24px">使用點餐系統需要先加入會員</p><a href="https://liff.line.me/2009530264-3xA9VL4a?page=member" style="display:inline-block;padding:14px 40px;background:#D85A30;color:#fff;border-radius:14px;text-decoration:none;font-size:17px;font-weight:700">立即加入會員</a></div>';document.getElementById('ft').style.display='none';return;}alert(rd.message||'送出失敗');btns.forEach(b=>{b.disabled=false;b.textContent='✅ 確認送出訂單';});return;}
-var ptsBefore=rd.pointsBefore||0;var ptsEarned=rd.pointsEarned||0;var ptsAfter=rd.pointsAfter||0;
+// ============================================================
+// 【B】活動橫幅（插入菜單頁頂部）
+// 呼叫時機：loadMenu() 成功後呼叫 renderPromoBanner()
+// ============================================================
+function renderPromoBanner() {
+  const container = document.getElementById('promo-banner-container');
+  if (!container) return;
 
-try{if(typeof liff!=='undefined'&&liff.isInClient()){var cl=[];cl.push(groupId?'📋 揪團訂單確認':'📋 訂單確認');cl.push('');cl.push('🔖 '+orderId);cl.push('👤 '+custName);cl.push('🕐 '+orderDT);if(groupId){cl.push('🎉 揪團：'+groupId);}cl.push('');data.items.forEach(function(it,i){
-var cds=['香菜','醬油','烏醋','蒜蓉'];
-var rm=cds.filter(function(x){return !it.conds[x];});
-var cdT=rm.length===0?'✅全加':'⛔'+rm.map(function(x){return '不要'+x;}).join('、');
-var spT=it.spice==='不加辣'?'':'🌶️'+it.spice;
-var tpA=[];if(it.toppings)it.toppings.forEach(function(t){tpA.push(t);});
-var tpT=tpA.length?'➕'+tpA.join('、'):'';
-var detail=[cdT,spT,tpT].filter(function(x){return x;}).join(' ');
-cl.push((i+1)+'. '+it.name+'('+it.size+')x'+it.qty+' $'+it.price);
-cl.push('   '+detail);
-});cl.push('');cl.push('💰 合計 '+data.totalBowls+'碗 $'+data.totalAmount);if(groupId){cl.push('');cl.push('📢 此訂單已計入揪團，滿 5 碗全團享 95 折！');}cl.push('');cl.push('✅ 訂單已送出，請等候製作！');liff.sendMessage([{type:'text',text:cl.join('\n')}]);}}catch(me){}
-document.getElementById('ft').style.display='none';
-var rm=CD;
-document.getElementById('app').innerHTML='<div class="ok"><div class="ic">✅</div><h2>訂單已送出！</h2></div><div class="okinfo"><div class="row"><span class="k">訂單編號</span><span class="v vid">'+data.orderId+'</span></div><div class="row"><span class="k">取餐姓名</span><span class="v">'+custName+'</span></div><div class="row"><span class="k">下單時間</span><span class="v">'+data.orderDatetime+'</span></div>'+(rd.groupId?'<div class="row"><span class="k">揪團編號</span><span class="v vid">'+rd.groupId+'</span></div>':'')+'</div>'+'<div class="sec">📋 訂單明細</div><div class="receipt">'+data.items.map((it,i)=>{var removed=rm.filter(c=>!it.conds[c]);var cT=removed.length?'去'+removed.join('、'):'全加';var tps=[];for(var k in it.toppingQty)if(it.toppingQty[k]>0)tps.push(k+' x'+it.toppingQty[k]);return '<div class="ri"><div class="ri-hd">'+(i+1)+'. '+it.name+'（'+it.size+'）</div>'+'<div class="ri-row"><span>底價</span><span class="rv">$'+it.unitBase+'</span></div>'+'<div class="ri-row"><span>醬料</span><span class="rv">'+cT+'</span></div>'+'<div class="ri-row"><span>辣度</span><span class="rv">'+it.spice+'</span></div>'+(tps.length?'<div class="ri-row"><span>加料</span><span class="rv">'+tps.join('、')+'</span></div>':'')+'<div class="ri-row"><span>碗數</span><span class="rv">x'+it.qty+'</span></div>'+'<div class="ri-sub"><span>小計</span><span>$'+it.price+'</span></div></div>';}).join('')+'</div>'+'<div class="rt"><div style="font-size:14px;color:#888;margin-bottom:4px">合計（'+data.totalBowls+' 碗）</div><div class="a">$'+data.totalAmount+'</div></div>'+(rd.groupDiscount?'<div style="background:#E1F5EE;border-radius:12px;margin:0 16px 16px;padding:16px;text-align:center;border:2px solid #0F6E56"><div style="font-size:15px;font-weight:700;color:#0F6E56">🎉 揪團 95 折優惠已啟用！</div><div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-top:8px;font-size:16px"><span style="color:#888;text-decoration:line-through">$'+data.totalAmount+'</span><span style="color:#0F6E56;font-size:14px">→</span><span style="color:#0F6E56;font-size:22px;font-weight:800">$'+rd.finalAmount+'</span></div><div style="font-size:11px;color:#888;margin-top:6px">省下 $'+(data.totalAmount-rd.finalAmount)+' | 結算時以折扣價計算</div></div>':(rd.groupId?'<div style="background:#FFF5F0;border-radius:12px;margin:0 16px 16px;padding:14px;text-align:center;border:1.5px solid #F0C8B0"><div style="font-size:13px;color:#D85A30;font-weight:600">🍜 已加入揪團，滿 5 碗全團享 95 折</div></div>':''))+'<div style="background:#FFF5F0;border-radius:12px;margin:16px 20px;padding:16px;text-align:center"><div style="font-size:13px;color:#888;margin-bottom:8px">🎁 會員積分</div><div style="display:flex;justify-content:center;align-items:center;gap:8px;font-size:16px"><span style="color:#888">'+ptsBefore+' 點</span><span style="color:#D85A30;font-weight:700">+ '+ptsEarned+' 點</span><span style="color:#888">=</span><span style="color:#D85A30;font-size:22px;font-weight:800">'+ptsAfter+' 點</span></div><div style="font-size:11px;color:#aaa;margin-top:6px">每消費 $10 累積 1 點 | 50 點兌換豬腸麵線(小)</div></div>'+'<div style="text-align:center;color:#888;font-size:14px;padding:0 20px 12px">感謝訂購，請稍候取餐 🍜</div>'+'<div style="padding:0 16px 40px"><button class="fbtn" onclick="closeLiff()">關閉</button></div>';
-}catch(e){btns.forEach(b=>{b.disabled=false;b.textContent='送出失敗，請重試';});}}
-function closeLiff(){try{if(liff.isInClient()){liff.closeWindow();return;}}catch(e){}try{window.close();}catch(e){}document.querySelector('.fbtn').textContent='請手動關閉此分頁';document.querySelector('.fbtn').style.background='#999';}
-init();
+  const banners = [];
 
-// === Group Order Detection (runs after init completes) ===
-setTimeout(function(){
-  try{
-    dlog('🔍 [GROUP] starting detection...');
-    var p=new URLSearchParams(window.location.search);
-    var g=p.get('group')||'';
-    dlog('🔍 [GROUP] from URL search: "'+(g||'')+'"');
-    // fallback: hash fragment
-    if(!g){try{var h=window.location.hash;if(h&&h.indexOf('group=')!==-1){g=new URLSearchParams(h.substring(h.indexOf('?'))).get('group')||'';dlog('🔍 [GROUP] from hash: "'+g+'"');}}catch(e){}}
-    // fallback: sessionStorage
-    if(!g){try{g=sessionStorage.getItem('liff_group')||'';if(g)dlog('🔍 [GROUP] from sessionStorage: "'+g+'"');}catch(e){}}
-    // fallback: liff context
-    if(!g&&typeof liff!=='undefined'){try{var ctx=liff.getContext();dlog('🔍 [GROUP] liff context: '+JSON.stringify(ctx));if(ctx&&ctx.liffUrl){g=new URL(ctx.liffUrl).searchParams.get('group')||'';if(g)dlog('🔍 [GROUP] from liffUrl: "'+g+'"');}}catch(e){dlog('🔍 [GROUP] liff context error: '+e.message);}}
+  // 揪團加碼橫幅
+  if (activePromos.groupBoost) {
+    const p = activePromos.groupBoost;
+    const minBowls = p.group_min_bowls || 5;
+    const pct = Math.round((p.group_discount_rate || 0.95) * 100);
+    const badge = p.display_badge || '🎉 揪團加碼';
+    const color = p.display_color || 'orange';
+    banners.push(`
+      <div class="promo-banner promo-banner--${color}">
+        <span class="promo-banner__icon">${badge.split(' ')[0]}</span>
+        <span class="promo-banner__text">
+          <strong>${badge.replace(/^[^\s]+\s/, '')}</strong>
+          揪 ${minBowls} 碗以上享 ${pct} 折！
+        </span>
+        <span class="promo-banner__end">
+          活動至 ${formatDate(p.end_date)}
+        </span>
+      </div>
+    `);
+  }
 
-    if(!g){dlog('❌ [GROUP] no groupId found anywhere');return;}
-    dlog('✅ [GROUP] groupId = '+g);
-    groupId=g;
-    try{sessionStorage.setItem('liff_group',g);}catch(e){}
-
-    // STEP 1: 立即顯示基本橫幅（不等 n8n）
-    function showBanner(title, detail){
-      var existing=document.getElementById('group-banner');
-      if(existing)existing.remove();
-      var gb=document.createElement('div');
-      gb.id='group-banner';
-      gb.style.cssText='background:linear-gradient(135deg,#FFF0E8,#FFE0D0);padding:14px 16px;margin:12px 16px 4px;border-radius:14px;text-align:center;border:2px solid #F0C8B0';
-      gb.innerHTML='<div style="font-size:15px;font-weight:700;color:#D85A30">'+title+'</div><div style="font-size:12px;color:#888;margin-top:4px">'+detail+'</div>';
-      var hd=document.querySelector('.obar');
-      if(hd&&hd.nextSibling){hd.parentNode.insertBefore(gb,hd.nextSibling);dlog('✅ [GROUP] banner inserted after .obar');}
-      else{var app=document.getElementById('app');if(app){app.parentNode.insertBefore(gb,app);dlog('✅ [GROUP] banner inserted before #app');}
-      else{dlog('❌ [GROUP] cannot find .obar or #app');}}
+  // 加贈積分橫幅
+  activePromos.bonusPoints.forEach(p => {
+    const badge = p.display_badge || '⭐ 積分活動';
+    const color = p.display_color || 'green';
+    let desc = '';
+    if (p.points_multiplier > 1 && !p.target_items) {
+      desc = `全館 ${p.points_multiplier} 倍積分！`;
+    } else if (p.spend_threshold > 0) {
+      desc = `消費滿 $${p.spend_threshold} 額外贈 ${p.spend_bonus_points} 點！`;
+    } else if (p.bonus_points_per_item > 0) {
+      desc = `指定品項每份額外加贈 ${p.bonus_points_per_item} 積分！`;
     }
+    if (desc) {
+      banners.push(`
+        <div class="promo-banner promo-banner--${color}">
+          <span class="promo-banner__icon">${badge.split(' ')[0]}</span>
+          <span class="promo-banner__text">
+            <strong>${badge.replace(/^[^\s]+\s/, '')}</strong>
+            ${desc}
+          </span>
+          <span class="promo-banner__end">
+            活動至 ${formatDate(p.end_date)}
+          </span>
+        </div>
+      `);
+    }
+  });
 
-    showBanner('🎉 揪團點餐模式', '揪團代碼: '+g+' | 滿 5 碗享 95 折 | 查詢中...');
+  // 積分兌換連動橫幅
+  if (activePromos.redeemPromo) {
+    const p = activePromos.redeemPromo;
+    const pts = p.redeem_points_required || 50;
+    const item = p.redeem_item_name || '豬腸麵線(小)';
+    banners.push(`
+      <div class="promo-banner promo-banner--purple">
+        <span class="promo-banner__icon">🎫</span>
+        <span class="promo-banner__text">
+          <strong>限時積分優惠</strong>
+          ${pts} 點即可兌換 ${item}！
+        </span>
+        <span class="promo-banner__end">
+          活動至 ${formatDate(p.end_date)}
+        </span>
+      </div>
+    `);
+  }
 
-    // STEP 2: 嘗試向 n8n 取得揪團詳情
-    if(!accessToken){dlog('⚠️ [GROUP] no accessToken, skip fetch');return;}
-    dlog('📡 [GROUP] fetch: '+GROUP_JOIN_URL);
-    fetch(GROUP_JOIN_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'group_join',groupId:g,accessToken:accessToken})})
-    .then(function(r){dlog('📡 [GROUP] status='+r.status+' type='+r.headers.get('content-type'));return r.text();})
-    .then(function(txt){
-      dlog('📡 [GROUP] raw response(100): '+txt.substring(0,100));
-      var d;
-      try{d=JSON.parse(txt);}catch(pe){
-        dlog('❌ [GROUP] JSON parse fail, response is not JSON');
-        showBanner('🎉 揪團點餐模式', '揪團代碼: '+g+' | 滿 5 碗享 95 折');
-        return;
-      }
-      dlog('📡 [GROUP] parsed: '+JSON.stringify(d).substring(0,200));
-      if(d.success){
-        groupInfo=d;
-        showBanner(
-          '🎉 你正在參加 '+(d.hostName||'好友')+' 的揪團',
-          '目前 '+(d.totalMembers||'?')+' 人 / '+(d.totalBowls||'?')+' 碗 | 滿 5 碗享 95 折'
-        );
-      }else{dlog('⚠️ [GROUP] success:false — '+(d.message||''));}
-    }).catch(function(err){dlog('❌ [GROUP] fetch err: '+err);});
-  }catch(e){dlog('❌ [GROUP] outer err: '+e.message);}
-},500);
-</script>
-</body>
-</html>
+  container.innerHTML = banners.join('') || '';
+}
+
+// ============================================================
+// 【C】菜單品項活動標籤（整合至 renderMenuItem()）
+// 在原本 renderMenuItem() 函式中找到品項卡片 HTML，插入以下標籤邏輯
+// ============================================================
+function getItemPromoTag(itemName) {
+  const tags = [];
+
+  // 指定品項加贈積分標籤
+  activePromos.bonusPoints.forEach(p => {
+    if (!p.target_items) return;
+    const targets = p.target_items.split(',').map(s => s.trim());
+    if (targets.includes(itemName) && p.bonus_points_per_item > 0) {
+      const badge = p.display_badge || `+${p.bonus_points_per_item}pts`;
+      tags.push(`<span class="item-promo-tag item-promo-tag--green">${badge}</span>`);
+    }
+  });
+
+  return tags.join('');
+}
+
+// 使用範例 — 在 renderMenuItem() 的品項卡片 HTML 內插入：
+// <div class="menu-item__tags">
+//   ${getItemPromoTag(item.item_name)}
+// </div>
+
+// ============================================================
+// 【D】揪團頁面：差幾碗達標提示（整合至 renderGroupStatus()）
+// ============================================================
+function renderGroupProgress(currentBowls) {
+  const container = document.getElementById('group-progress-container');
+  if (!container) return;
+
+  // 取得當前有效門檻（活動覆蓋或預設 5 碗）
+  const minBowls = activePromos.groupBoost?.group_min_bowls || 5;
+  const discountRate = activePromos.groupBoost?.group_discount_rate || 0.95;
+  const discountPct  = Math.round(discountRate * 100);
+  const remaining    = Math.max(0, minBowls - currentBowls);
+
+  if (currentBowls >= minBowls) {
+    // 已達標
+    container.innerHTML = `
+      <div class="group-progress group-progress--success">
+        <span class="group-progress__icon">🎉</span>
+        <span class="group-progress__text">
+          已達標！共 <strong>${currentBowls} 碗</strong>，享 <strong>${discountPct} 折</strong> 優惠
+        </span>
+      </div>
+    `;
+  } else {
+    // 未達標
+    const progressPct = Math.min(100, Math.round((currentBowls / minBowls) * 100));
+    container.innerHTML = `
+      <div class="group-progress">
+        <div class="group-progress__info">
+          <span>🧑‍🤝‍🧑 再揪 <strong>${remaining} 碗</strong> 就能享 ${discountPct} 折！</span>
+          <span class="group-progress__count">${currentBowls} / ${minBowls} 碗</span>
+        </div>
+        <div class="group-progress__bar">
+          <div class="group-progress__bar-fill" style="width: ${progressPct}%"></div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// ============================================================
+// 【E】購物車：活動折扣與積分預覽（整合至 renderCartSummary()）
+// ============================================================
+function renderCartPromoSummary(cartData) {
+  // cartData 為 WF-02 回傳的計算結果
+  const container = document.getElementById('cart-promo-summary');
+  if (!container || !cartData) return;
+
+  const rows = [];
+
+  // 原始金額
+  rows.push(`
+    <div class="cart-summary-row">
+      <span>小計</span>
+      <span>$${cartData.originalAmount}</span>
+    </div>
+  `);
+
+  // 揪團折扣
+  if (cartData.discountSaved > 0) {
+    rows.push(`
+      <div class="cart-summary-row cart-summary-row--discount">
+        <span>${cartData.discountRate < 1 ? `揪團 ${Math.round(cartData.discountRate * 100)} 折` : '折扣'}</span>
+        <span>- $${cartData.discountSaved}</span>
+      </div>
+    `);
+  }
+
+  // 應付金額
+  rows.push(`
+    <div class="cart-summary-row cart-summary-row--total">
+      <span><strong>應付金額</strong></span>
+      <span><strong>$${cartData.discountedAmount}</strong></span>
+    </div>
+  `);
+
+  // 積分預覽
+  if (cartData.totalEarnedPoints > 0) {
+    let pointsText = `+ ${cartData.basePoints} 積分`;
+    if (cartData.pointsMultiplier > 1) {
+      pointsText = `+ ${cartData.multipliedPoints} 積分（${cartData.pointsMultiplier} 倍）`;
+    }
+    if (cartData.totalBonusPoints > 0) {
+      pointsText += ` + ${cartData.totalBonusPoints} 加贈`;
+    }
+    rows.push(`
+      <div class="cart-summary-row cart-summary-row--points">
+        <span>⭐ 本次獲得</span>
+        <span class="points-preview">${pointsText} = ${cartData.totalEarnedPoints} 點</span>
+      </div>
+    `);
+  }
+
+  // 積分兌換
+  if (cartData.redeemItem) {
+    rows.push(`
+      <div class="cart-summary-row cart-summary-row--redeem">
+        <span>🎫 積分兌換</span>
+        <span>${cartData.redeemItem} (- ${cartData.redeemPointsCost} 點)</span>
+      </div>
+    `);
+  }
+
+  container.innerHTML = rows.join('');
+}
+
+// ============================================================
+// 【F】活動 CSS 樣式（插入 order.html 的 <style> 區塊）
+// ============================================================
+const PROMO_CSS = `
+/* ── 活動橫幅 ── */
+.promo-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  animation: slideFadeIn 0.3s ease;
+}
+.promo-banner--orange { background: #fff3e0; border-left: 4px solid #ff9800; }
+.promo-banner--green  { background: #e8f5e9; border-left: 4px solid #4caf50; }
+.promo-banner--red    { background: #fce4ec; border-left: 4px solid #e91e63; }
+.promo-banner--purple { background: #f3e5f5; border-left: 4px solid #9c27b0; }
+.promo-banner__icon   { font-size: 20px; flex-shrink: 0; }
+.promo-banner__text   { flex: 1; }
+.promo-banner__end    { font-size: 11px; color: #999; white-space: nowrap; }
+
+/* ── 品項活動標籤 ── */
+.item-promo-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 4px;
+}
+.item-promo-tag--green { background: #e8f5e9; color: #2e7d32; }
+.item-promo-tag--red   { background: #fce4ec; color: #c62828; }
+
+/* ── 揪團進度條 ── */
+.group-progress { padding: 10px 14px; background: #fff8e1; border-radius: 10px; }
+.group-progress--success { background: #e8f5e9; }
+.group-progress__info { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
+.group-progress__bar { height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
+.group-progress__bar-fill { height: 100%; background: linear-gradient(90deg, #ff9800, #f44336); border-radius: 4px; transition: width 0.4s ease; }
+
+/* ── 購物車活動摘要 ── */
+.cart-summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+.cart-summary-row--discount { color: #e53935; }
+.cart-summary-row--total { border-top: 1px solid #eee; padding-top: 10px; font-size: 16px; }
+.cart-summary-row--points { color: #388e3c; font-size: 13px; }
+.cart-summary-row--redeem { color: #7b1fa2; font-size: 13px; }
+.points-preview { font-weight: 600; }
+
+@keyframes slideFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+`;
+
+// ── 工具函式 ────────────────────────────────────────────────
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+// ============================================================
+// 【G】初始化整合（在原本 init() 或 DOMContentLoaded 內加入）
+// ============================================================
+// document.addEventListener('DOMContentLoaded', async () => {
+//   await loadActivePromos();   // 1. 先載入活動
+//   await loadMenu();           // 2. 載入菜單
+//   renderPromoBanner();        // 3. 顯示活動橫幅
+//   // renderGroupProgress() 在取得揪團狀態後呼叫
+// });
