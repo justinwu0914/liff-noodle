@@ -98,7 +98,7 @@ try{
     try{sessionStorage.setItem('liff_token',accessToken);}catch(e){}
   }
   // Test admin access
-  var resp=await callAPI('today_orders');
+  var resp=await callAPI('all_orders');
   if(!resp.success){
     if(resp.error==='NOT_ADMIN'){
       document.getElementById('app').innerHTML='<div class="denied"><div class="ic">🔒</div><h2>無管理員權限</h2><p>此頁面僅限店家管理員使用</p></div>';
@@ -143,30 +143,51 @@ function switchTab(n){
 
 function refreshCurrent(){switchTab(currentTab);}
 
-// === Tab 0: Today Orders ===
+// === Tab 0: All Orders (grouped by date) ===
 function renderOrders(){
   var d=cachedData.orders;
   if(!d||!d.success){document.getElementById('p0').innerHTML='<div class="loading"><div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>';loadOrders();return;}
   var h='<div class="stats-grid">'+
-    '<div class="stat-card"><div class="val">'+d.count+'</div><div class="lbl">今日訂單</div></div>'+
-    '<div class="stat-card"><div class="val">$'+(d.totalAmount||0).toLocaleString()+'</div><div class="lbl">今日營收</div></div>'+
+    '<div class="stat-card"><div class="val">'+d.count+'</div><div class="lbl">總訂單數</div></div>'+
+    '<div class="stat-card"><div class="val">$'+(d.totalAmount||0).toLocaleString()+'</div><div class="lbl">總營收</div></div>'+
     '<div class="stat-card"><div class="val">'+(d.totalBowls||0)+'</div><div class="lbl">總碗數</div></div>'+
     '<div class="stat-card"><div class="val">$'+(d.count>0?Math.round(d.totalAmount/d.count):0)+'</div><div class="lbl">平均客單價</div></div>'+
     '</div>';
-  if(!d.orders||d.orders.length===0){h+='<div class="empty">今日尚無訂單</div>';}
-  else{d.orders.forEach(function(o){
-    var isPre=o.status==='preorder';
-    var badge=isPre?'<span class="badge-s badge-pre">預約</span>':'<span class="badge-s badge-ok">完成</span>';
-    h+='<div class="order-card'+(isPre?' preorder':'')+'">'+
-    '<div class="order-hd"><span class="order-id">'+o.orderId+badge+'</span><span class="order-time">'+o.customerName+'</span></div>'+
-    '<div class="order-body">'+o.items.replace(/,\s*/g,' | ')+'</div>'+
-    '<div class="order-ft"><span class="bowls">'+o.totalBowls+' 碗 | +'+o.pointsEarned+'點</span><span class="amt">$'+o.totalAmount+'</span></div>'+
-    '</div>';
-  });}
+  if(!d.orders||d.orders.length===0){h+='<div class="empty">尚無任何訂單</div>';}
+  else{
+    var grouped={};
+    d.orders.forEach(function(o){
+      var dt=o.date||'未知日期';
+      if(!grouped[dt])grouped[dt]=[];
+      grouped[dt].push(o);
+    });
+    var dates=Object.keys(grouped).sort().reverse();
+    var today=new Date().toISOString().split('T')[0];
+    dates.forEach(function(dt){
+      var dayOrders=grouped[dt];
+      var dayAmt=dayOrders.reduce(function(s,o){return s+o.totalAmount;},0);
+      var dayBowls=dayOrders.reduce(function(s,o){return s+o.totalBowls;},0);
+      var isToday=dt===today;
+      h+='<div style="margin:16px 0 8px;padding:8px 12px;background:'+(isToday?'#2d1525':'#0a0a1a')+';border-radius:8px;display:flex;justify-content:space-between;align-items:center;border-left:3px solid '+(isToday?'#e94560':'#333')+'">'+
+        '<div><span style="font-size:14px;font-weight:700;color:'+(isToday?'#e94560':'#ccc')+'">'+dt+(isToday?' (今日)':'')+'</span>'+
+        '<span style="font-size:11px;color:#666;margin-left:8px">'+dayOrders.length+' 筆</span></div>'+
+        '<div style="text-align:right"><span style="font-size:14px;font-weight:700;color:#e94560">$'+dayAmt.toLocaleString()+'</span>'+
+        '<span style="font-size:11px;color:#666;margin-left:6px">'+dayBowls+' 碗</span></div></div>';
+      dayOrders.forEach(function(o){
+        var isPre=o.status==='preorder';
+        var badge=isPre?'<span class="badge-s badge-pre">預約</span>':'<span class="badge-s badge-ok">完成</span>';
+        h+='<div class="order-card'+(isPre?' preorder':'')+'">'+
+        '<div class="order-hd"><span class="order-id">'+o.orderId+badge+'</span><span class="order-time">'+o.customerName+'</span></div>'+
+        '<div class="order-body">'+o.items.replace(/,\s*/g,' | ')+'</div>'+
+        '<div class="order-ft"><span class="bowls">'+o.totalBowls+' 碗 | +'+o.pointsEarned+'點</span><span class="amt">$'+o.totalAmount+'</span></div>'+
+        '</div>';
+      });
+    });
+  }
   document.getElementById('p0').innerHTML=h;
 }
 async function loadOrders(){
-  try{cachedData.orders=await callAPI('today_orders');renderOrders();}catch(e){document.getElementById('p0').innerHTML='<div class="empty">載入失敗</div>';}
+  try{cachedData.orders=await callAPI('all_orders');renderOrders();}catch(e){document.getElementById('p0').innerHTML='<div class="empty">載入失敗</div>';}
 }
 
 // === Tab 1: Revenue ===
