@@ -315,20 +315,103 @@ async function updateStatus(btn,pageId,newStatus,customerUserId,orderId){
 // === Tab 4: Broadcast ===
 function renderBroadcast(){
   document.getElementById('p4').innerHTML=
+    '<div class="card" style="margin-bottom:10px">'+
+    '<div style="font-size:14px;font-weight:700;color:#e94560;margin-bottom:12px">🔥 建立促銷活動（推播+點餐頁連動）</div>'+
+    '<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">打折品項（可多選）</div>'+
+    '<div id="promo-items" style="display:flex;flex-wrap:wrap;gap:6px"></div></div>'+
+    '<div style="display:flex;gap:8px;margin-bottom:10px">'+
+    '<div style="flex:1"><div style="font-size:11px;color:#888;margin-bottom:4px">折數（例如 75 = 75折）</div><input id="promo-discount" class="search-box" type="number" min="10" max="99" value="75" placeholder="75"></div>'+
+    '<div style="flex:1"><div style="font-size:11px;color:#888;margin-bottom:4px">活動日期</div><input id="promo-date" class="search-box" type="date" value="'+new Date().toISOString().split('T')[0]+'"></div>'+
+    '</div>'+
+    '<div style="display:flex;gap:8px;margin-bottom:10px">'+
+    '<div style="flex:1"><div style="font-size:11px;color:#888;margin-bottom:4px">開始時間</div><input id="promo-start" class="search-box" type="time" value="06:30"></div>'+
+    '<div style="flex:1"><div style="font-size:11px;color:#888;margin-bottom:4px">結束時間</div><input id="promo-end" class="search-box" type="time" value="13:00"></div>'+
+    '</div>'+
+    '<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">推播訊息（自動產生，可修改）</div>'+
+    '<textarea id="promo-msg" class="search-box" style="height:80px;resize:none"></textarea></div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:center">'+
+    '<span style="font-size:11px;color:#555" id="promo-status"></span>'+
+    '<button class="btn-complete" style="padding:10px 20px;font-size:13px" onclick="launchPromo()">🔥 推播 + 啟用活動</button>'+
+    '</div>'+
+    '<div id="active-promo-area" style="margin-top:12px"></div>'+
+    '</div>'+
     '<div class="card">'+
-    '<div style="font-size:14px;font-weight:700;color:#e94560;margin-bottom:12px">📢 推播訊息給所有會員</div>'+
+    '<div style="font-size:14px;font-weight:700;color:#e94560;margin-bottom:12px">📢 一般推播（純訊息，不連動折扣）</div>'+
     '<div style="margin-bottom:8px">'+
     '<div style="font-size:11px;color:#888;margin-bottom:4px">快速範本</div>'+
     '<div style="display:flex;flex-wrap:wrap;gap:6px">'+
-    '<span class="badge-s" style="background:#e9456022;color:#e94560;padding:6px 10px;cursor:pointer;font-size:11px" onclick="setBroadcast(\'🔥 今日限定！全品項 __ 折\\n\\n活動時間：今天營業時段\\n\\n老全麵線等你來 🍜\')">限時打折</span>'+
     '<span class="badge-s" style="background:#e9456022;color:#e94560;padding:6px 10px;cursor:pointer;font-size:11px" onclick="setBroadcast(\'🍜 午餐時段加碼！\\n\\n今天 11:00-12:00 點餐\\n揪團不限碗數直接享 95 折\\n\\n快來揪團 👥\')">揪團加碼</span>'+
     '<span class="badge-s" style="background:#e9456022;color:#e94560;padding:6px 10px;cursor:pointer;font-size:11px" onclick="setBroadcast(\'🎉 好消息！\\n\\n本週消費滿 $100 加贈 20 點\\n累積點數換免費麵線 🍜\\n\\n老全麵線感恩回饋\')">加贈積分</span>'+
     '</div></div>'+
-    '<textarea id="broadcast-msg" placeholder="輸入要推播的訊息內容..." style="width:100%;height:120px;padding:10px;background:#0f3460;border:1px solid #1a1a4e;border-radius:10px;color:#eee;font-size:14px;resize:none;outline:none;font-family:inherit"></textarea>'+
+    '<textarea id="broadcast-msg" placeholder="輸入要推播的訊息內容..." style="width:100%;height:80px;padding:10px;background:#0f3460;border:1px solid #1a1a4e;border-radius:10px;color:#eee;font-size:14px;resize:none;outline:none;font-family:inherit"></textarea>'+
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">'+
     '<span style="font-size:11px;color:#555" id="broadcast-status"></span>'+
     '<button class="btn-complete" style="padding:10px 24px;font-size:13px" onclick="doBroadcast()">📢 發送推播</button>'+
     '</div></div>';
+  // Render item checkboxes
+  var menuItems=['鮮蚵麵線','綜合麵線','豬腸麵線','清麵線'];
+  var itemsHtml=menuItems.map(function(nm){return '<label style="display:flex;align-items:center;gap:4px;padding:6px 10px;background:#0f3460;border-radius:8px;cursor:pointer;font-size:12px;color:#ccc"><input type="checkbox" class="promo-item-cb" value="'+nm+'" onchange="updatePromoMsg()"> '+nm+'</label>';}).join('');
+  document.getElementById('promo-items').innerHTML=itemsHtml;
+  updatePromoMsg();
+  loadActivePromo();
+}
+function getSelectedPromoItems(){
+  var cbs=document.querySelectorAll('.promo-item-cb:checked');
+  var items=[];cbs.forEach(function(cb){items.push(cb.value);});
+  return items;
+}
+function updatePromoMsg(){
+  var items=getSelectedPromoItems();
+  var disc=document.getElementById('promo-discount')?.value||'75';
+  var itemText=items.length?items.join('、'):'全品項';
+  var msg='🔥 今日限定！'+itemText+' '+disc+' 折\n\n活動時間：今天營業時段\n到店點餐即享優惠\n\n老全麵線等你來 🍜';
+  var el=document.getElementById('promo-msg');
+  if(el)el.value=msg;
+}
+async function loadActivePromo(){
+  try{
+    var d=await callAPI('get_settings');
+    if(!d.success)return;
+    var raw=d.settings.active_promo||'';
+    if(!raw){document.getElementById('active-promo-area').innerHTML='<div style="font-size:11px;color:#555;text-align:center;padding:8px">目前沒有進行中的促銷活動</div>';return;}
+    var promo=JSON.parse(raw);
+    if(!promo.enabled){document.getElementById('active-promo-area').innerHTML='<div style="font-size:11px;color:#555;text-align:center;padding:8px">目前沒有進行中的促銷活動</div>';return;}
+    var itemText=promo.items&&promo.items.length?promo.items.join('、'):'全品項';
+    document.getElementById('active-promo-area').innerHTML=
+      '<div style="background:#2d1525;border:1px solid #e94560;border-radius:10px;padding:12px">'+
+      '<div style="font-size:12px;font-weight:700;color:#e94560;margin-bottom:6px">🔴 進行中的促銷活動</div>'+
+      '<div style="font-size:12px;color:#ccc">'+itemText+' '+promo.discount+' 折</div>'+
+      '<div style="font-size:11px;color:#888;margin-top:4px">'+promo.date+' '+promo.startTime+' ~ '+promo.endTime+'</div>'+
+      '<button class="btn-complete" style="margin-top:8px;background:#E24B4A;padding:6px 16px;font-size:11px" onclick="stopPromo()">⛔ 關閉活動</button>'+
+      '</div>';
+  }catch(e){}
+}
+async function launchPromo(){
+  var items=getSelectedPromoItems();
+  var disc=parseInt(document.getElementById('promo-discount').value)||75;
+  var date=document.getElementById('promo-date').value;
+  var startTime=document.getElementById('promo-start').value;
+  var endTime=document.getElementById('promo-end').value;
+  var msg=document.getElementById('promo-msg').value.trim();
+  if(disc<10||disc>99){alert('折數請輸入 10~99');return;}
+  if(!msg){alert('請輸入推播訊息');return;}
+  if(!confirm('確定要啟用促銷活動並推播給所有會員嗎？\n\n'+msg)){return;}
+  var st=document.getElementById('promo-status');
+  st.textContent='啟用中...';st.style.color='#EF9F27';
+  var promo={enabled:true,discount:disc,items:items,startTime:startTime,endTime:endTime,date:date,message:msg};
+  try{
+    await callAPI('update_setting',{key:'active_promo',value:JSON.stringify(promo)});
+    var d=await callAPI('broadcast',{message:msg});
+    if(d.success){st.textContent='✅ 活動已啟用！推播送達 '+d.pushed+' 人';st.style.color='#1D9E75';loadActivePromo();}
+    else{st.textContent='活動已啟用，但推播失敗';st.style.color='#EF9F27';}
+  }catch(e){st.textContent='❌ 啟用失敗';st.style.color='#E24B4A';}
+}
+async function stopPromo(){
+  if(!confirm('確定要關閉促銷活動嗎？'))return;
+  try{
+    await callAPI('update_setting',{key:'active_promo',value:JSON.stringify({enabled:false})});
+    loadActivePromo();
+  }catch(e){alert('關閉失敗');}
 }
 function setBroadcast(txt){document.getElementById('broadcast-msg').value=txt;}
 async function doBroadcast(){
