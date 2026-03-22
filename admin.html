@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>商家後台 — 老全麵線</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#1a1a2e;color:#eee;padding-bottom:60px}
+.hd{background:linear-gradient(135deg,#16213e,#0f3460);padding:14px 20px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center}
+.hd h1{font-size:16px;font-weight:700;color:#e94560}
+.hd .badge{font-size:10px;background:#e94560;color:#fff;padding:2px 8px;border-radius:10px}
+.tabs{display:flex;background:#16213e;position:sticky;top:48px;z-index:99;border-bottom:1px solid #0f3460}
+.tab{flex:1;padding:10px 4px;text-align:center;font-size:12px;font-weight:600;color:#888;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.tab.on{color:#e94560;border-bottom-color:#e94560}
+.panel{display:none;padding:12px 14px}
+.panel.on{display:block}
+.card{background:#16213e;border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid #0f3460}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat-card{background:#0f3460;border-radius:10px;padding:14px;text-align:center}
+.stat-card .val{font-size:24px;font-weight:800;color:#e94560}
+.stat-card .lbl{font-size:11px;color:#888;margin-top:4px}
+.order-card{background:#16213e;border-radius:10px;margin-bottom:8px;border-left:3px solid #e94560;overflow:hidden;border:1px solid #0f3460}
+.order-card.preorder{border-left-color:#f0997b}
+.order-hd{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #0f3460}
+.order-id{font-family:monospace;font-size:11px;color:#e94560;font-weight:600}
+.order-time{font-size:11px;color:#666}
+.order-body{padding:8px 12px;font-size:12px;color:#aaa;line-height:1.5}
+.order-ft{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:#0a0a1a}
+.order-ft .bowls{font-size:11px;color:#666}
+.order-ft .amt{font-size:15px;font-weight:800;color:#e94560}
+.badge-s{display:inline-block;font-size:9px;font-weight:600;padding:2px 6px;border-radius:8px;margin-left:6px}
+.badge-ok{background:#1d3d2e;color:#5dcaa5}
+.badge-pre{background:#3d2e1d;color:#f0997b}
+.member-card{background:#16213e;border-radius:10px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;border:1px solid #0f3460}
+.member-info .name{font-size:14px;font-weight:700;color:#eee}
+.member-info .detail{font-size:11px;color:#888;margin-top:2px}
+.member-right{text-align:right}
+.member-right .pts{font-size:18px;font-weight:800;color:#e94560}
+.member-right .lvl{font-size:10px;color:#888}
+.search-box{width:100%;padding:10px 14px;background:#0f3460;border:1px solid #1a1a4e;border-radius:10px;color:#eee;font-size:14px;margin-bottom:12px;outline:none}
+.search-box:focus{border-color:#e94560}
+.search-box::placeholder{color:#555}
+.btn-complete{padding:6px 12px;background:#e94560;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer}
+.btn-complete:active{opacity:.7}
+.btn-complete:disabled{background:#333;color:#666}
+.period-tabs{display:flex;gap:6px;margin-bottom:12px}
+.period-tab{flex:1;padding:8px;text-align:center;background:#0f3460;border-radius:8px;font-size:12px;font-weight:600;color:#888;cursor:pointer;border:1px solid transparent}
+.period-tab.on{color:#e94560;border-color:#e94560}
+.loading{text-align:center;padding:40px;color:#666}
+.loading .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#e94560;margin:0 3px;animation:pulse .6s infinite alternate}
+.loading .dot:nth-child(2){animation-delay:.2s}
+.loading .dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{from{opacity:.3;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.empty{text-align:center;padding:40px;color:#555;font-size:13px}
+.denied{text-align:center;padding:80px 20px;color:#e94560}
+.denied .ic{font-size:48px;margin-bottom:12px}
+.denied h2{font-size:18px;margin-bottom:8px}
+.denied p{font-size:13px;color:#666}
+.refresh-btn{position:fixed;bottom:16px;right:16px;width:48px;height:48px;border-radius:50%;background:#e94560;color:#fff;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 12px rgba(233,69,96,.4);z-index:100}
+.refresh-btn:active{transform:scale(.9)}
+</style>
+</head>
+<body>
+<div class="hd">
+  <h1>商家後台</h1>
+  <span class="badge">老全麵線</span>
+</div>
+<div class="tabs">
+  <div class="tab on" onclick="switchTab(0)">訂單</div>
+  <div class="tab" onclick="switchTab(1)">營收</div>
+  <div class="tab" onclick="switchTab(2)">會員</div>
+  <div class="tab" onclick="switchTab(3)">預約</div>
+</div>
+<div id="app">
+  <div class="loading" style="padding:80px 20px">
+    <div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    <div style="margin-top:12px;font-size:12px;color:#555">驗證管理員身份...</div>
+  </div>
+</div>
+<button class="refresh-btn" id="refreshBtn" style="display:none" onclick="refreshCurrent()">↻</button>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+var LIFF_ID='2009530264-3xA9VL4a';
+var ADMIN_URL='https://n8n.justinaiauto.com/webhook/admin-api';
+var accessToken='';
+var currentTab=0;
+var cachedData={};
+
+async function init(){
+try{
+  accessToken=sessionStorage.getItem('liff_token')||'';
+  if(!accessToken){
+    await liff.init({liffId:LIFF_ID});
+    if(!liff.isLoggedIn()){liff.login({redirectUri:location.href});return;}
+    accessToken=liff.getAccessToken()||'';
+    try{sessionStorage.setItem('liff_token',accessToken);}catch(e){}
+  }
+  // Test admin access
+  var resp=await callAPI('today_orders');
+  if(!resp.success){
+    if(resp.error==='NOT_ADMIN'){
+      document.getElementById('app').innerHTML='<div class="denied"><div class="ic">🔒</div><h2>無管理員權限</h2><p>此頁面僅限店家管理員使用</p></div>';
+      return;
+    }
+    throw new Error(resp.error||'Auth failed');
+  }
+  cachedData.orders=resp;
+  renderApp();
+  document.getElementById('refreshBtn').style.display='block';
+}catch(e){
+  document.getElementById('app').innerHTML='<div class="denied"><div class="ic">⚠️</div><h2>載入失敗</h2><p>'+e.message+'</p></div>';
+}
+}
+
+async function callAPI(action,extra){
+  var body=Object.assign({accessToken:accessToken,action:action},extra||{});
+  var resp=await fetch(ADMIN_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  return await resp.json();
+}
+
+function renderApp(){
+  document.getElementById('app').innerHTML=
+    '<div class="panel on" id="p0"></div>'+
+    '<div class="panel" id="p1"></div>'+
+    '<div class="panel" id="p2"></div>'+
+    '<div class="panel" id="p3"></div>';
+  renderOrders();
+}
+
+function switchTab(n){
+  currentTab=n;
+  var tabs=document.querySelectorAll('.tab');
+  var panels=document.querySelectorAll('.panel');
+  tabs.forEach(function(t,i){t.className=i===n?'tab on':'tab';});
+  panels.forEach(function(p,i){p.className=i===n?'panel on':'panel';});
+  if(n===0)renderOrders();
+  if(n===1)loadRevenue();
+  if(n===2)renderMembers();
+  if(n===3)loadPreorders();
+}
+
+function refreshCurrent(){switchTab(currentTab);}
+
+// === Tab 0: Today Orders ===
+function renderOrders(){
+  var d=cachedData.orders;
+  if(!d||!d.success){document.getElementById('p0').innerHTML='<div class="loading"><div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>';loadOrders();return;}
+  var h='<div class="stats-grid">'+
+    '<div class="stat-card"><div class="val">'+d.count+'</div><div class="lbl">今日訂單</div></div>'+
+    '<div class="stat-card"><div class="val">$'+(d.totalAmount||0).toLocaleString()+'</div><div class="lbl">今日營收</div></div>'+
+    '<div class="stat-card"><div class="val">'+(d.totalBowls||0)+'</div><div class="lbl">總碗數</div></div>'+
+    '<div class="stat-card"><div class="val">$'+(d.count>0?Math.round(d.totalAmount/d.count):0)+'</div><div class="lbl">平均客單價</div></div>'+
+    '</div>';
+  if(!d.orders||d.orders.length===0){h+='<div class="empty">今日尚無訂單</div>';}
+  else{d.orders.forEach(function(o){
+    var isPre=o.status==='preorder';
+    var badge=isPre?'<span class="badge-s badge-pre">預約</span>':'<span class="badge-s badge-ok">完成</span>';
+    h+='<div class="order-card'+(isPre?' preorder':'')+'">'+
+    '<div class="order-hd"><span class="order-id">'+o.orderId+badge+'</span><span class="order-time">'+o.customerName+'</span></div>'+
+    '<div class="order-body">'+o.items.replace(/,\s*/g,' | ')+'</div>'+
+    '<div class="order-ft"><span class="bowls">'+o.totalBowls+' 碗 | +'+o.pointsEarned+'點</span><span class="amt">$'+o.totalAmount+'</span></div>'+
+    '</div>';
+  });}
+  document.getElementById('p0').innerHTML=h;
+}
+async function loadOrders(){
+  try{cachedData.orders=await callAPI('today_orders');renderOrders();}catch(e){document.getElementById('p0').innerHTML='<div class="empty">載入失敗</div>';}
+}
+
+// === Tab 1: Revenue ===
+async function loadRevenue(){
+  document.getElementById('p1').innerHTML='<div class="loading"><div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>';
+  try{
+    var d=await callAPI('revenue_stats');
+    if(!d.success)throw new Error(d.error);
+    var h='<div class="period-tabs">'+
+      '<div class="period-tab on" id="pt-today">今日</div>'+
+      '<div class="period-tab" id="pt-week">本週</div>'+
+      '<div class="period-tab" id="pt-month">本月</div>'+
+      '</div><div id="rev-content"></div>';
+    document.getElementById('p1').innerHTML=h;
+    var periods={today:d.today,week:d.week,month:d.month};
+    var curPeriod='today';
+    function showPeriod(p){
+      curPeriod=p;
+      document.querySelectorAll('.period-tab').forEach(function(t){t.className='period-tab'+(t.id==='pt-'+p?' on':'');});
+      var s=periods[p];
+      document.getElementById('rev-content').innerHTML=
+        '<div class="stats-grid">'+
+        '<div class="stat-card"><div class="val">$'+(s.amount||0).toLocaleString()+'</div><div class="lbl">營收總額</div></div>'+
+        '<div class="stat-card"><div class="val">'+(s.orders||0)+'</div><div class="lbl">訂單數</div></div>'+
+        '<div class="stat-card"><div class="val">'+(s.bowls||0)+'</div><div class="lbl">總碗數</div></div>'+
+        '<div class="stat-card"><div class="val">$'+(s.avg||0)+'</div><div class="lbl">平均客單價</div></div>'+
+        '</div>';
+    }
+    showPeriod('today');
+    document.getElementById('pt-today').onclick=function(){showPeriod('today');};
+    document.getElementById('pt-week').onclick=function(){showPeriod('week');};
+    document.getElementById('pt-month').onclick=function(){showPeriod('month');};
+  }catch(e){document.getElementById('p1').innerHTML='<div class="empty">載入失敗</div>';}
+}
+
+// === Tab 2: Members ===
+var memberSearchTimer=null;
+function renderMembers(){
+  document.getElementById('p2').innerHTML='<input class="search-box" id="memberSearch" placeholder="搜尋會員姓名..." oninput="onMemberSearch()"><div id="member-list"><div class="loading"><div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div></div>';
+  loadMembers('');
+}
+function onMemberSearch(){
+  clearTimeout(memberSearchTimer);
+  memberSearchTimer=setTimeout(function(){
+    var q=document.getElementById('memberSearch').value;
+    loadMembers(q);
+  },400);
+}
+async function loadMembers(search){
+  try{
+    var d=await callAPI('members',{search:search});
+    if(!d.success)throw new Error(d.error);
+    var el=document.getElementById('member-list');
+    if(!d.members||d.members.length===0){el.innerHTML='<div class="empty">無符合的會員</div>';return;}
+    var h='<div style="font-size:11px;color:#555;margin-bottom:8px;text-align:right">共 '+d.count+' 位會員</div>';
+    d.members.forEach(function(m){
+      h+='<div class="member-card">'+
+      '<div class="member-info"><div class="name">'+m.name+'</div><div class="detail">'+m.phone+' | '+m.birthday+' | 來店'+m.visits+'次</div></div>'+
+      '<div class="member-right"><div class="pts">'+m.points+'</div><div class="lvl">'+m.level+'</div></div>'+
+      '</div>';
+    });
+    el.innerHTML=h;
+  }catch(e){document.getElementById('member-list').innerHTML='<div class="empty">載入失敗</div>';}
+}
+
+// === Tab 3: Preorders ===
+async function loadPreorders(){
+  document.getElementById('p3').innerHTML='<div class="loading"><div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>';
+  try{
+    var d=await callAPI('preorders');
+    if(!d.success)throw new Error(d.error);
+    if(!d.preorders||d.preorders.length===0){document.getElementById('p3').innerHTML='<div class="empty">目前沒有待處理的預約訂單 ✅</div>';return;}
+    var h='<div style="font-size:11px;color:#555;margin-bottom:8px">共 '+d.count+' 筆待處理</div>';
+    d.preorders.forEach(function(o){
+      h+='<div class="order-card preorder">'+
+      '<div class="order-hd"><span class="order-id">'+o.orderId+'<span class="badge-s badge-pre">預約</span></span><span class="order-time">'+o.date+'</span></div>'+
+      '<div class="order-body"><b>'+o.customerName+'</b> — '+o.items+'</div>'+
+      '<div class="order-ft"><span class="bowls">'+o.totalBowls+' 碗 $'+o.totalAmount+'</span><button class="btn-complete" onclick="completePreorder(this,\''+o.pageId+'\')">標記完成</button></div>'+
+      '</div>';
+    });
+    document.getElementById('p3').innerHTML=h;
+  }catch(e){document.getElementById('p3').innerHTML='<div class="empty">載入失敗</div>';}
+}
+async function completePreorder(btn,pageId){
+  btn.disabled=true;btn.textContent='處理中...';
+  try{
+    var d=await callAPI('complete_preorder',{pageId:pageId});
+    if(d.success){btn.textContent='已完成 ✅';btn.style.background='#1d3d2e';
+    setTimeout(function(){loadPreorders();},1000);}
+    else{btn.textContent='失敗';btn.disabled=false;}
+  }catch(e){btn.textContent='失敗';btn.disabled=false;}
+}
+
+init();
+</script>
+</body>
+</html>
