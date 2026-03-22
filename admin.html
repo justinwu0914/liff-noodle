@@ -1,516 +1,402 @@
 <!-- ============================================================
-  admin.html — 統一活動管理 Tab
-  插入位置：admin.html 的 Tab 列表加入「活動」Tab，
-  並在對應 section 貼上以下 HTML + JS
+  整合三：admin.html 活動管理 Tab 完整整合
+  操作方式：在 admin.html 中找到對應位置，插入以下各段
+  共需修改 4 個位置
   ============================================================ -->
 
-<!-- ── Tab 按鈕（加入現有 Tab 列） ───────────────────────── -->
-<!-- 在原本 <div class="tabs"> 內新增： -->
-<!-- <button class="tab-btn" onclick="switchTab('promos')">🎯 活動</button> -->
+<!-- ════════════════════════════════════════════════════════
+  位置 A：Tab 按鈕列 — 加入「活動」Tab 按鈕
+  搜尋：你現有 Tab 列最後一個 <button>，例如：
+    <button onclick="switchTab('settings')">設定</button>
+  在它後面加入：
+════════════════════════════════════════════════════════ -->
+<button class="tab-btn" id="tab-btn-promos" onclick="switchTab('promos')">🎯 活動</button>
 
-<!-- ── 活動管理 Section ──────────────────────────────────── -->
+<!-- ════════════════════════════════════════════════════════
+  位置 B：Tab 內容區 — 加入活動管理 Section
+  搜尋：你現有最後一個 <section id="tab-...">，例如：
+    <section id="tab-settings" ...>
+  在它後面加入以下整段 section：
+════════════════════════════════════════════════════════ -->
 <section id="tab-promos" class="tab-content" style="display:none">
-  <div class="section-header">
-    <h2>🎯 統一活動管理</h2>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <h2 style="margin:0;font-size:18px">🎯 活動管理</h2>
     <button class="btn btn-primary" onclick="openPromoModal()">＋ 新增活動</button>
   </div>
 
-  <!-- 活動篩選列 -->
-  <div class="filter-bar">
-    <select id="promo-type-filter" onchange="filterPromos()">
+  <!-- 篩選列 -->
+  <div style="display:flex;gap:8px;margin-bottom:16px">
+    <select id="filter-promo-type" onchange="filterPromos()" style="flex:1;padding:8px;border-radius:8px;border:1px solid #ddd;font-size:13px">
       <option value="">全部類型</option>
       <option value="group_boost">🧑‍🤝‍🧑 揪團加碼</option>
       <option value="bonus_points">⭐ 加贈積分</option>
       <option value="redeem_promo">🎫 積分兌換連動</option>
     </select>
-    <select id="promo-status-filter" onchange="filterPromos()">
+    <select id="filter-promo-status" onchange="filterPromos()" style="flex:1;padding:8px;border-radius:8px;border:1px solid #ddd;font-size:13px">
       <option value="">全部狀態</option>
       <option value="active">🟢 進行中</option>
       <option value="scheduled">🔵 排程中</option>
-      <option value="ended">⚫ 已結束</option>
       <option value="paused">🟡 已暫停</option>
+      <option value="ended">⚫ 已結束</option>
     </select>
   </div>
 
   <!-- 活動列表 -->
-  <div id="promo-list" class="promo-list">
-    <div class="loading">載入活動中...</div>
-  </div>
+  <div id="promo-list"></div>
 </section>
 
-<!-- ── 新增/編輯活動 Modal ──────────────────────────────── -->
-<div id="promo-modal" class="modal" style="display:none">
-  <div class="modal-backdrop" onclick="closePromoModal()"></div>
-  <div class="modal-content modal-content--wide">
-    <div class="modal-header">
-      <h3 id="promo-modal-title">新增活動</h3>
-      <button class="modal-close" onclick="closePromoModal()">✕</button>
+<!-- ════════════════════════════════════════════════════════
+  位置 C：Modal — 加入新增/編輯活動 Modal
+  搜尋：</body>
+  在它前面插入以下 Modal HTML：
+════════════════════════════════════════════════════════ -->
+<div id="promo-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.5);align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;position:relative">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid #eee;position:sticky;top:0;background:#fff;z-index:1">
+      <h3 id="promo-modal-title" style="margin:0;font-size:16px">新增活動</h3>
+      <button onclick="closePromoModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#666">✕</button>
     </div>
+    <div style="padding:20px">
 
-    <div class="modal-body">
       <!-- 基本資訊 -->
-      <fieldset class="form-group">
-        <legend>基本資訊</legend>
-        <label>活動名稱 <span class="required">*</span></label>
-        <input type="text" id="f-promo-name" placeholder="例：週末揪團加碼、五月雙倍積分週" />
-
-        <label>活動類型 <span class="required">*</span></label>
-        <select id="f-promo-type" onchange="onPromoTypeChange()">
-          <option value="">請選擇類型</option>
-          <option value="group_boost">🧑‍🤝‍🧑 揪團加碼活動</option>
-          <option value="bonus_points">⭐ 加贈積分活動</option>
-          <option value="redeem_promo">🎫 積分兌換連動活動</option>
+      <div style="border:1px solid #e0e0e0;border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-weight:600;font-size:13px;color:#555;margin-bottom:10px">基本資訊</div>
+        <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">活動名稱 *</label>
+        <input id="pm-name" type="text" placeholder="例：週末揪團加碼" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;margin-bottom:10px">
+        <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">活動類型 *</label>
+        <select id="pm-type" onchange="onPromoTypeChange()" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:10px">
+          <option value="">請選擇</option>
+          <option value="group_boost">🧑‍🤝‍🧑 揪團加碼</option>
+          <option value="bonus_points">⭐ 加贈積分</option>
+          <option value="redeem_promo">🎫 積分兌換連動</option>
         </select>
-
-        <div class="form-row">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
           <div>
-            <label>開始日期 <span class="required">*</span></label>
-            <input type="date" id="f-start-date" />
+            <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">開始日期 *</label>
+            <input id="pm-start" type="date" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
           </div>
           <div>
-            <label>結束日期 <span class="required">*</span></label>
-            <input type="date" id="f-end-date" />
-          </div>
-        </div>
-
-        <label>狀態</label>
-        <select id="f-status">
-          <option value="active">🟢 立即上架</option>
-          <option value="scheduled">🔵 排程上架</option>
-          <option value="paused">🟡 暫停</option>
-        </select>
-
-        <label>優先序（數字越小越優先）</label>
-        <input type="number" id="f-priority" value="10" min="1" max="99" />
-      </fieldset>
-
-      <!-- 揪團加碼設定（動態顯示） -->
-      <fieldset class="form-group" id="section-group-boost" style="display:none">
-        <legend>🧑‍🤝‍🧑 揪團加碼設定</legend>
-        <div class="form-row">
-          <div>
-            <label>最低揪團碗數 <span class="required">*</span></label>
-            <input type="number" id="f-group-min-bowls" value="5" min="2" max="20" />
-            <span class="hint">預設 5 碗，活動期間可降低門檻</span>
-          </div>
-          <div>
-            <label>揪團折扣率 <span class="required">*</span></label>
-            <input type="number" id="f-group-discount-rate" value="0.95" min="0.5" max="0.99" step="0.01" />
-            <span class="hint">例：0.92 = 92折，預設 0.95</span>
+            <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">結束日期 *</label>
+            <input id="pm-end" type="date" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
           </div>
         </div>
-        <div class="promo-preview" id="group-boost-preview">
-          預覽：揪 <strong id="preview-min-bowls">5</strong> 碗起，享
-          <strong id="preview-discount-pct">95</strong> 折
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">狀態</label>
+            <select id="pm-status" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px">
+              <option value="active">🟢 立即上架</option>
+              <option value="scheduled">🔵 排程</option>
+              <option value="paused">🟡 暫停</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">優先序（小=優先）</label>
+            <input id="pm-priority" type="number" value="10" min="1" max="99" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
+          </div>
         </div>
-      </fieldset>
+      </div>
 
-      <!-- 加贈積分設定（動態顯示） -->
-      <fieldset class="form-group" id="section-bonus-points" style="display:none">
-        <legend>⭐ 加贈積分設定</legend>
-        <p class="hint">以下三種加贈方式可同時啟用，結帳時全部累加計算。</p>
+      <!-- 揪團加碼 -->
+      <div id="pm-section-group" style="display:none;border:1px solid #ffe0b2;border-radius:10px;padding:14px;margin-bottom:14px;background:#fffaf5">
+        <div style="font-weight:600;font-size:13px;color:#e65100;margin-bottom:10px">🧑‍🤝‍🧑 揪團加碼設定</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">最低碗數門檻（預設5）</label>
+            <input id="pm-min-bowls" type="number" value="5" min="2" max="20" oninput="updateGroupPreview()" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">折扣率（0.92 = 92折）</label>
+            <input id="pm-discount" type="number" value="0.95" min="0.5" max="0.99" step="0.01" oninput="updateGroupPreview()" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
+          </div>
+        </div>
+        <div id="group-preview" style="margin-top:10px;padding:8px 12px;background:#fff3e0;border-radius:8px;font-size:13px;text-align:center">
+          預覽：揪 <strong id="gp-bowls">5</strong> 碗以上享 <strong id="gp-pct">95</strong> 折
+        </div>
+      </div>
 
-        <div class="bonus-option">
-          <label class="checkbox-label">
-            <input type="checkbox" id="f-use-multiplier" onchange="toggleBonusSection('multiplier')" />
+      <!-- 加贈積分 -->
+      <div id="pm-section-points" style="display:none;border:1px solid #c8e6c9;border-radius:10px;padding:14px;margin-bottom:14px;background:#f9fff9">
+        <div style="font-weight:600;font-size:13px;color:#2e7d32;margin-bottom:10px">⭐ 加贈積分設定</div>
+        <div style="margin-bottom:10px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="pm-use-multi" onchange="document.getElementById('pm-multi-sec').style.display=this.checked?'block':'none'">
             全館積分倍率
           </label>
-          <div id="section-multiplier" style="display:none; margin-top:8px">
-            <input type="number" id="f-points-multiplier" value="2" min="1.5" max="10" step="0.5" />
-            <span class="hint">倍（例：2 = 雙倍積分）</span>
+          <div id="pm-multi-sec" style="display:none;margin-top:6px">
+            <input id="pm-multiplier" type="number" value="2" min="2" max="10" step="0.5" placeholder="倍率（例：2）" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
           </div>
         </div>
-
-        <div class="bonus-option">
-          <label class="checkbox-label">
-            <input type="checkbox" id="f-use-item-bonus" onchange="toggleBonusSection('item')" />
-            指定品項額外加贈積分
+        <div style="margin-bottom:10px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="pm-use-item" onchange="document.getElementById('pm-item-sec').style.display=this.checked?'block':'none'">
+            指定品項額外加贈
           </label>
-          <div id="section-item-bonus" style="display:none; margin-top:8px">
-            <label>指定品項（品項名稱，逗號分隔）</label>
-            <input type="text" id="f-target-items" placeholder="例：鮮蚵麵線(小),鮮蚵麵線(大)" />
-            <label>每份加贈積分</label>
-            <input type="number" id="f-bonus-per-item" value="5" min="1" />
+          <div id="pm-item-sec" style="display:none;margin-top:6px">
+            <input id="pm-target-items" type="text" placeholder="品項名稱，逗號分隔（例：鮮蚵麵線(小),綜合麵線(大)）" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;box-sizing:border-box;margin-bottom:6px">
+            <input id="pm-bonus-per-item" type="number" value="5" min="1" placeholder="每份加贈積分" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
           </div>
         </div>
-
-        <div class="bonus-option">
-          <label class="checkbox-label">
-            <input type="checkbox" id="f-use-spend-bonus" onchange="toggleBonusSection('spend')" />
+        <div>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="pm-use-spend" onchange="document.getElementById('pm-spend-sec').style.display=this.checked?'block':'none'">
             消費滿額送積分
           </label>
-          <div id="section-spend-bonus" style="display:none; margin-top:8px">
-            <div class="form-row">
-              <div>
-                <label>滿額門檻（元）</label>
-                <input type="number" id="f-spend-threshold" value="100" min="1" />
-              </div>
-              <div>
-                <label>贈送積分（點）</label>
-                <input type="number" id="f-spend-bonus-points" value="20" min="1" />
-              </div>
-            </div>
+          <div id="pm-spend-sec" style="display:none;margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <input id="pm-spend-threshold" type="number" value="100" min="1" placeholder="滿額門檻（元）" style="padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
+            <input id="pm-spend-bonus" type="number" value="20" min="1" placeholder="贈送積分（點）" style="padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
           </div>
         </div>
-      </fieldset>
+      </div>
 
-      <!-- 積分兌換連動設定（動態顯示） -->
-      <fieldset class="form-group" id="section-redeem-promo" style="display:none">
-        <legend>🎫 積分兌換連動設定</legend>
-        <p class="hint">活動期間將覆蓋系統預設的兌換品項與所需積分（預設：50點 = 豬腸麵線(小)）</p>
-        <div class="form-row">
+      <!-- 積分兌換連動 -->
+      <div id="pm-section-redeem" style="display:none;border:1px solid #e1bee7;border-radius:10px;padding:14px;margin-bottom:14px;background:#fdf5ff">
+        <div style="font-weight:600;font-size:13px;color:#6a1b9a;margin-bottom:4px">🎫 積分兌換連動設定</div>
+        <div style="font-size:12px;color:#999;margin-bottom:10px">活動期間覆蓋預設（50點 = 豬腸麵線小）</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div>
-            <label>活動兌換品項</label>
-            <input type="text" id="f-redeem-item" placeholder="例：豬腸麵線(大)" />
+            <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">活動兌換品項</label>
+            <input id="pm-redeem-item" type="text" placeholder="例：豬腸麵線(大)" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
           </div>
           <div>
-            <label>所需積分（點）</label>
-            <input type="number" id="f-redeem-points" value="30" min="1" />
+            <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">所需積分</label>
+            <input id="pm-redeem-pts" type="number" value="30" min="1" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
           </div>
         </div>
-        <div class="promo-preview">
-          活動期間 → <strong id="preview-redeem-pts">30</strong> 點兌換
-          <strong id="preview-redeem-item">豬腸麵線(大)</strong>
-        </div>
-      </fieldset>
+      </div>
 
-      <!-- 前端顯示設定 -->
-      <fieldset class="form-group">
-        <legend>前端顯示設定</legend>
-        <div class="form-row">
+      <!-- 前端顯示 -->
+      <div style="border:1px solid #e0e0e0;border-radius:10px;padding:14px">
+        <div style="font-weight:600;font-size:13px;color:#555;margin-bottom:10px">前端顯示設定</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
           <div>
-            <label>活動標籤文字</label>
-            <input type="text" id="f-display-badge" placeholder="例：🔥 限時優惠 / ⭐ 雙倍積分" />
+            <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">標籤文字</label>
+            <input id="pm-badge" type="text" placeholder="例：🔥 限時優惠" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
           </div>
           <div>
-            <label>標籤顏色</label>
-            <select id="f-display-color">
-              <option value="orange">🟠 橘色（揪團）</option>
-              <option value="green">🟢 綠色（積分）</option>
-              <option value="red">🔴 紅色（限時）</option>
-              <option value="purple">🟣 紫色（兌換）</option>
+            <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">標籤顏色</label>
+            <select id="pm-color" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px">
+              <option value="orange">🟠 橘（揪團）</option>
+              <option value="green">🟢 綠（積分）</option>
+              <option value="red">🔴 紅（限時）</option>
+              <option value="purple">🟣 紫（兌換）</option>
             </select>
           </div>
         </div>
-        <label>備註</label>
-        <input type="text" id="f-notes" placeholder="內部備忘" />
-      </fieldset>
+        <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">備註</label>
+        <input id="pm-notes" type="text" placeholder="內部備忘" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box">
+      </div>
     </div>
 
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closePromoModal()">取消</button>
-      <button class="btn btn-primary" onclick="savePromo()">💾 儲存活動</button>
+    <!-- Footer -->
+    <div style="padding:16px 20px;border-top:1px solid #eee;display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:#fff">
+      <button onclick="closePromoModal()" style="padding:10px 20px;border:1px solid #ddd;border-radius:10px;background:#f5f5f5;cursor:pointer;font-size:14px">取消</button>
+      <button onclick="savePromo()" style="padding:10px 20px;border:none;border-radius:10px;background:#1976d2;color:#fff;cursor:pointer;font-size:14px;font-weight:600">💾 儲存活動</button>
     </div>
   </div>
 </div>
 
+<!-- ════════════════════════════════════════════════════════
+  位置 D：JavaScript — 在 </body> 前插入活動管理 JS
+════════════════════════════════════════════════════════ -->
 <script>
-// ============================================================
-// 活動管理 JavaScript
-// ============================================================
-
-let allPromos = [];
-let editingPromoId = null;
+// ── 活動管理全域狀態 ──────────────────────────────────────
+let _allPromos = [];
+let _editingPromoId = null;
 
 // ── 載入活動列表 ──────────────────────────────────────────
 async function loadPromos() {
+  const listEl = document.getElementById('promo-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="text-align:center;padding:30px;color:#aaa">載入中...</div>';
   try {
+    const at = liff.getAccessToken();
     const res = await fetch('/webhook/admin-api', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'get_promos' })
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_promos', accessToken: at })
     });
     const data = await res.json();
-    allPromos = data.promos || [];
-    renderPromoList(allPromos);
-  } catch (e) {
-    document.getElementById('promo-list').innerHTML =
-      '<div class="error">載入失敗，請重試</div>';
+    _allPromos = data.promos || [];
+    renderPromoList(_allPromos);
+  } catch(e) {
+    listEl.innerHTML = '<div style="text-align:center;padding:30px;color:#e53935">載入失敗，請重試</div>';
   }
 }
 
 // ── 渲染活動列表 ──────────────────────────────────────────
 function renderPromoList(promos) {
-  const container = document.getElementById('promo-list');
-  if (promos.length === 0) {
-    container.innerHTML = '<div class="empty-state">尚無活動，點擊「新增活動」開始建立</div>';
+  const listEl = document.getElementById('promo-list');
+  if (!listEl) return;
+  if (!promos.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:40px;color:#bbb">尚無活動，點擊「＋ 新增活動」開始建立</div>';
     return;
   }
+  const typeMap  = { group_boost:'🧑‍🤝‍🧑 揪團加碼', bonus_points:'⭐ 加贈積分', redeem_promo:'🎫 積分兌換' };
+  const statusMap= { active:'<span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:12px;font-size:11px">🟢 進行中</span>', scheduled:'<span style="background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:12px;font-size:11px">🔵 排程中</span>', paused:'<span style="background:#fffde7;color:#f57f17;padding:2px 8px;border-radius:12px;font-size:11px">🟡 暫停</span>', ended:'<span style="background:#f5f5f5;color:#616161;padding:2px 8px;border-radius:12px;font-size:11px">⚫ 已結束</span>' };
+  const borderMap= { orange:'#ff9800', green:'#4caf50', red:'#e91e63', purple:'#9c27b0' };
 
-  const typeLabel = {
-    group_boost:  '🧑‍🤝‍🧑 揪團加碼',
-    bonus_points: '⭐ 加贈積分',
-    redeem_promo: '🎫 積分兌換連動'
-  };
-  const statusLabel = {
-    active:    '<span class="badge badge--green">🟢 進行中</span>',
-    scheduled: '<span class="badge badge--blue">🔵 排程中</span>',
-    ended:     '<span class="badge badge--gray">⚫ 已結束</span>',
-    paused:    '<span class="badge badge--yellow">🟡 已暫停</span>'
-  };
-
-  container.innerHTML = promos.map(p => {
-    // 組合活動摘要文字
+  listEl.innerHTML = promos.map(p => {
     let summary = '';
-    if (p.promo_type === 'group_boost') {
-      summary = `揪 ${p.group_min_bowls || 5} 碗以上享 ${Math.round((p.group_discount_rate || 0.95) * 100)} 折`;
-    } else if (p.promo_type === 'bonus_points') {
-      const parts = [];
-      if (p.points_multiplier > 1)     parts.push(`全館 ${p.points_multiplier} 倍積分`);
-      if (p.bonus_points_per_item > 0)  parts.push(`指定品項 +${p.bonus_points_per_item} 點`);
-      if (p.spend_threshold > 0)        parts.push(`滿 $${p.spend_threshold} 送 ${p.spend_bonus_points} 點`);
-      summary = parts.join(' ＋ ') || '—';
-    } else if (p.promo_type === 'redeem_promo') {
-      summary = `${p.redeem_points_required || 50} 點兌換 ${p.redeem_item_name || '豬腸麵線(小)'}`;
+    if (p.promo_type === 'group_boost')  summary = `揪 ${p.group_min_bowls||5} 碗享 ${Math.round((p.group_discount_rate||0.95)*100)} 折`;
+    if (p.promo_type === 'bonus_points') {
+      const pts = [];
+      if ((p.points_multiplier||1)>1) pts.push(`全館 ${p.points_multiplier} 倍`);
+      if (p.bonus_points_per_item>0)   pts.push(`品項 +${p.bonus_points_per_item}點`);
+      if (p.spend_threshold>0)         pts.push(`滿$${p.spend_threshold}送${p.spend_bonus_points}點`);
+      summary = pts.join(' ＋ ') || '—';
     }
+    if (p.promo_type === 'redeem_promo') summary = `${p.redeem_points_required||50}點換${p.redeem_item_name||'豬腸麵線(小)'}`;
+    const borderColor = borderMap[p.display_color||'orange'] || '#ff9800';
+    const isPausable  = p.status === 'active' || p.status === 'scheduled' || p.status === 'paused';
 
-    return `
-      <div class="promo-card promo-card--${p.display_color || 'orange'}">
-        <div class="promo-card__header">
-          <div>
-            <span class="promo-type-badge">${typeLabel[p.promo_type] || p.promo_type}</span>
-            ${statusLabel[p.status] || ''}
-          </div>
-          <div class="promo-card__actions">
-            <button class="btn-icon" onclick="editPromo('${p.page_id}')" title="編輯">✏️</button>
-            <button class="btn-icon" onclick="togglePromoStatus('${p.page_id}', '${p.status}')" title="暫停/啟動">
-              ${p.status === 'active' ? '⏸️' : '▶️'}
-            </button>
-          </div>
+    return `<div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;border-left:5px solid ${borderColor};box-shadow:0 1px 6px rgba(0,0,0,0.06)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-size:11px;background:#f0f0f0;border-radius:6px;padding:2px 8px">${typeMap[p.promo_type]||p.promo_type}</span>
+          ${statusMap[p.status]||''}
         </div>
-        <div class="promo-card__name">${p.promo_name || '—'}</div>
-        <div class="promo-card__summary">${summary}</div>
-        <div class="promo-card__footer">
-          <span>📅 ${p.start_date || '?'} ～ ${p.end_date || '?'}</span>
-          <span class="promo-badge-preview">${p.display_badge || ''}</span>
+        <div style="display:flex;gap:8px">
+          <button onclick="editPromo('${p.page_id}')" style="background:none;border:none;font-size:16px;cursor:pointer" title="編輯">✏️</button>
+          ${isPausable ? `<button onclick="togglePromoStatus('${p.page_id}','${p.status}')" style="background:none;border:none;font-size:16px;cursor:pointer" title="${p.status==='active'?'暫停':'啟動'}">${p.status==='active'?'⏸️':'▶️'}</button>` : ''}
         </div>
       </div>
-    `;
+      <div style="font-size:15px;font-weight:600;margin-bottom:4px">${p.promo_name||'—'}</div>
+      <div style="font-size:12px;color:#666;margin-bottom:6px">${summary}</div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#aaa">
+        <span>📅 ${p.start_date||'?'} ～ ${p.end_date||'?'}</span>
+        <span>${p.display_badge||''}</span>
+      </div>
+    </div>`;
   }).join('');
 }
 
-// ── 篩選活動 ──────────────────────────────────────────────
+// ── 篩選 ──────────────────────────────────────────────────
 function filterPromos() {
-  const type   = document.getElementById('promo-type-filter').value;
-  const status = document.getElementById('promo-status-filter').value;
-  const filtered = allPromos.filter(p =>
+  const type   = document.getElementById('filter-promo-type')?.value   || '';
+  const status = document.getElementById('filter-promo-status')?.value || '';
+  renderPromoList(_allPromos.filter(p =>
     (!type   || p.promo_type === type) &&
     (!status || p.status === status)
-  );
-  renderPromoList(filtered);
+  ));
 }
 
-// ── 開啟新增 Modal ──────────────────────────────────────────
+// ── 開啟 Modal ────────────────────────────────────────────
 function openPromoModal(promoData = null) {
-  editingPromoId = promoData?.page_id || null;
-  document.getElementById('promo-modal-title').textContent =
-    promoData ? '編輯活動' : '新增活動';
-
-  // 清空表單
-  resetPromoForm();
-
-  // 若是編輯則填入資料
-  if (promoData) {
-    document.getElementById('f-promo-name').value       = promoData.promo_name || '';
-    document.getElementById('f-promo-type').value       = promoData.promo_type || '';
-    document.getElementById('f-start-date').value       = promoData.start_date || '';
-    document.getElementById('f-end-date').value         = promoData.end_date || '';
-    document.getElementById('f-status').value           = promoData.status || 'active';
-    document.getElementById('f-priority').value         = promoData.priority || 10;
-    document.getElementById('f-display-badge').value    = promoData.display_badge || '';
-    document.getElementById('f-display-color').value    = promoData.display_color || 'orange';
-    document.getElementById('f-notes').value            = promoData.notes || '';
-    onPromoTypeChange();
-    // 依類型填入特定欄位...
-    if (promoData.promo_type === 'group_boost') {
-      document.getElementById('f-group-min-bowls').value   = promoData.group_min_bowls || 5;
-      document.getElementById('f-group-discount-rate').value = promoData.group_discount_rate || 0.95;
-      updateGroupBoostPreview();
-    }
-    if (promoData.promo_type === 'redeem_promo') {
-      document.getElementById('f-redeem-item').value   = promoData.redeem_item_name || '';
-      document.getElementById('f-redeem-points').value = promoData.redeem_points_required || 50;
-    }
-  }
-
+  _editingPromoId = promoData?.page_id || null;
+  document.getElementById('promo-modal-title').textContent = promoData ? '編輯活動' : '新增活動';
+  _resetPromoForm();
+  if (promoData) _fillPromoForm(promoData);
   document.getElementById('promo-modal').style.display = 'flex';
 }
-
 function closePromoModal() {
   document.getElementById('promo-modal').style.display = 'none';
 }
-
-function resetPromoForm() {
-  ['f-promo-name','f-promo-type','f-start-date','f-end-date','f-display-badge','f-notes'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-  document.getElementById('f-status').value = 'active';
-  document.getElementById('f-priority').value = 10;
-  document.getElementById('f-display-color').value = 'orange';
-  document.getElementById('f-group-min-bowls').value = 5;
-  document.getElementById('f-group-discount-rate').value = 0.95;
-  document.getElementById('f-redeem-points').value = 50;
-  ['section-group-boost','section-bonus-points','section-redeem-promo'].forEach(id => {
-    document.getElementById(id).style.display = 'none';
-  });
+function _resetPromoForm() {
+  ['pm-name','pm-badge','pm-notes','pm-target-items','pm-redeem-item'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  const pm = v => { const el=document.getElementById(v); if(el) return el; };
+  if(pm('pm-type'))        pm('pm-type').value = '';
+  if(pm('pm-status'))      pm('pm-status').value = 'active';
+  if(pm('pm-priority'))    pm('pm-priority').value = 10;
+  if(pm('pm-color'))       pm('pm-color').value = 'orange';
+  if(pm('pm-min-bowls'))   pm('pm-min-bowls').value = 5;
+  if(pm('pm-discount'))    pm('pm-discount').value = 0.95;
+  if(pm('pm-multiplier'))  pm('pm-multiplier').value = 2;
+  if(pm('pm-bonus-per-item')) pm('pm-bonus-per-item').value = 5;
+  if(pm('pm-spend-threshold'))pm('pm-spend-threshold').value = 100;
+  if(pm('pm-spend-bonus')) pm('pm-spend-bonus').value = 20;
+  if(pm('pm-redeem-pts'))  pm('pm-redeem-pts').value = 30;
+  ['pm-use-multi','pm-use-item','pm-use-spend'].forEach(id => { const el=document.getElementById(id); if(el) el.checked=false; });
+  ['pm-multi-sec','pm-item-sec','pm-spend-sec','pm-section-group','pm-section-points','pm-section-redeem'].forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
+  updateGroupPreview();
+}
+function _fillPromoForm(p) {
+  const set = (id, v) => { const el=document.getElementById(id); if(el&&v!==undefined) el.value=v; };
+  set('pm-name', p.promo_name); set('pm-type', p.promo_type); set('pm-start', p.start_date);
+  set('pm-end', p.end_date); set('pm-status', p.status); set('pm-priority', p.priority);
+  set('pm-badge', p.display_badge); set('pm-color', p.display_color); set('pm-notes', p.notes);
+  onPromoTypeChange();
+  if (p.promo_type === 'group_boost') {
+    set('pm-min-bowls', p.group_min_bowls); set('pm-discount', p.group_discount_rate); updateGroupPreview();
+  }
+  if (p.promo_type === 'bonus_points') {
+    if ((p.points_multiplier||1)>1) { document.getElementById('pm-use-multi').checked=true; document.getElementById('pm-multi-sec').style.display='block'; set('pm-multiplier', p.points_multiplier); }
+    if (p.bonus_points_per_item>0)  { document.getElementById('pm-use-item').checked=true; document.getElementById('pm-item-sec').style.display='block'; set('pm-target-items', p.target_items); set('pm-bonus-per-item', p.bonus_points_per_item); }
+    if (p.spend_threshold>0)        { document.getElementById('pm-use-spend').checked=true; document.getElementById('pm-spend-sec').style.display='grid'; set('pm-spend-threshold', p.spend_threshold); set('pm-spend-bonus', p.spend_bonus_points); }
+  }
+  if (p.promo_type === 'redeem_promo') { set('pm-redeem-item', p.redeem_item_name); set('pm-redeem-pts', p.redeem_points_required); }
 }
 
-// ── 依類型切換欄位顯示 ──────────────────────────────────────
+// ── 類型切換 ──────────────────────────────────────────────
 function onPromoTypeChange() {
-  const type = document.getElementById('f-promo-type').value;
-  document.getElementById('section-group-boost').style.display  = type === 'group_boost'  ? '' : 'none';
-  document.getElementById('section-bonus-points').style.display = type === 'bonus_points' ? '' : 'none';
-  document.getElementById('section-redeem-promo').style.display = type === 'redeem_promo' ? '' : 'none';
+  const type = document.getElementById('pm-type')?.value;
+  document.getElementById('pm-section-group').style.display  = type==='group_boost'  ? 'block' : 'none';
+  document.getElementById('pm-section-points').style.display = type==='bonus_points' ? 'block' : 'none';
+  document.getElementById('pm-section-redeem').style.display = type==='redeem_promo' ? 'block' : 'none';
 }
-
-function toggleBonusSection(key) {
-  const map = { multiplier: 'section-multiplier', item: 'section-item-bonus', spend: 'section-spend-bonus' };
-  const checked = document.getElementById(`f-use-${key}`).checked;
-  document.getElementById(map[key]).style.display = checked ? '' : 'none';
+function updateGroupPreview() {
+  const bowls = document.getElementById('pm-min-bowls')?.value || 5;
+  const rate  = document.getElementById('pm-discount')?.value  || 0.95;
+  const el1 = document.getElementById('gp-bowls'), el2 = document.getElementById('gp-pct');
+  if (el1) el1.textContent = bowls;
+  if (el2) el2.textContent = Math.round(rate * 100);
 }
-
-// ── 揪團加碼即時預覽 ──────────────────────────────────────
-function updateGroupBoostPreview() {
-  const bowls = document.getElementById('f-group-min-bowls').value;
-  const rate  = document.getElementById('f-group-discount-rate').value;
-  document.getElementById('preview-min-bowls').textContent = bowls;
-  document.getElementById('preview-discount-pct').textContent = Math.round(rate * 100);
-}
-// 加入事件監聽
-['f-group-min-bowls','f-group-discount-rate'].forEach(id => {
-  document.getElementById(id)?.addEventListener('input', updateGroupBoostPreview);
-});
 
 // ── 儲存活動 ──────────────────────────────────────────────
 async function savePromo() {
+  const g = id => document.getElementById(id);
+  const v = id => g(id)?.value?.trim() || '';
+  const n = (id, def) => Number(g(id)?.value) || def;
+  const c = id => g(id)?.checked || false;
   const payload = {
-    action: editingPromoId ? 'update_promo' : 'create_promo',
-    page_id:      editingPromoId,
-    promo_name:   document.getElementById('f-promo-name').value.trim(),
-    promo_type:   document.getElementById('f-promo-type').value,
-    start_date:   document.getElementById('f-start-date').value,
-    end_date:     document.getElementById('f-end-date').value,
-    status:       document.getElementById('f-status').value,
-    priority:     Number(document.getElementById('f-priority').value),
-    display_badge: document.getElementById('f-display-badge').value.trim(),
-    display_color: document.getElementById('f-display-color').value,
-    notes:        document.getElementById('f-notes').value.trim(),
-    // 類型特定欄位
-    group_min_bowls:     Number(document.getElementById('f-group-min-bowls').value),
-    group_discount_rate: Number(document.getElementById('f-group-discount-rate').value),
-    points_multiplier:   document.getElementById('f-use-multiplier').checked
-                          ? Number(document.getElementById('f-points-multiplier').value) : 1,
-    target_items:        document.getElementById('f-use-item-bonus').checked
-                          ? document.getElementById('f-target-items').value.trim() : '',
-    bonus_points_per_item: document.getElementById('f-use-item-bonus').checked
-                          ? Number(document.getElementById('f-bonus-per-item').value) : 0,
-    spend_threshold:     document.getElementById('f-use-spend-bonus').checked
-                          ? Number(document.getElementById('f-spend-threshold').value) : 0,
-    spend_bonus_points:  document.getElementById('f-use-spend-bonus').checked
-                          ? Number(document.getElementById('f-spend-bonus-points').value) : 0,
-    redeem_item_name:    document.getElementById('f-redeem-item').value.trim(),
-    redeem_points_required: Number(document.getElementById('f-redeem-points').value),
+    action:    _editingPromoId ? 'update_promo' : 'create_promo',
+    page_id:   _editingPromoId,
+    accessToken: liff.getAccessToken(),
+    promo_name: v('pm-name'), promo_type: v('pm-type'),
+    start_date: v('pm-start'), end_date: v('pm-end'),
+    status: v('pm-status'), priority: n('pm-priority', 10),
+    display_badge: v('pm-badge'), display_color: v('pm-color'), notes: v('pm-notes'),
+    group_min_bowls:      n('pm-min-bowls', 5),
+    group_discount_rate:  n('pm-discount', 0.95),
+    points_multiplier:    c('pm-use-multi') ? n('pm-multiplier', 2) : 1,
+    target_items:         c('pm-use-item')  ? v('pm-target-items') : '',
+    bonus_points_per_item:c('pm-use-item')  ? n('pm-bonus-per-item', 0) : 0,
+    spend_threshold:      c('pm-use-spend') ? n('pm-spend-threshold', 0) : 0,
+    spend_bonus_points:   c('pm-use-spend') ? n('pm-spend-bonus', 0) : 0,
+    redeem_item_name:     v('pm-redeem-item'),
+    redeem_points_required: n('pm-redeem-pts', 50),
   };
-
   if (!payload.promo_name || !payload.promo_type || !payload.start_date || !payload.end_date) {
-    alert('請填寫活動名稱、類型及日期');
-    return;
+    alert('請填寫活動名稱、類型及日期'); return;
   }
-
   try {
-    const res = await fetch('/webhook/admin-api', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    const res = await fetch('/webhook/admin-api', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
     const data = await res.json();
     if (data.success) {
-      showToast(editingPromoId ? '活動已更新 ✅' : '活動已建立 ✅');
-      closePromoModal();
-      loadPromos();
-    } else {
-      alert('儲存失敗：' + (data.error || '未知錯誤'));
-    }
-  } catch (e) {
-    alert('網路錯誤，請重試');
-  }
+      showToast && showToast(_editingPromoId ? '活動已更新 ✅' : '活動已建立 ✅');
+      closePromoModal(); loadPromos();
+    } else { alert('儲存失敗：' + (data.error||'未知錯誤')); }
+  } catch(e) { alert('網路錯誤，請重試'); }
 }
 
-// ── 暫停/啟動活動 ─────────────────────────────────────────
+// ── 暫停 / 啟動 ───────────────────────────────────────────
 async function togglePromoStatus(pageId, currentStatus) {
   const newStatus = currentStatus === 'active' ? 'paused' : 'active';
-  const label = newStatus === 'active' ? '啟動' : '暫停';
-  if (!confirm(`確定要${label}此活動？`)) return;
-
-  await fetch('/webhook/admin-api', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'update_promo_status', page_id: pageId, status: newStatus })
-  });
-  showToast(`活動已${label}`);
-  loadPromos();
+  if (!confirm(`確定要${newStatus==='active'?'啟動':'暫停'}此活動？`)) return;
+  try {
+    await fetch('/webhook/admin-api', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'update_promo_status', page_id:pageId, status:newStatus, accessToken:liff.getAccessToken() }) });
+    showToast && showToast(`活動已${newStatus==='active'?'啟動':'暫停'}`);
+    loadPromos();
+  } catch(e) { alert('操作失敗'); }
 }
 
-// ── 編輯活動 ──────────────────────────────────────────────
+// ── 編輯 ──────────────────────────────────────────────────
 function editPromo(pageId) {
-  const promo = allPromos.find(p => p.page_id === pageId);
-  if (promo) openPromoModal(promo);
+  const p = _allPromos.find(x => x.page_id === pageId);
+  if (p) openPromoModal(p);
 }
 
-// ── Tab 切換時觸發載入 ────────────────────────────────────
-// 在原本 switchTab() 函式加入：
-// if (tabName === 'promos') loadPromos();
+// ════════════════════════════════════════════════════════
+// ★ 在你現有的 switchTab() 函式中加入：
+//   if (tabName === 'promos') loadPromos();
+// ════════════════════════════════════════════════════════
 </script>
-
-<style>
-/* ── 活動管理 CSS ── */
-.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.filter-bar { display: flex; gap: 8px; margin-bottom: 16px; }
-.filter-bar select { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #ddd; }
-
-.promo-list { display: grid; gap: 12px; }
-.promo-card { background: #fff; border-radius: 12px; padding: 14px; border-left: 5px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-.promo-card--orange { border-left-color: #ff9800; }
-.promo-card--green  { border-left-color: #4caf50; }
-.promo-card--red    { border-left-color: #e91e63; }
-.promo-card--purple { border-left-color: #9c27b0; }
-.promo-card__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-.promo-card__name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-.promo-card__summary { font-size: 13px; color: #555; margin-bottom: 8px; }
-.promo-card__footer { display: flex; justify-content: space-between; font-size: 12px; color: #888; }
-.promo-card__actions { display: flex; gap: 6px; }
-.btn-icon { background: none; border: none; cursor: pointer; font-size: 18px; padding: 2px; }
-.promo-type-badge { font-size: 12px; background: #f0f0f0; border-radius: 6px; padding: 2px 8px; margin-right: 6px; }
-.badge { font-size: 12px; padding: 2px 8px; border-radius: 20px; }
-.badge--green  { background: #e8f5e9; color: #2e7d32; }
-.badge--blue   { background: #e3f2fd; color: #1565c0; }
-.badge--gray   { background: #f5f5f5; color: #616161; }
-.badge--yellow { background: #fffde7; color: #f57f17; }
-
-/* Modal */
-.modal { position: fixed; inset: 0; display: flex; align-items: flex-end; z-index: 1000; }
-.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
-.modal-content { position: relative; background: #fff; border-radius: 20px 20px 0 0; width: 100%; max-height: 90vh; overflow-y: auto; }
-.modal-content--wide { max-width: 600px; margin: auto; border-radius: 16px; }
-.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: #fff; z-index: 1; }
-.modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #666; }
-.modal-body { padding: 20px; }
-.modal-footer { padding: 16px 20px; border-top: 1px solid #eee; display: flex; gap: 10px; justify-content: flex-end; }
-
-/* 表單 */
-.form-group { border: 1px solid #e0e0e0; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
-.form-group legend { font-weight: 700; color: #333; padding: 0 6px; font-size: 14px; }
-.form-group label { display: block; font-size: 13px; color: #555; margin: 10px 0 4px; }
-.form-group input, .form-group select { width: 100%; padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.required { color: #e53935; }
-.hint { font-size: 11px; color: #999; margin-top: 3px; display: block; }
-.bonus-option { border: 1px solid #f0f0f0; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
-.checkbox-label { display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer; }
-.promo-preview { background: #f9f9f9; border-radius: 8px; padding: 10px; font-size: 13px; margin-top: 10px; text-align: center; }
-
-.btn { padding: 10px 20px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; }
-.btn-primary   { background: #1976d2; color: #fff; }
-.btn-secondary { background: #f0f0f0; color: #333; }
-.empty-state { text-align: center; padding: 40px; color: #999; }
-</style>
