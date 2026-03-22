@@ -63,7 +63,9 @@ async function init() {
 
     // Navigate to the appropriate page
     var baseUrl = location.origin + location.pathname.replace(/index\.html$/, '').replace(/\/$/, '');
-    if (page === 'member') {
+    if (page === 'admin') {
+      location.replace(baseUrl + '/admin.html');
+    } else if (page === 'member') {
       location.replace(baseUrl + '/member.html');
     } else {
       var grp='';
