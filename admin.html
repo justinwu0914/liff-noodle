@@ -90,11 +90,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 <div class="tabs">
   <button class="tab-btn active" onclick="switchTab('orders')">📋 訂單</button>
-  <button class="tab-btn" onclick="switchTab('revenue')">💰 營收</button>
-  <button class="tab-btn" onclick="switchTab('members')">👥 會員</button>
   <button class="tab-btn" onclick="switchTab('preorders')">⏰ 預約</button>
-  <button class="tab-btn" onclick="switchTab('broadcast')">📢 推播</button>
+  <button class="tab-btn" onclick="switchTab('revenue')">💰 營收</button>
   <button class="tab-btn" onclick="switchTab('promos')">🎯 活動</button>
+  <button class="tab-btn" onclick="switchTab('members')">👥 會員</button>
   <button class="tab-btn" onclick="switchTab('settings')">⚙️ 設定</button>
 </div>
 
@@ -140,22 +139,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <button class="btn btn-gray" onclick="loadPreorders()" style="font-size:12px;padding:7px 12px">🔄 重整</button>
   </div>
   <div id="preorders-list"><div class="loading-overlay">載入中...</div></div>
-</section>
-
-<!-- ══ 推播 Tab ══════════════════════════════════════════════ -->
-<section id="tab-broadcast" class="tab-content">
-  <div class="section-header"><h2>📢 推播訊息</h2></div>
-  <div class="card">
-    <div class="card-title">發送推播給所有會員</div>
-    <div class="form-group">
-      <label>推播內容</label>
-      <textarea id="broadcast-msg" placeholder="輸入要傳送給所有會員的訊息..."></textarea>
-    </div>
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:12px;color:#888">將發送給所有已註冊會員</span>
-      <button class="btn btn-primary" onclick="sendBroadcast()">📤 發送推播</button>
-    </div>
-  </div>
 </section>
 
 <!-- ══ 設定 Tab ══════════════════════════════════════════════ -->
@@ -206,6 +189,43 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     </select>
   </div>
   <div id="promo-list"><div class="loading-overlay">載入中...</div></div>
+
+  <!-- 推播區塊 -->
+  <div style="margin-top:24px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <span style="font-size:16px;font-weight:700">📢 推播訊息</span>
+      <span style="font-size:12px;color:#888">發送給所有已註冊會員</span>
+    </div>
+
+    <!-- 範例快選 -->
+    <div style="margin-bottom:12px">
+      <div style="font-size:12px;color:#888;margin-bottom:6px">📌 範例快選（點擊套用）</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button onclick="applyBroadcastTemplate(this)" style="text-align:left;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;background:#f9f9f9;font-size:12px;cursor:pointer;line-height:1.5">
+          🎉 本週特惠活動！\n揪團 5 碗以上享 95 折優惠\n快揪朋友一起來吃老全麵線！\n👉 點餐連結：https://liff.line.me/2009530264-3xA9VL4a
+        </button>
+        <button onclick="applyBroadcastTemplate(this)" style="text-align:left;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;background:#f9f9f9;font-size:12px;cursor:pointer;line-height:1.5">
+          ⭐ 積分加倍週！\n本週消費積分雙倍送\n趕快來老全麵線累積點數，50 點換免費豬腸麵線(小)！
+        </button>
+        <button onclick="applyBroadcastTemplate(this)" style="text-align:left;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;background:#f9f9f9;font-size:12px;cursor:pointer;line-height:1.5">
+          📢 店家公告\n感謝大家的支持！\n本店將於 [日期] 公休一天，造成不便請見諒 🙏\n恢復營業後將提供優惠活動，敬請期待！
+        </button>
+        <button onclick="applyBroadcastTemplate(this)" style="text-align:left;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;background:#f9f9f9;font-size:12px;cursor:pointer;line-height:1.5">
+          🍜 今日限定！\n今天消費滿 $100 贈送 20 點積分\n數量有限，快來老全麵線點一碗！
+        </button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:0">
+      <div class="form-group" style="margin-bottom:10px">
+        <label style="font-size:13px;font-weight:600;color:#333;display:block;margin-bottom:6px">推播內容</label>
+        <textarea id="broadcast-msg" placeholder="輸入推播訊息，或點擊上方範例快選..." style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;height:100px;resize:vertical;box-sizing:border-box"></textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn btn-primary" onclick="sendBroadcast()">📤 發送推播</button>
+      </div>
+    </div>
+  </div>
 </section>
 
 <!-- ══ 活動 Modal ══════════════════════════════════════════════ -->
@@ -550,6 +570,13 @@ async function completePreorder(pageId) {
   if (data.success) { showToast('預約訂單已完成 ✅'); loadPreorders(); }
 }
 
+// ── 推播範例快選 ──────────────────────────────────────────
+function applyBroadcastTemplate(btn) {
+  const text = btn.innerText.trim();
+  document.getElementById('broadcast-msg').value = text;
+  document.getElementById('broadcast-msg').focus();
+}
+
 // ── 推播 ──────────────────────────────────────────────────
 async function sendBroadcast() {
   const msg = document.getElementById('broadcast-msg').value.trim();
@@ -557,8 +584,20 @@ async function sendBroadcast() {
   if (!confirm(`確定要推播以下訊息給所有會員？\n\n${msg}`)) return;
   try {
     const data = await apiCall({ action:'broadcast', message:msg });
-    if (data.success) { showToast(`推播完成！成功 ${data.pushed} 人 ✅`); document.getElementById('broadcast-msg').value = ''; }
-    else alert('推播失敗：' + (data.error || ''));
+    if (data.success) {
+      document.getElementById('broadcast-msg').value = '';
+      // 顯示結果並提供關閉按鈕
+      const resultHtml = `
+        <div id="broadcast-result" style="position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;padding:20px">
+          <div style="background:#fff;border-radius:16px;padding:24px;max-width:320px;width:100%;text-align:center">
+            <div style="font-size:40px;margin-bottom:12px">✅</div>
+            <div style="font-size:16px;font-weight:700;margin-bottom:8px">推播發送完成！</div>
+            <div style="font-size:13px;color:#555;margin-bottom:20px">成功推播給 <strong>${data.pushed}</strong> 位會員${data.failed > 0 ? `<br><span style="color:#e53935">失敗 ${data.failed} 位</span>` : ''}</div>
+            <button onclick="document.getElementById('broadcast-result').remove()" style="padding:10px 30px;border:none;border-radius:10px;background:#1976d2;color:#fff;font-size:14px;font-weight:600;cursor:pointer;width:100%">關閉</button>
+          </div>
+        </div>`;
+      document.body.insertAdjacentHTML('beforeend', resultHtml);
+    } else { alert('推播失敗：' + (data.error || '')); }
   } catch(e) { alert('網路錯誤'); }
 }
 
