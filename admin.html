@@ -169,59 +169,63 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 <!-- ══ 活動 Tab ══════════════════════════════════════════════ -->
 <section id="tab-promos" class="tab-content">
-  <div class="section-header">
-    <h2>🎯 活動管理</h2>
-    <button class="btn btn-primary" onclick="openPromoModal()">＋ 新增活動</button>
+  <!-- Sub-tab 切換列 -->
+  <div style="display:flex;background:#f0f4f8;border-radius:10px;padding:4px;margin-bottom:16px;gap:4px">
+    <button id="sub-btn-promos" onclick="switchSubTab('promos')" style="flex:1;padding:8px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:#1976d2;color:#fff;transition:all 0.2s">🎯 活動管理</button>
+    <button id="sub-btn-broadcast" onclick="switchSubTab('broadcast')" style="flex:1;padding:8px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:none;color:#666;transition:all 0.2s">📢 推播訊息</button>
   </div>
-  <div style="display:flex;gap:8px;margin-bottom:16px">
-    <select id="filter-promo-type" onchange="filterPromos()" style="flex:1;padding:8px;border-radius:8px;border:1px solid #ddd;font-size:13px">
-      <option value="">全部類型</option>
-      <option value="group_boost">🧑‍🤝‍🧑 揪團加碼</option>
-      <option value="bonus_points">⭐ 加贈積分</option>
-      <option value="redeem_promo">🎫 積分兌換連動</option>
-    </select>
-    <select id="filter-promo-status" onchange="filterPromos()" style="flex:1;padding:8px;border-radius:8px;border:1px solid #ddd;font-size:13px">
-      <option value="">全部狀態</option>
-      <option value="active">🟢 進行中</option>
-      <option value="scheduled">🔵 排程中</option>
-      <option value="paused">🟡 已暫停</option>
-      <option value="ended">⚫ 已結束</option>
-    </select>
-  </div>
-  <div id="promo-list"><div class="loading-overlay">載入中...</div></div>
 
-  <!-- 推播區塊 -->
-  <div style="margin-top:24px">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-      <span style="font-size:16px;font-weight:700">📢 推播訊息</span>
-      <span style="font-size:12px;color:#888">發送給所有已註冊會員</span>
+  <!-- 活動管理區 -->
+  <div id="sub-promos">
+    <div class="section-header">
+      <h2>🎯 活動管理</h2>
+      <button class="btn btn-primary" onclick="openPromoModal()">＋ 新增活動</button>
     </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <select id="filter-promo-type" onchange="filterPromos()" style="flex:1;padding:8px;border-radius:8px;border:1px solid #ddd;font-size:13px">
+        <option value="">全部類型</option>
+        <option value="group_boost">🧑‍🤝‍🧑 揪團加碼</option>
+        <option value="bonus_points">⭐ 加贈積分</option>
+        <option value="redeem_promo">🎫 積分兌換連動</option>
+      </select>
+      <select id="filter-promo-status" onchange="filterPromos()" style="flex:1;padding:8px;border-radius:8px;border:1px solid #ddd;font-size:13px">
+        <option value="">全部狀態</option>
+        <option value="active">🟢 進行中</option>
+        <option value="scheduled">🔵 排程中</option>
+        <option value="paused">🟡 已暫停</option>
+        <option value="ended">⚫ 已結束</option>
+      </select>
+    </div>
+    <div id="promo-list"><div class="loading-overlay">載入中...</div></div>
+  </div>
 
-    <!-- 範例快選 -->
-    <div style="margin-bottom:12px">
-      <div style="font-size:12px;color:#888;margin-bottom:6px">📌 範例快選（點擊套用）</div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <button onclick="applyBroadcastTemplate(this)" style="text-align:left;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;background:#f9f9f9;font-size:12px;cursor:pointer;line-height:1.5">
-          🎉 本週特惠活動！\n揪團 5 碗以上享 95 折優惠\n快揪朋友一起來吃老全麵線！\n👉 點餐連結：https://liff.line.me/2009530264-3xA9VL4a
-        </button>
-        <button onclick="applyBroadcastTemplate(this)" style="text-align:left;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;background:#f9f9f9;font-size:12px;cursor:pointer;line-height:1.5">
-          ⭐ 積分加倍週！\n本週消費積分雙倍送\n趕快來老全麵線累積點數，50 點換免費豬腸麵線(小)！
-        </button>
-        <button onclick="applyBroadcastTemplate(this)" style="text-align:left;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;background:#f9f9f9;font-size:12px;cursor:pointer;line-height:1.5">
-          📢 店家公告\n感謝大家的支持！\n本店將於 [日期] 公休一天，造成不便請見諒 🙏\n恢復營業後將提供優惠活動，敬請期待！
-        </button>
-        <button onclick="applyBroadcastTemplate(this)" style="text-align:left;padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;background:#f9f9f9;font-size:12px;cursor:pointer;line-height:1.5">
-          🍜 今日限定！\n今天消費滿 $100 贈送 20 點積分\n數量有限，快來老全麵線點一碗！
-        </button>
+  <!-- 推播訊息區 -->
+  <div id="sub-broadcast" style="display:none">
+    <div class="section-header"><h2>📢 推播訊息</h2></div>
+    <div class="card" style="margin-bottom:12px">
+      <div style="font-size:12px;font-weight:600;color:#555;margin-bottom:10px">📌 範例快選（點擊套用）</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div onclick="applyTemplate(0)" style="padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;background:#f9f9f9;font-size:12px;cursor:pointer;line-height:1.6;color:#333">
+          🎉 <strong>本週特惠活動！</strong><br>揪團 5 碗以上享 95 折優惠<br>快揪朋友一起來吃老全麵線！<br>👉 點餐連結：https://liff.line.me/2009530264-3xA9VL4a
+        </div>
+        <div onclick="applyTemplate(1)" style="padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;background:#f9f9f9;font-size:12px;cursor:pointer;line-height:1.6;color:#333">
+          ⭐ <strong>積分加倍週！</strong><br>本週消費積分雙倍送<br>趕快來老全麵線累積點數，50 點換免費豬腸麵線(小)！
+        </div>
+        <div onclick="applyTemplate(2)" style="padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;background:#f9f9f9;font-size:12px;cursor:pointer;line-height:1.6;color:#333">
+          📢 <strong>店家公告</strong><br>感謝大家的支持！<br>本店將於 [日期] 公休一天，造成不便請見諒 🙏<br>恢復營業後將提供優惠活動，敬請期待！
+        </div>
+        <div onclick="applyTemplate(3)" style="padding:10px 12px;border:1px solid #e0e0e0;border-radius:8px;background:#f9f9f9;font-size:12px;cursor:pointer;line-height:1.6;color:#333">
+          🍜 <strong>今日限定！</strong><br>今天消費滿 $100 贈送 20 點積分<br>數量有限，快來老全麵線點一碗！
+        </div>
       </div>
     </div>
-
-    <div class="card" style="margin-bottom:0">
+    <div class="card">
       <div class="form-group" style="margin-bottom:10px">
         <label style="font-size:13px;font-weight:600;color:#333;display:block;margin-bottom:6px">推播內容</label>
-        <textarea id="broadcast-msg" placeholder="輸入推播訊息，或點擊上方範例快選..." style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;height:100px;resize:vertical;box-sizing:border-box"></textarea>
+        <textarea id="broadcast-msg" placeholder="輸入推播訊息，或點擊上方範例套用..." style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;height:120px;resize:vertical;box-sizing:border-box"></textarea>
       </div>
-      <div style="display:flex;justify-content:flex-end">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;color:#888">發送給所有已註冊會員</span>
         <button class="btn btn-primary" onclick="sendBroadcast()">📤 發送推播</button>
       </div>
     </div>
@@ -570,11 +574,26 @@ async function completePreorder(pageId) {
   if (data.success) { showToast('預約訂單已完成 ✅'); loadPreorders(); }
 }
 
+// ── Sub-tab 切換（活動管理 / 推播訊息）────────────────────
+function switchSubTab(name) {
+  document.getElementById('sub-promos').style.display    = name === 'promos'    ? 'block' : 'none';
+  document.getElementById('sub-broadcast').style.display = name === 'broadcast' ? 'block' : 'none';
+  document.getElementById('sub-btn-promos').style.background    = name === 'promos'    ? '#1976d2' : 'none';
+  document.getElementById('sub-btn-promos').style.color         = name === 'promos'    ? '#fff'    : '#666';
+  document.getElementById('sub-btn-broadcast').style.background = name === 'broadcast' ? '#1976d2' : 'none';
+  document.getElementById('sub-btn-broadcast').style.color      = name === 'broadcast' ? '#fff'    : '#666';
+}
+
 // ── 推播範例快選 ──────────────────────────────────────────
-function applyBroadcastTemplate(btn) {
-  const text = btn.innerText.trim();
-  document.getElementById('broadcast-msg').value = text;
-  document.getElementById('broadcast-msg').focus();
+const _broadcastTemplates = [
+  '🎉 本週特惠活動！\n揪團 5 碗以上享 95 折優惠\n快揪朋友一起來吃老全麵線！\n👉 點餐連結：https://liff.line.me/2009530264-3xA9VL4a',
+  '⭐ 積分加倍週！\n本週消費積分雙倍送\n趕快來老全麵線累積點數，50 點換免費豬腸麵線(小)！',
+  '📢 店家公告\n感謝大家的支持！\n本店將於 [日期] 公休一天，造成不便請見諒 🙏\n恢復營業後將提供優惠活動，敬請期待！',
+  '🍜 今日限定！\n今天消費滿 $100 贈送 20 點積分\n數量有限，快來老全麵線點一碗！'
+];
+function applyTemplate(idx) {
+  const el = document.getElementById('broadcast-msg');
+  if (el) { el.value = _broadcastTemplates[idx] || ''; el.focus(); }
 }
 
 // ── 推播 ──────────────────────────────────────────────────
