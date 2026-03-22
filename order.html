@@ -175,6 +175,41 @@ render();
 var cn=document.getElementById('cname');
 if(cn&&uname&&!cn.value){cn.value=uname;custName=uname;}
 dlog('✅ init() done');
+// Load last order for reorder
+loadLastOrder();
+}
+var lastOrderData=null;
+async function loadLastOrder(){
+try{
+  if(!accessToken)return;
+  var resp=await fetch('https://n8n.justinaiauto.com/webhook/admin-api',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({accessToken:accessToken,action:'last_order'})});
+  var d=await resp.json();
+  if(d.success&&d.lastOrder){lastOrderData=d.lastOrder;showReorderBanner();}
+}catch(e){dlog('⚠️ loadLastOrder error: '+e.message);}
+}
+function showReorderBanner(){
+if(!lastOrderData||cart.length>0)return;
+var el=document.getElementById('reorder-area');
+if(!el)return;
+el.innerHTML='<div style="background:#FFF5F0;border:1.5px solid #FFE0D0;border-radius:14px;padding:14px;margin:0 16px 12px">'+
+'<div style="font-size:13px;font-weight:700;color:#D85A30;margin-bottom:6px">🔄 再來一份？</div>'+
+'<div style="font-size:12px;color:#888;margin-bottom:8px">上次：'+lastOrderData.items+' — $'+lastOrderData.totalAmount+'</div>'+
+'<button onclick="doReorder()" style="width:100%;padding:10px;background:#D85A30;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">🍜 一鍵重新下單</button>'+
+'</div>';
+}
+function doReorder(){
+try{
+  var items=JSON.parse(lastOrderData.itemsDetail||'[]');
+  if(!items.length){alert('無法讀取上次訂單資料');return;}
+  cart=[];
+  items.forEach(function(it){
+    var m=M.find(x=>x.id===it.name)||M.find(x=>x.nm===it.name);
+    if(!m)return;
+    cart.push({uid:Date.now()+Math.random(),mid:m.id,nm:m.nm,sz:it.size||'小碗',qty:it.qty||1,cd:it.conds||{香菜:1,醬油:1,烏醋:1,蒜蓉:1},sp:it.spice||'不加辣',tp:it.toppingQty||{加豬腸:0,加鮮蚵:0},canTop:m.top});
+  });
+  if(cart.length){rc();document.getElementById('reorder-area').innerHTML='';document.getElementById('ca').scrollIntoView({behavior:'smooth'});}
+  else{alert('菜單已更新，請重新選擇品項');}
+}catch(e){alert('載入失敗：'+e.message);}
 }
 // === 營業時間判斷 ===
 // 週一至週六 06:30-13:00，週日公休
@@ -220,8 +255,8 @@ if(!biz.open){showClosed(biz);return;}
 }
 var preTag=_preorderMode?'<div style="background:#FFF5F0;padding:10px 16px;text-align:center;border-bottom:2px solid #D85A30;font-size:13px;color:#D85A30;font-weight:600">📝 預約模式 — 此訂單將於下次營業時段製作</div>':'';
 var nm=custName||uname||'';
-document.getElementById('app').innerHTML=preTag+'<div class="nsec"><div class="nlbl">👤 取餐姓名（必填）</div><div class="nwrap"><input type="text" id="cname" placeholder="請輸入您的姓名" maxlength="20" value="'+nm.replace(/"/g,'&quot;')+'" oninput="custName=this.value.trim();document.getElementById(\x27nerr\x27).style.display=\x27none\x27;rc();"></div><div class="nerr" id="nerr">⚠ 請輸入取餐姓名才能送出訂單</div></div><div class="sec">選擇品項加入購物車</div><div class="grid">'+M.map(m=>'<div class="mc"><div class="nm">'+m.nm+'</div><div class="ds">'+m.ds+'</div><div class="sr"><div class="sb on" onclick="add(\x27'+m.id+'\x27,\x27小碗\x27)">小碗 $'+m.S+'</div><div class="sb" onclick="add(\x27'+m.id+'\x27,\x27大碗\x27)">大碗 $'+m.L+'</div></div></div>').join('')+'</div><div id="ca"></div>';
-document.getElementById('ft').style.display='block';rc();
+document.getElementById('app').innerHTML=preTag+'<div class="nsec"><div class="nlbl">👤 取餐姓名（必填）</div><div class="nwrap"><input type="text" id="cname" placeholder="請輸入您的姓名" maxlength="20" value="'+nm.replace(/"/g,'&quot;')+'" oninput="custName=this.value.trim();document.getElementById(\x27nerr\x27).style.display=\x27none\x27;rc();"></div><div class="nerr" id="nerr">⚠ 請輸入取餐姓名才能送出訂單</div></div><div id="reorder-area"></div><div class="sec">選擇品項加入購物車</div><div class="grid">'+M.map(m=>'<div class="mc"><div class="nm">'+m.nm+'</div><div class="ds">'+m.ds+'</div><div class="sr"><div class="sb on" onclick="add(\x27'+m.id+'\x27,\x27小碗\x27)">小碗 $'+m.S+'</div><div class="sb" onclick="add(\x27'+m.id+'\x27,\x27大碗\x27)">大碗 $'+m.L+'</div></div></div>').join('')+'</div><div id="ca"></div>';
+document.getElementById('ft').style.display='block';rc();if(lastOrderData&&!cart.length)showReorderBanner();
 }
 function add(id,sz){var m=M.find(x=>x.id===id);cart.push({uid:Date.now(),mid:id,nm:m.nm,sz:sz,qty:1,cd:{香菜:1,醬油:1,烏醋:1,蒜蓉:1},sp:'不加辣',tp:{加豬腸:0,加鮮蚵:0},canTop:m.top});rc();setTimeout(function(){document.getElementById('ca').scrollIntoView({behavior:'smooth'});},100);}
 function del(u){cart=cart.filter(c=>c.uid!==u);rc();}
