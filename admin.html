@@ -1,468 +1,516 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<title>商家後台 — 老全麵線</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#1a1a2e;color:#eee;padding-bottom:60px}
-.hd{background:linear-gradient(135deg,#16213e,#0f3460);padding:14px 20px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center}
-.hd h1{font-size:16px;font-weight:700;color:#e94560}
-.hd .badge{font-size:10px;background:#e94560;color:#fff;padding:2px 8px;border-radius:10px}
-.tabs{display:flex;background:#16213e;position:sticky;top:48px;z-index:99;border-bottom:1px solid #0f3460}
-.tab{flex:1;padding:10px 4px;text-align:center;font-size:12px;font-weight:600;color:#888;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
-.tab.on{color:#e94560;border-bottom-color:#e94560}
-.panel{display:none;padding:12px 14px}
-.panel.on{display:block}
-.card{background:#16213e;border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid #0f3460}
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.stat-card{background:#0f3460;border-radius:10px;padding:14px;text-align:center}
-.stat-card .val{font-size:24px;font-weight:800;color:#e94560}
-.stat-card .lbl{font-size:11px;color:#888;margin-top:4px}
-.order-card{background:#16213e;border-radius:10px;margin-bottom:8px;border-left:3px solid #e94560;overflow:hidden;border:1px solid #0f3460}
-.order-card.preorder{border-left-color:#f0997b}
-.order-hd{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #0f3460}
-.order-id{font-family:monospace;font-size:11px;color:#e94560;font-weight:600}
-.order-time{font-size:11px;color:#666}
-.order-body{padding:8px 12px;font-size:12px;color:#aaa;line-height:1.5}
-.order-ft{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:#0a0a1a}
-.order-ft .bowls{font-size:11px;color:#666}
-.order-ft .amt{font-size:15px;font-weight:800;color:#e94560}
-.badge-s{display:inline-block;font-size:9px;font-weight:600;padding:2px 6px;border-radius:8px;margin-left:6px}
-.badge-ok{background:#1d3d2e;color:#5dcaa5}
-.badge-pre{background:#3d2e1d;color:#f0997b}
-.member-card{background:#16213e;border-radius:10px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;border:1px solid #0f3460}
-.member-info .name{font-size:14px;font-weight:700;color:#eee}
-.member-info .detail{font-size:11px;color:#888;margin-top:2px}
-.member-right{text-align:right}
-.member-right .pts{font-size:18px;font-weight:800;color:#e94560}
-.member-right .lvl{font-size:10px;color:#888}
-.search-box{width:100%;padding:10px 14px;background:#0f3460;border:1px solid #1a1a4e;border-radius:10px;color:#eee;font-size:14px;margin-bottom:12px;outline:none}
-.search-box:focus{border-color:#e94560}
-.search-box::placeholder{color:#555}
-.btn-complete{padding:6px 12px;background:#e94560;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer}
-.btn-complete:active{opacity:.7}
-.btn-complete:disabled{background:#333;color:#666}
-.period-tabs{display:flex;gap:6px;margin-bottom:12px}
-.period-tab{flex:1;padding:8px;text-align:center;background:#0f3460;border-radius:8px;font-size:12px;font-weight:600;color:#888;cursor:pointer;border:1px solid transparent}
-.period-tab.on{color:#e94560;border-color:#e94560}
-.loading{text-align:center;padding:40px;color:#666}
-.loading .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#e94560;margin:0 3px;animation:pulse .6s infinite alternate}
-.loading .dot:nth-child(2){animation-delay:.2s}
-.loading .dot:nth-child(3){animation-delay:.4s}
-@keyframes pulse{from{opacity:.3;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
-.empty{text-align:center;padding:40px;color:#555;font-size:13px}
-.denied{text-align:center;padding:80px 20px;color:#e94560}
-.denied .ic{font-size:48px;margin-bottom:12px}
-.denied h2{font-size:18px;margin-bottom:8px}
-.denied p{font-size:13px;color:#666}
-.refresh-btn{position:fixed;bottom:16px;right:16px;width:48px;height:48px;border-radius:50%;background:#e94560;color:#fff;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 12px rgba(233,69,96,.4);z-index:100}
-.refresh-btn:active{transform:scale(.9)}
-</style>
-</head>
-<body>
-<div class="hd">
-  <h1>商家後台</h1>
-  <span class="badge">老全麵線</span>
-</div>
-<div class="tabs">
-  <div class="tab on" onclick="switchTab(0)">訂單</div>
-  <div class="tab" onclick="switchTab(1)">營收</div>
-  <div class="tab" onclick="switchTab(2)">會員</div>
-  <div class="tab" onclick="switchTab(3)">預約</div>
-  <div class="tab" onclick="switchTab(4)">推播</div>
-  <div class="tab" onclick="switchTab(5)">設定</div>
-</div>
-<div id="app">
-  <div class="loading" style="padding:80px 20px">
-    <div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
-    <div style="margin-top:12px;font-size:12px;color:#555">驗證管理員身份...</div>
+<!-- ============================================================
+  admin.html — 統一活動管理 Tab
+  插入位置：admin.html 的 Tab 列表加入「活動」Tab，
+  並在對應 section 貼上以下 HTML + JS
+  ============================================================ -->
+
+<!-- ── Tab 按鈕（加入現有 Tab 列） ───────────────────────── -->
+<!-- 在原本 <div class="tabs"> 內新增： -->
+<!-- <button class="tab-btn" onclick="switchTab('promos')">🎯 活動</button> -->
+
+<!-- ── 活動管理 Section ──────────────────────────────────── -->
+<section id="tab-promos" class="tab-content" style="display:none">
+  <div class="section-header">
+    <h2>🎯 統一活動管理</h2>
+    <button class="btn btn-primary" onclick="openPromoModal()">＋ 新增活動</button>
+  </div>
+
+  <!-- 活動篩選列 -->
+  <div class="filter-bar">
+    <select id="promo-type-filter" onchange="filterPromos()">
+      <option value="">全部類型</option>
+      <option value="group_boost">🧑‍🤝‍🧑 揪團加碼</option>
+      <option value="bonus_points">⭐ 加贈積分</option>
+      <option value="redeem_promo">🎫 積分兌換連動</option>
+    </select>
+    <select id="promo-status-filter" onchange="filterPromos()">
+      <option value="">全部狀態</option>
+      <option value="active">🟢 進行中</option>
+      <option value="scheduled">🔵 排程中</option>
+      <option value="ended">⚫ 已結束</option>
+      <option value="paused">🟡 已暫停</option>
+    </select>
+  </div>
+
+  <!-- 活動列表 -->
+  <div id="promo-list" class="promo-list">
+    <div class="loading">載入活動中...</div>
+  </div>
+</section>
+
+<!-- ── 新增/編輯活動 Modal ──────────────────────────────── -->
+<div id="promo-modal" class="modal" style="display:none">
+  <div class="modal-backdrop" onclick="closePromoModal()"></div>
+  <div class="modal-content modal-content--wide">
+    <div class="modal-header">
+      <h3 id="promo-modal-title">新增活動</h3>
+      <button class="modal-close" onclick="closePromoModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- 基本資訊 -->
+      <fieldset class="form-group">
+        <legend>基本資訊</legend>
+        <label>活動名稱 <span class="required">*</span></label>
+        <input type="text" id="f-promo-name" placeholder="例：週末揪團加碼、五月雙倍積分週" />
+
+        <label>活動類型 <span class="required">*</span></label>
+        <select id="f-promo-type" onchange="onPromoTypeChange()">
+          <option value="">請選擇類型</option>
+          <option value="group_boost">🧑‍🤝‍🧑 揪團加碼活動</option>
+          <option value="bonus_points">⭐ 加贈積分活動</option>
+          <option value="redeem_promo">🎫 積分兌換連動活動</option>
+        </select>
+
+        <div class="form-row">
+          <div>
+            <label>開始日期 <span class="required">*</span></label>
+            <input type="date" id="f-start-date" />
+          </div>
+          <div>
+            <label>結束日期 <span class="required">*</span></label>
+            <input type="date" id="f-end-date" />
+          </div>
+        </div>
+
+        <label>狀態</label>
+        <select id="f-status">
+          <option value="active">🟢 立即上架</option>
+          <option value="scheduled">🔵 排程上架</option>
+          <option value="paused">🟡 暫停</option>
+        </select>
+
+        <label>優先序（數字越小越優先）</label>
+        <input type="number" id="f-priority" value="10" min="1" max="99" />
+      </fieldset>
+
+      <!-- 揪團加碼設定（動態顯示） -->
+      <fieldset class="form-group" id="section-group-boost" style="display:none">
+        <legend>🧑‍🤝‍🧑 揪團加碼設定</legend>
+        <div class="form-row">
+          <div>
+            <label>最低揪團碗數 <span class="required">*</span></label>
+            <input type="number" id="f-group-min-bowls" value="5" min="2" max="20" />
+            <span class="hint">預設 5 碗，活動期間可降低門檻</span>
+          </div>
+          <div>
+            <label>揪團折扣率 <span class="required">*</span></label>
+            <input type="number" id="f-group-discount-rate" value="0.95" min="0.5" max="0.99" step="0.01" />
+            <span class="hint">例：0.92 = 92折，預設 0.95</span>
+          </div>
+        </div>
+        <div class="promo-preview" id="group-boost-preview">
+          預覽：揪 <strong id="preview-min-bowls">5</strong> 碗起，享
+          <strong id="preview-discount-pct">95</strong> 折
+        </div>
+      </fieldset>
+
+      <!-- 加贈積分設定（動態顯示） -->
+      <fieldset class="form-group" id="section-bonus-points" style="display:none">
+        <legend>⭐ 加贈積分設定</legend>
+        <p class="hint">以下三種加贈方式可同時啟用，結帳時全部累加計算。</p>
+
+        <div class="bonus-option">
+          <label class="checkbox-label">
+            <input type="checkbox" id="f-use-multiplier" onchange="toggleBonusSection('multiplier')" />
+            全館積分倍率
+          </label>
+          <div id="section-multiplier" style="display:none; margin-top:8px">
+            <input type="number" id="f-points-multiplier" value="2" min="1.5" max="10" step="0.5" />
+            <span class="hint">倍（例：2 = 雙倍積分）</span>
+          </div>
+        </div>
+
+        <div class="bonus-option">
+          <label class="checkbox-label">
+            <input type="checkbox" id="f-use-item-bonus" onchange="toggleBonusSection('item')" />
+            指定品項額外加贈積分
+          </label>
+          <div id="section-item-bonus" style="display:none; margin-top:8px">
+            <label>指定品項（品項名稱，逗號分隔）</label>
+            <input type="text" id="f-target-items" placeholder="例：鮮蚵麵線(小),鮮蚵麵線(大)" />
+            <label>每份加贈積分</label>
+            <input type="number" id="f-bonus-per-item" value="5" min="1" />
+          </div>
+        </div>
+
+        <div class="bonus-option">
+          <label class="checkbox-label">
+            <input type="checkbox" id="f-use-spend-bonus" onchange="toggleBonusSection('spend')" />
+            消費滿額送積分
+          </label>
+          <div id="section-spend-bonus" style="display:none; margin-top:8px">
+            <div class="form-row">
+              <div>
+                <label>滿額門檻（元）</label>
+                <input type="number" id="f-spend-threshold" value="100" min="1" />
+              </div>
+              <div>
+                <label>贈送積分（點）</label>
+                <input type="number" id="f-spend-bonus-points" value="20" min="1" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- 積分兌換連動設定（動態顯示） -->
+      <fieldset class="form-group" id="section-redeem-promo" style="display:none">
+        <legend>🎫 積分兌換連動設定</legend>
+        <p class="hint">活動期間將覆蓋系統預設的兌換品項與所需積分（預設：50點 = 豬腸麵線(小)）</p>
+        <div class="form-row">
+          <div>
+            <label>活動兌換品項</label>
+            <input type="text" id="f-redeem-item" placeholder="例：豬腸麵線(大)" />
+          </div>
+          <div>
+            <label>所需積分（點）</label>
+            <input type="number" id="f-redeem-points" value="30" min="1" />
+          </div>
+        </div>
+        <div class="promo-preview">
+          活動期間 → <strong id="preview-redeem-pts">30</strong> 點兌換
+          <strong id="preview-redeem-item">豬腸麵線(大)</strong>
+        </div>
+      </fieldset>
+
+      <!-- 前端顯示設定 -->
+      <fieldset class="form-group">
+        <legend>前端顯示設定</legend>
+        <div class="form-row">
+          <div>
+            <label>活動標籤文字</label>
+            <input type="text" id="f-display-badge" placeholder="例：🔥 限時優惠 / ⭐ 雙倍積分" />
+          </div>
+          <div>
+            <label>標籤顏色</label>
+            <select id="f-display-color">
+              <option value="orange">🟠 橘色（揪團）</option>
+              <option value="green">🟢 綠色（積分）</option>
+              <option value="red">🔴 紅色（限時）</option>
+              <option value="purple">🟣 紫色（兌換）</option>
+            </select>
+          </div>
+        </div>
+        <label>備註</label>
+        <input type="text" id="f-notes" placeholder="內部備忘" />
+      </fieldset>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closePromoModal()">取消</button>
+      <button class="btn btn-primary" onclick="savePromo()">💾 儲存活動</button>
+    </div>
   </div>
 </div>
-<button class="refresh-btn" id="refreshBtn" style="display:none" onclick="refreshCurrent()">↻</button>
 
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
-var LIFF_ID='2009530264-jdJXYpnX';
-var ADMIN_URL='https://n8n.justinaiauto.com/webhook/admin-api';
-var accessToken='';
-var currentTab=0;
-var cachedData={};
+// ============================================================
+// 活動管理 JavaScript
+// ============================================================
 
-async function init(){
-try{
-  accessToken=sessionStorage.getItem('liff_token')||'';
-  if(!accessToken){
-    await liff.init({liffId:LIFF_ID});
-    if(!liff.isLoggedIn()){liff.login({redirectUri:location.href});return;}
-    accessToken=liff.getAccessToken()||'';
-    try{sessionStorage.setItem('liff_token',accessToken);}catch(e){}
+let allPromos = [];
+let editingPromoId = null;
+
+// ── 載入活動列表 ──────────────────────────────────────────
+async function loadPromos() {
+  try {
+    const res = await fetch('/webhook/admin-api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_promos' })
+    });
+    const data = await res.json();
+    allPromos = data.promos || [];
+    renderPromoList(allPromos);
+  } catch (e) {
+    document.getElementById('promo-list').innerHTML =
+      '<div class="error">載入失敗，請重試</div>';
   }
-  // Test admin access
-  var resp=await callAPI('all_orders');
-  if(!resp.success){
-    if(resp.error==='NOT_ADMIN'){
-      document.getElementById('app').innerHTML='<div class="denied"><div class="ic">🔒</div><h2>無管理員權限</h2><p>此頁面僅限店家管理員使用</p></div>';
-      return;
+}
+
+// ── 渲染活動列表 ──────────────────────────────────────────
+function renderPromoList(promos) {
+  const container = document.getElementById('promo-list');
+  if (promos.length === 0) {
+    container.innerHTML = '<div class="empty-state">尚無活動，點擊「新增活動」開始建立</div>';
+    return;
+  }
+
+  const typeLabel = {
+    group_boost:  '🧑‍🤝‍🧑 揪團加碼',
+    bonus_points: '⭐ 加贈積分',
+    redeem_promo: '🎫 積分兌換連動'
+  };
+  const statusLabel = {
+    active:    '<span class="badge badge--green">🟢 進行中</span>',
+    scheduled: '<span class="badge badge--blue">🔵 排程中</span>',
+    ended:     '<span class="badge badge--gray">⚫ 已結束</span>',
+    paused:    '<span class="badge badge--yellow">🟡 已暫停</span>'
+  };
+
+  container.innerHTML = promos.map(p => {
+    // 組合活動摘要文字
+    let summary = '';
+    if (p.promo_type === 'group_boost') {
+      summary = `揪 ${p.group_min_bowls || 5} 碗以上享 ${Math.round((p.group_discount_rate || 0.95) * 100)} 折`;
+    } else if (p.promo_type === 'bonus_points') {
+      const parts = [];
+      if (p.points_multiplier > 1)     parts.push(`全館 ${p.points_multiplier} 倍積分`);
+      if (p.bonus_points_per_item > 0)  parts.push(`指定品項 +${p.bonus_points_per_item} 點`);
+      if (p.spend_threshold > 0)        parts.push(`滿 $${p.spend_threshold} 送 ${p.spend_bonus_points} 點`);
+      summary = parts.join(' ＋ ') || '—';
+    } else if (p.promo_type === 'redeem_promo') {
+      summary = `${p.redeem_points_required || 50} 點兌換 ${p.redeem_item_name || '豬腸麵線(小)'}`;
     }
-    throw new Error(resp.error||'Auth failed');
-  }
-  cachedData.orders=resp;
-  renderApp();
-  document.getElementById('refreshBtn').style.display='block';
-}catch(e){
-  document.getElementById('app').innerHTML='<div class="denied"><div class="ic">⚠️</div><h2>載入失敗</h2><p>'+e.message+'</p></div>';
-}
+
+    return `
+      <div class="promo-card promo-card--${p.display_color || 'orange'}">
+        <div class="promo-card__header">
+          <div>
+            <span class="promo-type-badge">${typeLabel[p.promo_type] || p.promo_type}</span>
+            ${statusLabel[p.status] || ''}
+          </div>
+          <div class="promo-card__actions">
+            <button class="btn-icon" onclick="editPromo('${p.page_id}')" title="編輯">✏️</button>
+            <button class="btn-icon" onclick="togglePromoStatus('${p.page_id}', '${p.status}')" title="暫停/啟動">
+              ${p.status === 'active' ? '⏸️' : '▶️'}
+            </button>
+          </div>
+        </div>
+        <div class="promo-card__name">${p.promo_name || '—'}</div>
+        <div class="promo-card__summary">${summary}</div>
+        <div class="promo-card__footer">
+          <span>📅 ${p.start_date || '?'} ～ ${p.end_date || '?'}</span>
+          <span class="promo-badge-preview">${p.display_badge || ''}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
-async function callAPI(action,extra){
-  var body=Object.assign({accessToken:accessToken,action:action,_t:Date.now()},extra||{});
-  var resp=await fetch(ADMIN_URL,{method:'POST',headers:{'Content-Type':'application/json','Cache-Control':'no-cache'},body:JSON.stringify(body)});
-  return await resp.json();
+// ── 篩選活動 ──────────────────────────────────────────────
+function filterPromos() {
+  const type   = document.getElementById('promo-type-filter').value;
+  const status = document.getElementById('promo-status-filter').value;
+  const filtered = allPromos.filter(p =>
+    (!type   || p.promo_type === type) &&
+    (!status || p.status === status)
+  );
+  renderPromoList(filtered);
 }
 
-function renderApp(){
-  document.getElementById('app').innerHTML=
-    '<div class="panel on" id="p0"></div>'+
-    '<div class="panel" id="p1"></div>'+
-    '<div class="panel" id="p2"></div>'+
-    '<div class="panel" id="p3"></div>'+
-    '<div class="panel" id="p4"></div>'+
-    '<div class="panel" id="p5"></div>';
-  renderOrders();
-}
+// ── 開啟新增 Modal ──────────────────────────────────────────
+function openPromoModal(promoData = null) {
+  editingPromoId = promoData?.page_id || null;
+  document.getElementById('promo-modal-title').textContent =
+    promoData ? '編輯活動' : '新增活動';
 
-function switchTab(n){
-  currentTab=n;
-  var tabs=document.querySelectorAll('.tab');
-  var panels=document.querySelectorAll('.panel');
-  tabs.forEach(function(t,i){t.className=i===n?'tab on':'tab';});
-  panels.forEach(function(p,i){p.className=i===n?'panel on':'panel';});
-  if(n===0)renderOrders();
-  if(n===1)loadRevenue();
-  if(n===2)renderMembers();
-  if(n===3)loadPreorders();
-  if(n===4)renderBroadcast();
-  if(n===5)loadSettings();
-}
+  // 清空表單
+  resetPromoForm();
 
-function refreshCurrent(){cachedData={};switchTab(currentTab);}
-
-// === Tab 0: All Orders (grouped by date) ===
-function renderOrders(){
-  var d=cachedData.orders;
-  if(!d||!d.success){document.getElementById('p0').innerHTML='<div class="loading"><div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>';loadOrders();return;}
-  var h='<div class="stats-grid">'+
-    '<div class="stat-card"><div class="val">'+d.count+'</div><div class="lbl">總訂單數</div></div>'+
-    '<div class="stat-card"><div class="val">$'+(d.totalAmount||0).toLocaleString()+'</div><div class="lbl">總營收</div></div>'+
-    '<div class="stat-card"><div class="val">'+(d.totalBowls||0)+'</div><div class="lbl">總碗數</div></div>'+
-    '<div class="stat-card"><div class="val">$'+(d.count>0?Math.round(d.totalAmount/d.count):0)+'</div><div class="lbl">平均客單價</div></div>'+
-    '</div>';
-  if(!d.orders||d.orders.length===0){h+='<div class="empty">尚無任何訂單</div>';}
-  else{
-    var grouped={};
-    d.orders.forEach(function(o){
-      var dt=o.date||'未知日期';
-      if(!grouped[dt])grouped[dt]=[];
-      grouped[dt].push(o);
-    });
-    var dates=Object.keys(grouped).sort().reverse();
-    var today=new Date().toISOString().split('T')[0];
-    dates.forEach(function(dt){
-      var dayOrders=grouped[dt];
-      var dayAmt=dayOrders.reduce(function(s,o){return s+o.totalAmount;},0);
-      var dayBowls=dayOrders.reduce(function(s,o){return s+o.totalBowls;},0);
-      var isToday=dt===today;
-      h+='<div style="margin:16px 0 8px;padding:8px 12px;background:'+(isToday?'#2d1525':'#0a0a1a')+';border-radius:8px;display:flex;justify-content:space-between;align-items:center;border-left:3px solid '+(isToday?'#e94560':'#333')+'">'+
-        '<div><span style="font-size:14px;font-weight:700;color:'+(isToday?'#e94560':'#ccc')+'">'+dt+(isToday?' (今日)':'')+'</span>'+
-        '<span style="font-size:11px;color:#666;margin-left:8px">'+dayOrders.length+' 筆</span></div>'+
-        '<div style="text-align:right"><span style="font-size:14px;font-weight:700;color:#e94560">$'+dayAmt.toLocaleString()+'</span>'+
-        '<span style="font-size:11px;color:#666;margin-left:6px">'+dayBowls+' 碗</span></div></div>';
-      dayOrders.forEach(function(o){
-        var isPre=o.status==='preorder';
-        var statusMap={'new':'🆕 新訂單','preparing':'🍳 製作中','ready':'✅ 完成取餐','picked_up':'📦 已取餐','completed':'✔ 完成','preorder':'📝 預約','cancelled':'❌ 取消'};
-        var statusColor={'new':'#378ADD','preparing':'#EF9F27','ready':'#1D9E75','picked_up':'#888780','completed':'#1D9E75','preorder':'#D85A30','cancelled':'#E24B4A'};
-        var nextMap={'new':'preparing','preparing':'ready','ready':'picked_up'};
-        var nextLabel={'new':'開始製作','preparing':'製作完成','ready':'已取餐'};
-        var st=o.status||'completed';
-        var badge='<span class="badge-s" style="background:'+statusColor[st]+'22;color:'+statusColor[st]+'">'+(statusMap[st]||st)+'</span>';
-        var actionBtn='';
-        if(nextMap[st]){
-          actionBtn='<button class="btn-complete" onclick="updateStatus(this,\''+o.pageId+'\',\''+nextMap[st]+'\',\''+o.userId+'\',\''+o.orderId+'\')">'+(nextLabel[st]||'下一步')+'</button>';
-        }
-        h+='<div class="order-card'+(isPre?' preorder':'')+'" style="border-left-color:'+statusColor[st]+'">'+
-        '<div class="order-hd"><span class="order-id">'+o.orderId+badge+'</span><span class="order-time">'+o.customerName+'</span></div>'+
-        '<div class="order-body">'+o.items.replace(/,\s*/g,' | ')+'</div>'+
-        '<div class="order-ft"><span class="bowls">'+o.totalBowls+' 碗 | +'+o.pointsEarned+'點</span>'+actionBtn+'<span class="amt">$'+o.totalAmount+'</span></div>'+
-        '</div>';
-      });
-    });
-  }
-  document.getElementById('p0').innerHTML=h;
-}
-async function loadOrders(){
-  try{cachedData.orders=await callAPI('all_orders');renderOrders();}catch(e){document.getElementById('p0').innerHTML='<div class="empty">載入失敗</div>';}
-}
-
-// === Tab 1: Revenue ===
-async function loadRevenue(){
-  document.getElementById('p1').innerHTML='<div class="loading"><div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>';
-  try{
-    var d=await callAPI('revenue_stats');
-    if(!d.success)throw new Error(d.error);
-    var h='<div class="period-tabs">'+
-      '<div class="period-tab on" id="pt-today">今日</div>'+
-      '<div class="period-tab" id="pt-week">本週</div>'+
-      '<div class="period-tab" id="pt-month">本月</div>'+
-      '</div><div id="rev-content"></div>';
-    document.getElementById('p1').innerHTML=h;
-    var periods={today:d.today,week:d.week,month:d.month};
-    var curPeriod='today';
-    function showPeriod(p){
-      curPeriod=p;
-      document.querySelectorAll('.period-tab').forEach(function(t){t.className='period-tab'+(t.id==='pt-'+p?' on':'');});
-      var s=periods[p];
-      document.getElementById('rev-content').innerHTML=
-        '<div class="stats-grid">'+
-        '<div class="stat-card"><div class="val">$'+(s.amount||0).toLocaleString()+'</div><div class="lbl">營收總額</div></div>'+
-        '<div class="stat-card"><div class="val">'+(s.orders||0)+'</div><div class="lbl">訂單數</div></div>'+
-        '<div class="stat-card"><div class="val">'+(s.bowls||0)+'</div><div class="lbl">總碗數</div></div>'+
-        '<div class="stat-card"><div class="val">$'+(s.avg||0)+'</div><div class="lbl">平均客單價</div></div>'+
-        '</div>';
+  // 若是編輯則填入資料
+  if (promoData) {
+    document.getElementById('f-promo-name').value       = promoData.promo_name || '';
+    document.getElementById('f-promo-type').value       = promoData.promo_type || '';
+    document.getElementById('f-start-date').value       = promoData.start_date || '';
+    document.getElementById('f-end-date').value         = promoData.end_date || '';
+    document.getElementById('f-status').value           = promoData.status || 'active';
+    document.getElementById('f-priority').value         = promoData.priority || 10;
+    document.getElementById('f-display-badge').value    = promoData.display_badge || '';
+    document.getElementById('f-display-color').value    = promoData.display_color || 'orange';
+    document.getElementById('f-notes').value            = promoData.notes || '';
+    onPromoTypeChange();
+    // 依類型填入特定欄位...
+    if (promoData.promo_type === 'group_boost') {
+      document.getElementById('f-group-min-bowls').value   = promoData.group_min_bowls || 5;
+      document.getElementById('f-group-discount-rate').value = promoData.group_discount_rate || 0.95;
+      updateGroupBoostPreview();
     }
-    showPeriod('today');
-    document.getElementById('pt-today').onclick=function(){showPeriod('today');};
-    document.getElementById('pt-week').onclick=function(){showPeriod('week');};
-    document.getElementById('pt-month').onclick=function(){showPeriod('month');};
-  }catch(e){document.getElementById('p1').innerHTML='<div class="empty">載入失敗</div>';}
-}
-
-// === Tab 2: Members ===
-var memberSearchTimer=null;
-function renderMembers(){
-  document.getElementById('p2').innerHTML='<input class="search-box" id="memberSearch" placeholder="搜尋會員姓名..." oninput="onMemberSearch()"><div id="member-list"><div class="loading"><div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div></div>';
-  loadMembers('');
-}
-function onMemberSearch(){
-  clearTimeout(memberSearchTimer);
-  memberSearchTimer=setTimeout(function(){
-    var q=document.getElementById('memberSearch').value;
-    loadMembers(q);
-  },400);
-}
-async function loadMembers(search){
-  try{
-    var d=await callAPI('members',{search:search});
-    if(!d.success)throw new Error(d.error);
-    var el=document.getElementById('member-list');
-    if(!d.members||d.members.length===0){el.innerHTML='<div class="empty">無符合的會員</div>';return;}
-    var h='<div style="font-size:11px;color:#555;margin-bottom:8px;text-align:right">共 '+d.count+' 位會員</div>';
-    d.members.forEach(function(m){
-      h+='<div class="member-card">'+
-      '<div class="member-info"><div class="name">'+m.name+'</div><div class="detail">'+m.phone+' | '+m.birthday+' | 來店'+m.visits+'次</div></div>'+
-      '<div class="member-right"><div class="pts">'+m.points+'</div><div class="lvl">'+m.level+'</div></div>'+
-      '</div>';
-    });
-    el.innerHTML=h;
-  }catch(e){document.getElementById('member-list').innerHTML='<div class="empty">載入失敗</div>';}
-}
-
-// === Tab 3: Preorders ===
-async function loadPreorders(){
-  document.getElementById('p3').innerHTML='<div class="loading"><div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>';
-  try{
-    var d=await callAPI('preorders');
-    if(!d.success)throw new Error(d.error);
-    if(!d.preorders||d.preorders.length===0){document.getElementById('p3').innerHTML='<div class="empty">目前沒有待處理的預約訂單 ✅</div>';return;}
-    var h='<div style="font-size:11px;color:#555;margin-bottom:8px">共 '+d.count+' 筆待處理</div>';
-    d.preorders.forEach(function(o){
-      h+='<div class="order-card preorder">'+
-      '<div class="order-hd"><span class="order-id">'+o.orderId+'<span class="badge-s badge-pre">預約</span></span><span class="order-time">'+o.date+'</span></div>'+
-      '<div class="order-body"><b>'+o.customerName+'</b> — '+o.items+'</div>'+
-      '<div class="order-ft"><span class="bowls">'+o.totalBowls+' 碗 $'+o.totalAmount+'</span><button class="btn-complete" onclick="completePreorder(this,\''+o.pageId+'\')">標記完成</button></div>'+
-      '</div>';
-    });
-    document.getElementById('p3').innerHTML=h;
-  }catch(e){document.getElementById('p3').innerHTML='<div class="empty">載入失敗</div>';}
-}
-async function completePreorder(btn,pageId){
-  btn.disabled=true;btn.textContent='處理中...';
-  try{
-    var d=await callAPI('complete_preorder',{pageId:pageId});
-    if(d.success){btn.textContent='已完成 ✅';btn.style.background='#1d3d2e';
-    setTimeout(function(){loadPreorders();},1000);}
-    else{btn.textContent='失敗';btn.disabled=false;}
-  }catch(e){btn.textContent='失敗';btn.disabled=false;}
-}
-
-async function updateStatus(btn,pageId,newStatus,customerUserId,orderId){
-  btn.disabled=true;btn.textContent='處理中...';
-  try{
-    var d=await callAPI('update_order_status',{pageId:pageId,newStatus:newStatus,customerUserId:customerUserId,orderId:orderId});
-    if(d.success){
-      var labels={'preparing':'🍳 製作中','ready':'✅ 完成','picked_up':'📦 已取餐'};
-      btn.textContent=(labels[newStatus]||'已更新');
-      btn.style.background='#1d3d2e';
-      setTimeout(function(){loadOrders();},800);
-    }else{btn.textContent='失敗';btn.disabled=false;}
-  }catch(e){btn.textContent='失敗';btn.disabled=false;}
-}
-
-// === Tab 4: Broadcast ===
-function renderBroadcast(){
-  document.getElementById('p4').innerHTML=
-    '<div class="card" style="margin-bottom:10px">'+
-    '<div style="font-size:14px;font-weight:700;color:#e94560;margin-bottom:12px">🔥 建立促銷活動（推播+點餐頁連動）</div>'+
-    '<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">打折品項（可多選）</div>'+
-    '<div id="promo-items" style="display:flex;flex-wrap:wrap;gap:6px"></div></div>'+
-    '<div style="display:flex;gap:8px;margin-bottom:10px">'+
-    '<div style="flex:1"><div style="font-size:11px;color:#888;margin-bottom:4px">折數（例如 75 = 75折）</div><input id="promo-discount" class="search-box" type="number" min="10" max="99" value="75" placeholder="75"></div>'+
-    '<div style="flex:1"><div style="font-size:11px;color:#888;margin-bottom:4px">活動日期</div><input id="promo-date" class="search-box" type="date" value="'+new Date().toISOString().split('T')[0]+'"></div>'+
-    '</div>'+
-    '<div style="display:flex;gap:8px;margin-bottom:10px">'+
-    '<div style="flex:1"><div style="font-size:11px;color:#888;margin-bottom:4px">開始時間</div><input id="promo-start" class="search-box" type="time" value="06:30"></div>'+
-    '<div style="flex:1"><div style="font-size:11px;color:#888;margin-bottom:4px">結束時間</div><input id="promo-end" class="search-box" type="time" value="13:00"></div>'+
-    '</div>'+
-    '<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">推播訊息（自動產生，可修改）</div>'+
-    '<textarea id="promo-msg" class="search-box" style="height:80px;resize:none"></textarea></div>'+
-    '<div style="display:flex;justify-content:space-between;align-items:center">'+
-    '<span style="font-size:11px;color:#555" id="promo-status"></span>'+
-    '<button class="btn-complete" style="padding:10px 20px;font-size:13px" onclick="launchPromo()">🔥 推播 + 啟用活動</button>'+
-    '</div>'+
-    '<div id="active-promo-area" style="margin-top:12px"></div>'+
-    '</div>'+
-    '<div class="card">'+
-    '<div style="font-size:14px;font-weight:700;color:#e94560;margin-bottom:12px">📢 一般推播（純訊息，不連動折扣）</div>'+
-    '<div style="margin-bottom:8px">'+
-    '<div style="font-size:11px;color:#888;margin-bottom:4px">快速範本</div>'+
-    '<div style="display:flex;flex-wrap:wrap;gap:6px">'+
-    '<span class="badge-s" style="background:#e9456022;color:#e94560;padding:6px 10px;cursor:pointer;font-size:11px" onclick="setBroadcast(\'🍜 午餐時段加碼！\\n\\n今天 11:00-12:00 點餐\\n揪團不限碗數直接享 95 折\\n\\n快來揪團 👥\')">揪團加碼</span>'+
-    '<span class="badge-s" style="background:#e9456022;color:#e94560;padding:6px 10px;cursor:pointer;font-size:11px" onclick="setBroadcast(\'🎉 好消息！\\n\\n本週消費滿 $100 加贈 20 點\\n累積點數換免費麵線 🍜\\n\\n老全麵線感恩回饋\')">加贈積分</span>'+
-    '</div></div>'+
-    '<textarea id="broadcast-msg" placeholder="輸入要推播的訊息內容..." style="width:100%;height:80px;padding:10px;background:#0f3460;border:1px solid #1a1a4e;border-radius:10px;color:#eee;font-size:14px;resize:none;outline:none;font-family:inherit"></textarea>'+
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">'+
-    '<span style="font-size:11px;color:#555" id="broadcast-status"></span>'+
-    '<button class="btn-complete" style="padding:10px 24px;font-size:13px" onclick="doBroadcast()">📢 發送推播</button>'+
-    '</div></div>';
-  // Render item checkboxes
-  var menuItems=['鮮蚵麵線','綜合麵線','豬腸麵線','清麵線'];
-  var itemsHtml=menuItems.map(function(nm){return '<label style="display:flex;align-items:center;gap:4px;padding:6px 10px;background:#0f3460;border-radius:8px;cursor:pointer;font-size:12px;color:#ccc"><input type="checkbox" class="promo-item-cb" value="'+nm+'" onchange="updatePromoMsg()"> '+nm+'</label>';}).join('');
-  document.getElementById('promo-items').innerHTML=itemsHtml;
-  updatePromoMsg();
-  loadActivePromo();
-}
-function getSelectedPromoItems(){
-  var cbs=document.querySelectorAll('.promo-item-cb:checked');
-  var items=[];cbs.forEach(function(cb){items.push(cb.value);});
-  return items;
-}
-function updatePromoMsg(){
-  var items=getSelectedPromoItems();
-  var disc=document.getElementById('promo-discount')?.value||'75';
-  var itemText=items.length?items.join('、'):'全品項';
-  var msg='🔥 今日限定！'+itemText+' '+disc+' 折\n\n活動時間：今天營業時段\n到店點餐即享優惠\n\n老全麵線等你來 🍜';
-  var el=document.getElementById('promo-msg');
-  if(el)el.value=msg;
-}
-async function loadActivePromo(){
-  try{
-    var d=await callAPI('get_settings');
-    if(!d.success)return;
-    var raw=d.settings.active_promo||'';
-    if(!raw){document.getElementById('active-promo-area').innerHTML='<div style="font-size:11px;color:#555;text-align:center;padding:8px">目前沒有進行中的促銷活動</div>';return;}
-    var promo=JSON.parse(raw);
-    if(!promo.enabled){document.getElementById('active-promo-area').innerHTML='<div style="font-size:11px;color:#555;text-align:center;padding:8px">目前沒有進行中的促銷活動</div>';return;}
-    var itemText=promo.items&&promo.items.length?promo.items.join('、'):'全品項';
-    document.getElementById('active-promo-area').innerHTML=
-      '<div style="background:#2d1525;border:1px solid #e94560;border-radius:10px;padding:12px">'+
-      '<div style="font-size:12px;font-weight:700;color:#e94560;margin-bottom:6px">🔴 進行中的促銷活動</div>'+
-      '<div style="font-size:12px;color:#ccc">'+itemText+' '+promo.discount+' 折</div>'+
-      '<div style="font-size:11px;color:#888;margin-top:4px">'+promo.date+' '+promo.startTime+' ~ '+promo.endTime+'</div>'+
-      '<button class="btn-complete" style="margin-top:8px;background:#E24B4A;padding:6px 16px;font-size:11px" onclick="stopPromo()">⛔ 關閉活動</button>'+
-      '</div>';
-  }catch(e){}
-}
-async function launchPromo(){
-  var items=getSelectedPromoItems();
-  var disc=parseInt(document.getElementById('promo-discount').value)||75;
-  var date=document.getElementById('promo-date').value;
-  var startTime=document.getElementById('promo-start').value;
-  var endTime=document.getElementById('promo-end').value;
-  var msg=document.getElementById('promo-msg').value.trim();
-  if(disc<10||disc>99){alert('折數請輸入 10~99');return;}
-  if(!msg){alert('請輸入推播訊息');return;}
-  if(!confirm('確定要啟用促銷活動並推播給所有會員嗎？\n\n'+msg)){return;}
-  var st=document.getElementById('promo-status');
-  st.textContent='啟用中...';st.style.color='#EF9F27';
-  var promo={enabled:true,discount:disc,items:items,startTime:startTime,endTime:endTime,date:date,message:msg};
-  try{
-    await callAPI('update_setting',{key:'active_promo',value:JSON.stringify(promo)});
-    var d=await callAPI('broadcast',{message:msg});
-    if(d.success){st.textContent='✅ 活動已啟用！推播送達 '+d.pushed+' 人';st.style.color='#1D9E75';loadActivePromo();}
-    else{st.textContent='活動已啟用，但推播失敗';st.style.color='#EF9F27';}
-  }catch(e){st.textContent='❌ 啟用失敗';st.style.color='#E24B4A';}
-}
-async function stopPromo(){
-  if(!confirm('確定要關閉促銷活動嗎？'))return;
-  try{
-    await callAPI('update_setting',{key:'active_promo',value:JSON.stringify({enabled:false})});
-    loadActivePromo();
-  }catch(e){alert('關閉失敗');}
-}
-function setBroadcast(txt){document.getElementById('broadcast-msg').value=txt;}
-async function doBroadcast(){
-  var msg=document.getElementById('broadcast-msg').value.trim();
-  if(!msg){alert('請輸入推播內容');return;}
-  if(!confirm('確定要推播給所有會員嗎？')){return;}
-  var st=document.getElementById('broadcast-status');
-  st.textContent='推播中...';st.style.color='#EF9F27';
-  try{
-    var d=await callAPI('broadcast',{message:msg});
-    if(d.success){st.textContent='✅ 推播成功！送達 '+d.pushed+' 人'+(d.failed?' / 失敗 '+d.failed+' 人':'');st.style.color='#1D9E75';document.getElementById('broadcast-msg').value='';}
-    else{st.textContent='❌ '+d.error;st.style.color='#E24B4A';}
-  }catch(e){st.textContent='❌ 推播失敗';st.style.color='#E24B4A';}
-}
-
-// === Tab 5: Settings ===
-async function loadSettings(){
-  document.getElementById('p5').innerHTML='<div class="loading"><div><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>';
-  try{
-    var d=await callAPI('get_settings');
-    if(!d.success)throw new Error(d.error);
-    var s=d.settings;
-    document.getElementById('p5').innerHTML=
-      '<div class="card">'+
-      '<div style="font-size:14px;font-weight:700;color:#e94560;margin-bottom:12px">⚙️ 店家設定</div>'+
-      '<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">店名</div><input id="s-shop_name" class="search-box" value="'+(s.shop_name||'').replace(/"/g,'&quot;')+'"></div>'+
-      '<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">電話</div><input id="s-phone" class="search-box" value="'+(s.phone||'').replace(/"/g,'&quot;')+'"></div>'+
-      '<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">地址</div><input id="s-address" class="search-box" value="'+(s.address||'').replace(/"/g,'&quot;')+'"></div>'+
-      '<div style="display:flex;gap:8px;margin-bottom:10px"><div style="flex:1"><div style="font-size:11px;color:#888;margin-bottom:4px">開店時間</div><input id="s-open_hour" class="search-box" placeholder="06:30" value="'+(s.open_hour||'').replace(/"/g,'&quot;')+'"></div><div style="flex:1"><div style="font-size:11px;color:#888;margin-bottom:4px">打烊時間</div><input id="s-close_hour" class="search-box" placeholder="13:00" value="'+(s.close_hour||'').replace(/"/g,'&quot;')+'"></div></div>'+
-      '<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">營業日（顯示用）</div><input id="s-hours_weekday" class="search-box" placeholder="週一至週六 06:30-13:00" value="'+(s.hours_weekday||'').replace(/"/g,'&quot;')+'"></div>'+
-      '<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">公休日</div><input id="s-closed_day" class="search-box" value="'+(s.closed_day||'').replace(/"/g,'&quot;')+'"></div>'+
-      '<div style="margin-bottom:10px"><div style="font-size:11px;color:#888;margin-bottom:4px">休假公告</div><textarea id="s-holiday_notice" class="search-box" style="height:60px;resize:none">'+(s.holiday_notice||'')+'</textarea></div>'+
-      '<div style="text-align:right;margin-top:12px"><span id="settings-status" style="font-size:11px;margin-right:8px"></span><button class="btn-complete" style="padding:10px 24px;font-size:13px" onclick="saveSettings()">💾 儲存設定</button></div>'+
-      '</div>';
-  }catch(e){document.getElementById('p5').innerHTML='<div class="empty">載入失敗</div>';}
-}
-async function saveSettings(){
-  var fields=['shop_name','phone','address','open_hour','close_hour','hours_weekday','closed_day','holiday_notice'];
-  var st=document.getElementById('settings-status');
-  st.textContent='儲存中...';st.style.color='#EF9F27';
-  var ok=0;
-  for(var f of fields){
-    var el=document.getElementById('s-'+f);
-    if(!el)continue;
-    var val=el.value.trim();
-    try{await callAPI('update_setting',{key:f,value:val});ok++;}catch(e){}
+    if (promoData.promo_type === 'redeem_promo') {
+      document.getElementById('f-redeem-item').value   = promoData.redeem_item_name || '';
+      document.getElementById('f-redeem-points').value = promoData.redeem_points_required || 50;
+    }
   }
-  st.textContent='✅ 已儲存 '+ok+' 項設定';st.style.color='#1D9E75';
+
+  document.getElementById('promo-modal').style.display = 'flex';
 }
 
-init();
+function closePromoModal() {
+  document.getElementById('promo-modal').style.display = 'none';
+}
+
+function resetPromoForm() {
+  ['f-promo-name','f-promo-type','f-start-date','f-end-date','f-display-badge','f-notes'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f-status').value = 'active';
+  document.getElementById('f-priority').value = 10;
+  document.getElementById('f-display-color').value = 'orange';
+  document.getElementById('f-group-min-bowls').value = 5;
+  document.getElementById('f-group-discount-rate').value = 0.95;
+  document.getElementById('f-redeem-points').value = 50;
+  ['section-group-boost','section-bonus-points','section-redeem-promo'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+}
+
+// ── 依類型切換欄位顯示 ──────────────────────────────────────
+function onPromoTypeChange() {
+  const type = document.getElementById('f-promo-type').value;
+  document.getElementById('section-group-boost').style.display  = type === 'group_boost'  ? '' : 'none';
+  document.getElementById('section-bonus-points').style.display = type === 'bonus_points' ? '' : 'none';
+  document.getElementById('section-redeem-promo').style.display = type === 'redeem_promo' ? '' : 'none';
+}
+
+function toggleBonusSection(key) {
+  const map = { multiplier: 'section-multiplier', item: 'section-item-bonus', spend: 'section-spend-bonus' };
+  const checked = document.getElementById(`f-use-${key}`).checked;
+  document.getElementById(map[key]).style.display = checked ? '' : 'none';
+}
+
+// ── 揪團加碼即時預覽 ──────────────────────────────────────
+function updateGroupBoostPreview() {
+  const bowls = document.getElementById('f-group-min-bowls').value;
+  const rate  = document.getElementById('f-group-discount-rate').value;
+  document.getElementById('preview-min-bowls').textContent = bowls;
+  document.getElementById('preview-discount-pct').textContent = Math.round(rate * 100);
+}
+// 加入事件監聽
+['f-group-min-bowls','f-group-discount-rate'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', updateGroupBoostPreview);
+});
+
+// ── 儲存活動 ──────────────────────────────────────────────
+async function savePromo() {
+  const payload = {
+    action: editingPromoId ? 'update_promo' : 'create_promo',
+    page_id:      editingPromoId,
+    promo_name:   document.getElementById('f-promo-name').value.trim(),
+    promo_type:   document.getElementById('f-promo-type').value,
+    start_date:   document.getElementById('f-start-date').value,
+    end_date:     document.getElementById('f-end-date').value,
+    status:       document.getElementById('f-status').value,
+    priority:     Number(document.getElementById('f-priority').value),
+    display_badge: document.getElementById('f-display-badge').value.trim(),
+    display_color: document.getElementById('f-display-color').value,
+    notes:        document.getElementById('f-notes').value.trim(),
+    // 類型特定欄位
+    group_min_bowls:     Number(document.getElementById('f-group-min-bowls').value),
+    group_discount_rate: Number(document.getElementById('f-group-discount-rate').value),
+    points_multiplier:   document.getElementById('f-use-multiplier').checked
+                          ? Number(document.getElementById('f-points-multiplier').value) : 1,
+    target_items:        document.getElementById('f-use-item-bonus').checked
+                          ? document.getElementById('f-target-items').value.trim() : '',
+    bonus_points_per_item: document.getElementById('f-use-item-bonus').checked
+                          ? Number(document.getElementById('f-bonus-per-item').value) : 0,
+    spend_threshold:     document.getElementById('f-use-spend-bonus').checked
+                          ? Number(document.getElementById('f-spend-threshold').value) : 0,
+    spend_bonus_points:  document.getElementById('f-use-spend-bonus').checked
+                          ? Number(document.getElementById('f-spend-bonus-points').value) : 0,
+    redeem_item_name:    document.getElementById('f-redeem-item').value.trim(),
+    redeem_points_required: Number(document.getElementById('f-redeem-points').value),
+  };
+
+  if (!payload.promo_name || !payload.promo_type || !payload.start_date || !payload.end_date) {
+    alert('請填寫活動名稱、類型及日期');
+    return;
+  }
+
+  try {
+    const res = await fetch('/webhook/admin-api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(editingPromoId ? '活動已更新 ✅' : '活動已建立 ✅');
+      closePromoModal();
+      loadPromos();
+    } else {
+      alert('儲存失敗：' + (data.error || '未知錯誤'));
+    }
+  } catch (e) {
+    alert('網路錯誤，請重試');
+  }
+}
+
+// ── 暫停/啟動活動 ─────────────────────────────────────────
+async function togglePromoStatus(pageId, currentStatus) {
+  const newStatus = currentStatus === 'active' ? 'paused' : 'active';
+  const label = newStatus === 'active' ? '啟動' : '暫停';
+  if (!confirm(`確定要${label}此活動？`)) return;
+
+  await fetch('/webhook/admin-api', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'update_promo_status', page_id: pageId, status: newStatus })
+  });
+  showToast(`活動已${label}`);
+  loadPromos();
+}
+
+// ── 編輯活動 ──────────────────────────────────────────────
+function editPromo(pageId) {
+  const promo = allPromos.find(p => p.page_id === pageId);
+  if (promo) openPromoModal(promo);
+}
+
+// ── Tab 切換時觸發載入 ────────────────────────────────────
+// 在原本 switchTab() 函式加入：
+// if (tabName === 'promos') loadPromos();
 </script>
-</body>
-</html>
+
+<style>
+/* ── 活動管理 CSS ── */
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.filter-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+.filter-bar select { flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #ddd; }
+
+.promo-list { display: grid; gap: 12px; }
+.promo-card { background: #fff; border-radius: 12px; padding: 14px; border-left: 5px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.promo-card--orange { border-left-color: #ff9800; }
+.promo-card--green  { border-left-color: #4caf50; }
+.promo-card--red    { border-left-color: #e91e63; }
+.promo-card--purple { border-left-color: #9c27b0; }
+.promo-card__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.promo-card__name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.promo-card__summary { font-size: 13px; color: #555; margin-bottom: 8px; }
+.promo-card__footer { display: flex; justify-content: space-between; font-size: 12px; color: #888; }
+.promo-card__actions { display: flex; gap: 6px; }
+.btn-icon { background: none; border: none; cursor: pointer; font-size: 18px; padding: 2px; }
+.promo-type-badge { font-size: 12px; background: #f0f0f0; border-radius: 6px; padding: 2px 8px; margin-right: 6px; }
+.badge { font-size: 12px; padding: 2px 8px; border-radius: 20px; }
+.badge--green  { background: #e8f5e9; color: #2e7d32; }
+.badge--blue   { background: #e3f2fd; color: #1565c0; }
+.badge--gray   { background: #f5f5f5; color: #616161; }
+.badge--yellow { background: #fffde7; color: #f57f17; }
+
+/* Modal */
+.modal { position: fixed; inset: 0; display: flex; align-items: flex-end; z-index: 1000; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
+.modal-content { position: relative; background: #fff; border-radius: 20px 20px 0 0; width: 100%; max-height: 90vh; overflow-y: auto; }
+.modal-content--wide { max-width: 600px; margin: auto; border-radius: 16px; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: #fff; z-index: 1; }
+.modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #666; }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 16px 20px; border-top: 1px solid #eee; display: flex; gap: 10px; justify-content: flex-end; }
+
+/* 表單 */
+.form-group { border: 1px solid #e0e0e0; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+.form-group legend { font-weight: 700; color: #333; padding: 0 6px; font-size: 14px; }
+.form-group label { display: block; font-size: 13px; color: #555; margin: 10px 0 4px; }
+.form-group input, .form-group select { width: 100%; padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.required { color: #e53935; }
+.hint { font-size: 11px; color: #999; margin-top: 3px; display: block; }
+.bonus-option { border: 1px solid #f0f0f0; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+.checkbox-label { display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer; }
+.promo-preview { background: #f9f9f9; border-radius: 8px; padding: 10px; font-size: 13px; margin-top: 10px; text-align: center; }
+
+.btn { padding: 10px 20px; border: none; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; }
+.btn-primary   { background: #1976d2; color: #fff; }
+.btn-secondary { background: #f0f0f0; color: #333; }
+.empty-state { text-align: center; padding: 40px; color: #999; }
+</style>
