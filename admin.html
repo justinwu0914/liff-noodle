@@ -141,7 +141,7 @@ function switchTab(n){
   if(n===3)loadPreorders();
 }
 
-function refreshCurrent(){switchTab(currentTab);}
+function refreshCurrent(){cachedData={};switchTab(currentTab);}
 
 // === Tab 0: All Orders (grouped by date) ===
 function renderOrders(){
